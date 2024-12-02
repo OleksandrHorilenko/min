@@ -16,7 +16,7 @@ import { useState } from 'react'
 import TaskWallet from '@/icons/TaskWallet'
 import TaskPaws from '@/icons/TaskPaws'
 import TaskTwitter from '@/icons/TaskTwitter'
-import { taskBlum, taskBoost, taskWhitePaws } from '@/images'
+import { taskBlum, taskBoost, taskWhitePaws, sun } from '@/images'
 import TaskTelegram from '@/icons/TaskTelegram'
 import TaskInvite from '@/icons/TaskInvite'
 // Import other task icons...
@@ -33,39 +33,39 @@ const TasksTab = () => {
 
     const tasks: Task[] = [
         {
-            icon: taskWhitePaws.src,
-            title: 'Put 🐾 in your name',
-            reward: '+ 5,000 PAWS'
+            icon: sun.src,
+            title: 'Put ☀ in your name',
+            reward: '+ 5,000 ECO'
         },
         {
-            icon: TaskPaws,
-            title: 'Tweet about PAWS',
-            reward: '+ 2,000 PAWS'
+            icon: TaskTwitter,
+            title: 'Tweet about ECO',
+            reward: '+ 2,000 ECO'
         },
         {
             icon: taskBoost.src,
-            title: 'Boost PAWS channel',
-            reward: '+ 2,500 PAWS'
+            title: 'Boost ECO channel',
+            reward: '+ 2,500 ECO'
         },
         {
             icon: TaskTelegram,
             title: 'Follow channel',
-            reward: '+ 1,000 PAWS'
+            reward: '+ 1,000 ECO'
         },
         {
             icon: TaskTwitter,
             title: 'Follow twitter',
-            reward: '+ 2,000 PAWS'
+            reward: '+ 2,000 ECO'
         },
         {
             icon: TaskInvite,
             title: 'Invite 10 friends',
-            reward: '+ 5,000 PAWS'
+            reward: '+ 5,000 ECO'
         },
         {
             icon: TaskWallet,
             title: 'Connect wallet',
-            reward: '+ 3,000 PAWS'
+            reward: '+ 3,000 ECO'
         },
         // Add more tasks as needed
     ]
