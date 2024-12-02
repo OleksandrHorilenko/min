@@ -11,6 +11,7 @@
 
 import PawsLogo from '@/icons/PawsLogo'
 import { trophy } from '@/images';
+import { sun } from '@/images';
 import Image from 'next/image'
 
 type LeaderboardItem = {
@@ -56,7 +57,13 @@ const LeaderboardTab = () => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 p-1.5 bg-black rounded-lg">
-                                <PawsLogo className="w-full h-full" />
+                            <Image
+                        src={sun}
+                        alt="Trophy"
+                        width={80}
+                        height={80}
+                        className="mb-2"
+                    /> {/* <PawsLogo className="w-full h-full" />*/}
                             </div>
                             <div className="text-black font-medium">
                                 <div className="text-base">nikandr_s</div>
@@ -80,12 +87,18 @@ const LeaderboardTab = () => {
                         >
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 p-1.5 bg-white rounded-lg">
-                                    <PawsLogo className="w-full h-full text-black" />
+                                <Image
+                        src={sun}
+                        alt="Trophy"
+                        width={80}
+                        height={80}
+                        className="mb-2"
+                    />  {/*<PawsLogo className="w-full h-full text-black" />*/}
                                 </div>
                                 <div>
                                     <div className="text-base font-medium">{item.wallet}</div>
                                     <div className="text-sm font-medium text-[#7c7c7c]">
-                                        {item.balance} PAWS
+                                        {item.balance} ECO
                                     </div>
                                 </div>
                             </div>
