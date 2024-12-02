@@ -14,6 +14,15 @@ import TabContainer from '@/components/TabContainer'
 import { TabProvider } from '@/contexts/TabContext'
 import WebApp from '@twa-dev/sdk'
 import { useEffect, useState } from 'react'
+//import { WebApp } from '@twa-dev/types'
+
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp:typeof WebApp
+    }
+  }
+}
 
 // Define the interface for user data
 interface UserData {
@@ -27,16 +36,47 @@ interface UserData {
 
 export default function Home() {
   const [userData, setUserData] = useState<UserData | null>(null)
+  const [user, setUser] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [notification, setNotification] = useState('')
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      // Проверяем, что код выполняется в браузере
-      if (WebApp.initDataUnsafe?.user) {
-        const user = WebApp.initDataUnsafe.user as UserData;
-        setUserData(user);
-        localStorage.setItem('userData', JSON.stringify(user)); // Сохраняем данные в localStorage
+    if (typeof window !== "undefined") {
+      if (window.Telegram?.WebApp) {
+        // Если приложение открыто в Telegram
+        const tg = window.Telegram.WebApp;
+        tg.ready(); // Готовим WebApp
+  
+        const initDataUnsafe = tg.initDataUnsafe || {};
+        
+        if (initDataUnsafe.user) {
+          // Если есть данные пользователя из Telegram
+          const user = initDataUnsafe.user as UserData;
+          setUserData(user);
+          localStorage.setItem('userData', JSON.stringify(user)); // Сохраняем в localStorage
+  
+          // Отправляем данные на сервер
+          fetch('/api/user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.error) {
+                setError(data.error);
+              } else {
+                setUser(data);
+              }
+            })
+            .catch((err) => {
+              setError('Failed to fetch user data');
+            });
+        } else {
+          setError('No user data available');
+        }
       } else {
-        // Если пользователь не из Telegram, ставим тестовые данные
+        // Если не в Telegram, подгружаем тестовые данные
         const testUserData = {
           id: 12345,
           first_name: 'Test User',
@@ -47,9 +87,30 @@ export default function Home() {
         };
         setUserData(testUserData);
         localStorage.setItem('userData', JSON.stringify(testUserData)); // Сохраняем тестовые данные
+  
+        // Отправляем тестовые данные на сервер
+        fetch('/api/user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testUserData),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.error) {
+              setError(data.error);
+            } else {
+              setUser(data);
+            }
+          })
+          .catch((err) => {
+            setError('Failed to send test user data');
+          });
+  
+        setError('This app should be opened in Telegram');
       }
     }
   }, []);
+  
 
   return (
     <TabProvider>
