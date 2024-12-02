@@ -30,10 +30,24 @@ export default function Home() {
   const [userData, setUserData] = useState<UserData | null>(null)
   
   useEffect(() => {
-    if (WebApp.initDataUnsafe.user) {
-      setUserData(WebApp.initDataUnsafe.user as UserData); // Устанавливаем данные пользователя в контекст
+    if (WebApp.initDataUnsafe?.user) {
+      const user = WebApp.initDataUnsafe.user as UserData;
+      setUserData(user);
+      localStorage.setItem('userData', JSON.stringify(user)); // Сохраняем данные в localStorage
+    } else {
+      // Если пользователь не из Telegram, ставим тестовые данные
+      const testUserData = {
+        id: 12345,
+        first_name: 'Test User',
+        last_name: 'Testov',
+        username: 'testuser',
+        language_code: 'en',
+        is_premium: true,
+      };
+      setUserData(testUserData);
+      localStorage.setItem('userData', JSON.stringify(testUserData)); // Сохраняем тестовые данные
     }
-  }, [setUserData]);
+  }, []);
 
   return (
     <TabProvider>
