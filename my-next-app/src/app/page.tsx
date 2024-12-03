@@ -165,8 +165,7 @@ export default function Home() {
         <CheckFootprint />
         <TabContainer />
         <NavigationBar />
-        {error && <p className="text-red-500">{error}</p>}
-        {user && <pre className="text-green-500">{JSON.stringify(user, null, 2)}</pre>}
+    
       </main>
     </TabProvider>
   );

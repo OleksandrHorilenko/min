@@ -1,29 +1,18 @@
-// components/NavigationBar.tsx
-
-/**
- * This project was developed by Nikandr Surkov.
- * 
- * YouTube: https://www.youtube.com/@NikandrSurkov
- * GitHub: https://github.com/nikandr-surkov
- */
-
 'use client'
 
 import { useTab } from '@/contexts/TabContext'
-import Earn from '@/icons/Earn'
-import Friends from '@/icons/Friends'
-import Home from '@/icons/Home'
-import Leaderboard from '@/icons/Leaderboard'
+import { FaHome, FaTrophy, FaUsers, FaGift, FaWallet } from 'react-icons/fa' // Импортируем иконки из react-icons/fa
 import { TabType } from '@/utils/types'
 
 const NavigationBar = () => {
     const { activeTab, setActiveTab } = useTab()
 
     const tabs: { id: TabType; label: string; Icon: React.FC<{ className?: string }> }[] = [
-        { id: 'home', label: 'Home', Icon: Home },
-        { id: 'leaderboard', label: 'Leaderboard', Icon: Leaderboard },
-        { id: 'friends', label: 'Friends', Icon: Friends },
-        { id: 'earn', label: 'Earn', Icon: Earn },
+        { id: 'home', label: 'Home', Icon: FaHome }, // Используем FaHome для Home
+        { id: 'leaderboard', label: 'Leaderboard', Icon: FaTrophy }, // Используем FaTrophy для Leaderboard
+        { id: 'friends', label: 'Friends', Icon: FaUsers }, // Используем FaUsers для Friends
+        { id: 'earn', label: 'Earn', Icon: FaGift }, // Используем FaGift для Earn
+        { id: 'wallet', label: 'Wallet', Icon: FaWallet }, // Используем FaWallet для Wallet
     ]
 
     return (
@@ -39,12 +28,10 @@ const NavigationBar = () => {
                                 className={`flex flex-col items-center`}
                             >
                                 <tab.Icon
-                                    className={`w-10 h-10 ${isActive ? 'text-[#4c9ce2]' : 'text-[#727272]'
-                                        }`}
+                                    className={`w-8 h-8 ${isActive ? 'text-[#4c9ce2]' : 'text-[#727272]'}`}
                                 />
                                 <span
-                                    className={`text-xs font-medium ${isActive ? 'text-[#4c9ce2]' : 'text-[#727272]'
-                                        }`}
+                                    className={`text-xs font-medium ${isActive ? 'text-[#4c9ce2]' : 'text-[#727272]'}`}
                                 >
                                     {tab.label}
                                 </span>
@@ -58,3 +45,4 @@ const NavigationBar = () => {
 }
 
 export default NavigationBar
+

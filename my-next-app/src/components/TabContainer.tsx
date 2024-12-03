@@ -14,6 +14,7 @@ import HomeTab from './HomeTab'
 import LeaderboardTab from './LeaderboardTab'
 import FriendsTab from './FriendsTab'
 import TasksTab from './TasksTab'
+import Wallet from './Wallet';
 
 const TabContainer = () => {
     const { activeTab } = useTab()
@@ -22,6 +23,9 @@ const TabContainer = () => {
         <div className="flex-1 overflow-hidden max-w-md mx-auto pt-[44px] pb-[72px]">
             <div className={`${activeTab === 'home' ? 'is-show' : 'is-hide'}`}>
                 <HomeTab />
+            </div>
+            <div className={`${activeTab === 'wallet' ? 'is-show' : 'is-hide'}`}>
+                <Wallet />
             </div>
             <div className={`${activeTab === 'leaderboard' ? 'is-show' : 'is-hide'}`}>
                 <LeaderboardTab />
