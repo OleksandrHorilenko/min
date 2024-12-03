@@ -1,0 +1,8 @@
+{
+    "name": "ECOMINE",
+    "description": "Application for mining cryptocurrency",
+    "url": "https://min-liard.vercel.app/",
+    "icons": [
+      "https://min-liard.vercel.app/images/ecomine.png"
+    ]
+  }

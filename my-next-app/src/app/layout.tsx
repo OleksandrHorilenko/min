@@ -39,7 +39,7 @@ export default function RootLayout({
           />
         </Head>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><TonConnectUIProvider manifestUrl="https://violet-traditional-rabbit-103.mypinata.cloud/ipfs/QmQJJAdZ2qSwdepvb5evJq7soEBueFenHLX3PoM6tiBffm">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><TonConnectUIProvider manifestUrl="https://silver-odd-armadillo-313.mypinata.cloud/ipfs/QmaqQuApwBL1ndd2CY81XmLnXtx1Ebn3SLQmdm8MrfQcYQ">
           {children}
         
         </TonConnectUIProvider>
