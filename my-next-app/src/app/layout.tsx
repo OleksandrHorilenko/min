@@ -1,6 +1,9 @@
+'use client';
+
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { TonConnectUIProvider } from "@tonconnect/ui-react";
 import Head from "next/head"; // Импорт компонента Head
 import Script from "next/script";
 
@@ -15,10 +18,10 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata: Metadata = {
-  title: "ECOMINE - application for mining cryptocurrency",
-  description: "Application for mining cryptocurrency from Telegram",
-};
+//export const metadata: Metadata = {
+// title: "ECOMINE - application for mining cryptocurrency",
+ // description: "Application for mining cryptocurrency from Telegram",
+//};
 
 export default function RootLayout({
   children,
@@ -36,8 +39,10 @@ export default function RootLayout({
           />
         </Head>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><TonConnectUIProvider manifestUrl="https://violet-traditional-rabbit-103.mypinata.cloud/ipfs/QmQJJAdZ2qSwdepvb5evJq7soEBueFenHLX3PoM6tiBffm">
+          {children}
+        
+        </TonConnectUIProvider>
       </body>
     </html>
   );

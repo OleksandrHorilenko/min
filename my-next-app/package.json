@@ -1,5 +1,5 @@
 {
-  "name": "28-paws-clone",
+  "name": "ecomine",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
+    "@ton/core": "^0.59.0",
+    "@tonconnect/ui-react": "^2.0.9",
     "@twa-dev/sdk": "^8.0.1",
     "mongodb": "^6.11.0",
     "next": "14.2.16",
