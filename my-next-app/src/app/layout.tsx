@@ -39,7 +39,7 @@ export default function RootLayout({
           />
         </Head>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><TonConnectUIProvider manifestUrl="https://silver-odd-armadillo-313.mypinata.cloud/ipfs/QmY6CVPE42JSChUnTdhbjurb1WCRqhY1dAY26gfkL3vxLh">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><TonConnectUIProvider manifestUrl="https://min-liard.vercel.app/tonconnect-manifest.json">
           {children}
         
         </TonConnectUIProvider>
