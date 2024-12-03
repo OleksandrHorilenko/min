@@ -3,6 +3,8 @@
 'use client'
 
 import Wallet from '@/icons/Wallet'
+
+import { TonConnectButton } from '@tonconnect/ui-react';
 import PawsLogo from '@/icons/PawsLogo'
 import Community from '@/icons/Community'
 import Star from '@/icons/Star'
@@ -15,12 +17,9 @@ const HomeTab = () => {
     return (
         <div className={`home-tab-con transition-all duration-300`}>
             {/* Connect Wallet Button */}
-            <button className="w-full flex justify-center mt-8">
-                <div className="bg-[#007aff] text-white px-3 py-0.5 rounded-full flex items-center gap-2">
-                    <Wallet className="w-5 h-5" />
-                    <span>Connect wallet</span>
-                </div>
-            </button>
+            <div className="w-full flex justify-center mt-8">
+      <TonConnectButton />
+    </div>
 
             {/* PAWS Balance */}
             <div className="flex flex-col items-center mt-12">
