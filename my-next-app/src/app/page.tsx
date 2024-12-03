@@ -12,14 +12,14 @@ import CheckFootprint from '@/components/CheckFootprint'
 import NavigationBar from '@/components/NavigationBar'
 import TabContainer from '@/components/TabContainer'
 import { TabProvider } from '@/contexts/TabContext'
-import WebApp from '@twa-dev/sdk'
+//import WebApp from '@twa-dev/sdk'
 import { useEffect, useState } from 'react'
-//import { WebApp } from '@twa-dev/types'
+import { WebApp } from '@twa-dev/types'
 
 declare global {
   interface Window {
     Telegram?: {
-      WebApp:typeof WebApp
+      WebApp: WebApp
     }
   }
 }
