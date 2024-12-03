@@ -3,6 +3,6 @@
     "description": "Application for mining cryptocurrency",
     "url": "https://min-liard.vercel.app/",
     "icons": [
-      "https://min-liard.vercel.app/images/ecomine.png"
+      "https://min-liard.vercel.app/assets/ecomine.png"
     ]
   }
