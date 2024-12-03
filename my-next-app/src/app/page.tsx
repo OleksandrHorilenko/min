@@ -46,7 +46,8 @@ export default function Home() {
         // Если приложение открыто в Telegram
         const tg = window.Telegram.WebApp;
         tg.ready(); // Готовим WebApp
-  
+
+        const initData = tg.initData || ''
         const initDataUnsafe = tg.initDataUnsafe || {};
         
         if (initDataUnsafe.user) {
@@ -59,7 +60,7 @@ export default function Home() {
           fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(user),
+            body: JSON.stringify(initDataUnsafe.user),
           })
             .then((res) => res.json())
             .then((data) => {

@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Paws Game Clone",
-  description: "Clone of the popular Telegram mini app Paws, developed by Nikandr Surkov.",
+  title: "ECOMINE - application for mining cryptocurrency",
+  description: "Application for mining cryptocurrency from Telegram",
 };
 
 export default function RootLayout({
