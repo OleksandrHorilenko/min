@@ -20,7 +20,7 @@ model User {
   firstName       String?
   lastName        String?
   languageCode    String?
-  isPremium       Boolean
+  isPremium       Boolean @default(false)
 }
 
 

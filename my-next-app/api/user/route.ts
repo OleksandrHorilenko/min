@@ -22,6 +22,8 @@ export async function POST(req: NextRequest) {
                     username: userData.username || '',
                     firstName: userData.first_name || '',
                     lastName: userData.last_name || '',
+                    languageCode: userData.language_code || '', // можно добавить для совместимости
+                    isPremium: userData.is_premium || false, // Передаем значение для isPremium
                 },
             });
 
