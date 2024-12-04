@@ -4,7 +4,6 @@ const walletSchema = new mongoose.Schema(
   {
     userId: {
       type: Number,  // Используем число для userId
-      unique: true,
       required: true,
     },
     walletAddress: {
