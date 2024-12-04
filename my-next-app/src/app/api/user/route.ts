@@ -32,14 +32,4 @@ export async function POST(req: NextRequest) {
     }
   }
   
-  // Обработчик для GET запроса (получение списка пользователей)
-  export async function GET() {
-    await connect();
   
-    try {
-      const users = await User.find(); // Получение всех пользователей
-      return NextResponse.json(users); // Возвращаем пользователей
-    } catch (error) {
-      return NextResponse.json({ error: 'Ошибка при получении пользователей' }, { status: 500 });
-    }
-  }
