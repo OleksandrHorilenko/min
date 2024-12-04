@@ -1,12 +1,13 @@
 'use client';
 
-import { CircleLoader } from 'react-spinners';
 import CheckFootprint from '@/components/CheckFootprint';
 import NavigationBar from '@/components/NavigationBar';
 import TabContainer from '@/components/TabContainer';
+import Wallet from '@/components/Wallet';
 import { TabProvider } from '@/contexts/TabContext';
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
+
 
 declare global {
   interface Window {
@@ -31,68 +32,87 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState('');
-  const [loading, setLoading] = useState(true);  // Лоадер по умолчанию включен
+  const [loader, setLoader] = useState(false);
+
+  
 
   useEffect(() => {
     const loadData = async () => {
-      if (typeof window !== 'undefined') {
-        if (window.Telegram?.WebApp) {
-          const tg = window.Telegram.WebApp;
-          tg.ready(); // Готовим WebApp
-
-          const initDataUnsafe = tg.initDataUnsafe || {};
-
-          if (initDataUnsafe.user) {
-            const user = initDataUnsafe.user as UserData;
-            setUserData(user);
-            localStorage.setItem('userData', JSON.stringify(user));
-
-            try {
-              const response = await fetch('/api/user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(user),
-              });
-              const data = await response.json();
-              if (data.error) {
-                setError(data.error);
-              } else {
-                setUser(data);
-              }
-            } catch (err) {
-              console.error('Failed to fetch user data:', err);
-              setError('Failed to fetch user data');
-            }
-          } else {
-            setError('No user data available from Telegram');
-          }
-        } else {
-          setError('This app should be opened in Telegram');
+      let userData: UserData | null = null;
+  
+      if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+        // Проверяем, что приложение открыто в Telegram
+        const tg = window.Telegram.WebApp;
+        tg.ready(); // Инициализация Telegram WebApp
+  
+        const telegramUser = tg.initDataUnsafe?.user || null;
+  
+        if (telegramUser) {
+          // Преобразуем данные в формат UserData
+          userData = {
+            id: telegramUser.id,
+            first_name: telegramUser.first_name,
+            last_name: telegramUser.last_name || '', // Предоставляем значение по умолчанию
+            username: telegramUser.username || '', // Предоставляем значение по умолчанию
+            language_code: telegramUser.language_code || 'en', // Предоставляем значение по умолчанию для language_code
+            is_premium: telegramUser.is_premium || false, // Предоставляем значение по умолчанию для is_premium
+          };
         }
       }
-
-      setLoading(false);  // Останавливаем лоадер после загрузки данных
+  
+      if (!userData) {
+        // Если не в Telegram, используем тестовые данные
+        userData = {
+          id: 12345,
+          first_name: 'Test User',
+          last_name: 'Testov',
+          username: 'testuser',
+          language_code: 'en',
+          is_premium: true,
+        };
+        setError('This app should be opened in Telegram, using test data.');
+      }
+  
+      if (userData) {
+        setUserData(userData); // Сохраняем данные пользователя
+        localStorage.setItem('userData', JSON.stringify(userData)); // Кэшируем в localStorage
+  
+        try {
+          const response = await fetch('/api/user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData),
+          });
+          const data = await response.json();
+          if (data.error) {
+            setError(data.error);
+          } else {
+            setUser(data);
+          }
+        } catch (err) {
+          console.error('Failed to send user data:', err);
+          setError('Failed to send user data');
+        }
+      }
     };
-
+  
     loadData();
   }, []);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-900">  {/* Задаем фон для лоадера */}
-      <CircleLoader size={100} color="#36d7b7" loading={true} />
-    </div>
-    );
-  }
+  
+  
 
   return (
+    
+    
     <TabProvider>
       <main className="min-h-screen bg-black text-white">
         <CheckFootprint />
         <TabContainer />
         <NavigationBar />
+        
       </main>
     </TabProvider>
+    
+    
   );
 }
-
