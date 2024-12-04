@@ -1,95 +1,60 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTonConnectUI } from '@tonconnect/ui-react';
-import { Address } from "@ton/core";
+import { useState } from 'react';
+import DepositTab from './DepositTab';
+import WithdrawTab from './WithdrawTab';
+import Image from 'next/image';
+import { sun } from '@/images'; // Импортируем изображение солнца
+import { TonConnectButton, useTonConnectUI, SendTransactionRequest } from '@tonconnect/ui-react';
 
-export default function Home() {
+const Wallet = () => {
+  const [selectedTab, setSelectedTab] = useState<'Deposit' | 'Withdraw'>('Deposit'); // Состояние для переключения вкладок
+  // Использование хука для TON Connect
   const [tonConnectUI] = useTonConnectUI();
-  const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const handleWalletConnection = useCallback((address: string) => {
-    setTonWalletAddress(address);
-    console.log("Wallet connected successfully!");
-    setIsLoading(false);
-  }, []);
-
-  const handleWalletDisconnection = useCallback(() => {
-    setTonWalletAddress(null);
-    console.log("Wallet disconnected successfully!");
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    const checkWalletConnection = async () => {
-      if (tonConnectUI.account?.address) {
-        handleWalletConnection(tonConnectUI.account?.address);
-      } else {
-        handleWalletDisconnection();
-      }
-    };
-
-    checkWalletConnection();
-
-    const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
-      if (wallet) {
-        handleWalletConnection(wallet.account.address);
-      } else {
-        handleWalletDisconnection();
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [tonConnectUI, handleWalletConnection, handleWalletDisconnection]);
-
-  const handleWalletAction = async () => {
-    if (tonConnectUI.connected) {
-      setIsLoading(true);
-      await tonConnectUI.disconnect();
-    } else {
-      await tonConnectUI.openModal();
-    }
-  };
-
-  const formatAddress = (address: string) => {
-    const tempAddress = Address.parse(address).toString();
-    return `${tempAddress.slice(0, 4)}...${tempAddress.slice(-4)}`;
-  };
-
-  if (isLoading) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center">
-        <div className="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded">
-          Loading...
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold mb-8">TON Connect Demo</h1>
-      {tonWalletAddress ? (
-        <div className="flex flex-col items-center">
-          <p className="mb-4">Connected: {formatAddress(tonWalletAddress)}</p>
-          <button
-            onClick={handleWalletAction}
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Disconnect Wallet
-          </button>
+    <div className="bg-black min-h-screen text-white">
+      {/* Заголовок страницы */}
+      <div className="text-center text-3xl font-bold py-8">
+        My Wallet  <div className="w-full flex justify-center mt-8">
+        <TonConnectButton />
+      </div>
+      </div>
+      
+     
+      {/* Кнопка для подключения кошелька */}
+   
+     
+
+      {/* Полоска с балансом */}
+      <div className="flex justify-center items-center bg-[#1c1c1c] py-4 rounded-lg">
+        <div className="flex items-center text-xl">
+          <Image src={sun} alt="sparkles" width={24} height={24} />
+          <span className="ml-2 text-2xl font-bold">4,646</span>
+          <span className="ml-1">ECO</span>
         </div>
-      ) : (
-        <button
-          onClick={handleWalletAction}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      </div>
+
+      {/* Вкладки Deposit и Withdraw */}
+      <div className="flex justify-center mt-6 mb-8">
+        <div
+          className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg ${selectedTab === 'Deposit' ? 'bg-[#333] border-b-4 border-[#FFA500]' : 'bg-transparent'}`}
+          onClick={() => setSelectedTab('Deposit')}
         >
-          Connect TON Wallet
-        </button>
-      )}
-    </main>
+          Deposit
+        </div>
+        <div
+          className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg ${selectedTab === 'Withdraw' ? 'bg-[#333] border-b-4 border-[#FFA500]' : 'bg-transparent'}`}
+          onClick={() => setSelectedTab('Withdraw')}
+        >
+          Withdraw
+        </div>
+      </div>
+
+      {/* Отображение содержимого вкладки */}
+      {selectedTab === 'Deposit' && <DepositTab />}
+      {selectedTab === 'Withdraw' && <WithdrawTab />}
+    </div>
   );
-}
+};
+
+export default Wallet;

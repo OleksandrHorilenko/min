@@ -28,9 +28,7 @@ const HomeTab = () => {
   return (
     <div className={`home-tab-con transition-all duration-300`}>
       {/* Кнопка для подключения кошелька */}
-      <div className="w-full flex justify-center mt-8">
-        <TonConnectButton />
-      </div>
+     
 
       {/* Баланс PAWS */}
       <div className="flex flex-col items-center mt-12">

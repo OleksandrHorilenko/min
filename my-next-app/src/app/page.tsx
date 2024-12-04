@@ -3,6 +3,7 @@
 import CheckFootprint from '@/components/CheckFootprint';
 import NavigationBar from '@/components/NavigationBar';
 import TabContainer from '@/components/TabContainer';
+import Wallet from '@/components/Wallet';
 import { TabProvider } from '@/contexts/TabContext';
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
@@ -160,13 +161,17 @@ export default function Home() {
   }, []);
 
   return (
+    
+    
     <TabProvider>
       <main className="min-h-screen bg-black text-white">
         <CheckFootprint />
         <TabContainer />
         <NavigationBar />
-    
+        
       </main>
     </TabProvider>
+    
+    
   );
 }
