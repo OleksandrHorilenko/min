@@ -3,11 +3,10 @@
 import CheckFootprint from '@/components/CheckFootprint';
 import NavigationBar from '@/components/NavigationBar';
 import TabContainer from '@/components/TabContainer';
-import Wallet from '@/components/Wallet';
 import { TabProvider } from '@/contexts/TabContext';
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
-
+import useUserStore from '../stores/useUserStore';  // Импортируем zustand хранилище
 
 declare global {
   interface Window {
@@ -34,7 +33,8 @@ export default function Home() {
   const [notification, setNotification] = useState('');
   const [loader, setLoader] = useState(false);
 
-  
+  // Доступ к состоянию из Zustand
+  const { setUser: setUserInStore } = useUserStore();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -66,7 +66,14 @@ export default function Home() {
               if (data.error) {
                 setError(data.error);
               } else {
+                // После успешного отправления получаем обновленные данные из базы
                 setUser(data);
+                
+                // Сохраняем обновленные данные в localStorage
+                localStorage.setItem('userData', JSON.stringify(data));
+
+                // Обновляем состояние в Zustand
+                setUserInStore(data);
               }
             })
             .catch((err) => {
@@ -111,7 +118,14 @@ export default function Home() {
                   if (data.error) {
                     setError(data.error);
                   } else {
+                    // После успешного отправления получаем обновленные данные из базы
                     setUser(data);
+                    
+                    // Сохраняем обновленные данные в localStorage
+                    localStorage.setItem('userData', JSON.stringify(data));
+
+                    // Обновляем состояние в Zustand
+                    setUserInStore(data);
                   }
                 })
                 .catch((err) => {
@@ -150,7 +164,14 @@ export default function Home() {
               if (data.error) {
                 setError(data.error);
               } else {
+                // После успешного отправления получаем обновленные данные из базы
                 setUser(data);
+                
+                // Сохраняем обновленные данные в localStorage
+                localStorage.setItem('userData', JSON.stringify(data));
+
+                // Обновляем состояние в Zustand
+                setUserInStore(data);
               }
             })
             .catch((err) => {
@@ -162,20 +183,15 @@ export default function Home() {
         }
       }
     }
-  }, []);
+  }, [setUserInStore]); // Используем setUserInStore для изменения состояния в zustand
 
   return (
-    
-    
     <TabProvider>
       <main className="min-h-screen bg-black text-white">
         <CheckFootprint />
         <TabContainer />
         <NavigationBar />
-        
       </main>
     </TabProvider>
-    
-    
   );
 }

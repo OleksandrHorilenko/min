@@ -1,30 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DepositTab from './DepositTab';
 import WithdrawTab from './WithdrawTab';
 import Image from 'next/image';
 import { sun } from '@/images'; // Импортируем изображение солнца
-import { TonConnectButton, useTonConnectUI, SendTransactionRequest } from '@tonconnect/ui-react';
+import { TonConnectButton, useTonConnectUI, SendTransactionRequest, useTonWallet, useTonAddress } from '@tonconnect/ui-react';
+import { TonConnect, TonProofItemReply, TonProofItemReplyError } from '@tonconnect/sdk';
+import useUserStore from '@/stores/useUserStore'; // Подключаем хранилище пользователя
 
 const Wallet = () => {
   const [selectedTab, setSelectedTab] = useState<'Deposit' | 'Withdraw'>('Deposit'); // Состояние для переключения вкладок
-  // Использование хука для TON Connect
+  const tonwallet = useTonWallet(); // Использование хука для TON Connect
   const [tonConnectUI] = useTonConnectUI();
+  const userFriendlyAddress = useTonAddress();
+  const rawAddress = useTonAddress(false);
+
+  // Получаем данные пользователя из Zustand
+  const { user } = useUserStore();
+
+  useEffect(() => {
+    // Проверяем, что tonwallet не равен null и имеет account.address
+    if (tonwallet?.account?.address && user?.id) {
+      // Отправить адрес в API для сохранения в базе данных
+      const saveWalletAddress = async () => {
+        try {
+          const response = await fetch('/api/userwallet', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: user.id, // передаем userId
+              walletAddress: userFriendlyAddress, // передаем адрес кошелька
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Адрес кошелька сохранен:', data);
+          } else {
+            console.error('Ошибка при сохранении кошелька');
+          }
+        } catch (error) {
+          console.error('Ошибка при отправке запроса:', error);
+        }
+      };
+
+      saveWalletAddress();
+    }
+  }, [tonwallet, user?.id, userFriendlyAddress]); // Зависимости, чтобы запрос выполнялся, когда изменяется кошелек или данные пользователя
+
   return (
     <div className="bg-black min-h-screen text-white">
       {/* Заголовок страницы */}
       <div className="text-center text-3xl font-bold py-8">
-        My Wallet  <div className="w-full flex justify-center mt-8">
-        <TonConnectButton />
-      </div>
+        My Wallet  
+        <div className="w-full flex justify-center mt-8">
+          <TonConnectButton />
+        </div>
       </div>
       
-     
       {/* Кнопка для подключения кошелька */}
-   
-     
-
+      {userFriendlyAddress && (
+        <div>
+          <span>User-friendly address: {userFriendlyAddress}</span>
+          <span>Raw address: {rawAddress}</span>
+        </div>
+      )}
       {/* Полоска с балансом */}
       <div className="flex justify-center items-center bg-[#1c1c1c] py-4 rounded-lg">
         <div className="flex items-center text-xl">
@@ -58,3 +101,4 @@ const Wallet = () => {
 };
 
 export default Wallet;
+
