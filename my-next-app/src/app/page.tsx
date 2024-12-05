@@ -6,7 +6,7 @@ import TabContainer from '@/components/TabContainer';
 import { TabProvider } from '@/contexts/TabContext';
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
-import useUserStore from '../stores/useUserStore';  // Импортируем zustand хранилище
+import useUserStore from '../stores/useUserStore'; // Импортируем zustand хранилище
 
 declare global {
   interface Window {
@@ -18,7 +18,7 @@ declare global {
 
 // Define the interface for user data
 interface UserData {
-  id: number;
+  telegramId: string; // Заменяем id на telegramId
   first_name: string;
   last_name?: string;
   username?: string;
@@ -39,7 +39,6 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (window.Telegram?.WebApp) {
-        // Если приложение открыто в Telegram
         const tg = window.Telegram.WebApp;
         tg.ready(); // Готовим WebApp
 
@@ -50,10 +49,27 @@ export default function Home() {
         console.log('Telegram initDataUnsafe:', initDataUnsafe);
 
         if (initDataUnsafe.user) {
-          // Если есть данные пользователя из Telegram
-          const user = initDataUnsafe.user as UserData;
+          const rawUser = initDataUnsafe.user as unknown as {
+            id: number;
+            first_name: string;
+            last_name?: string;
+            username?: string;
+            language_code: string;
+            is_premium?: boolean;
+          };
+
+          // Преобразуем id в telegramId
+          const user: UserData = {
+            telegramId: String(rawUser.id), // Преобразование id в строку
+            first_name: rawUser.first_name,
+            last_name: rawUser.last_name,
+            username: rawUser.username,
+            language_code: rawUser.language_code,
+            is_premium: rawUser.is_premium,
+          };
+
           setUserData(user);
-          localStorage.setItem('userData', JSON.stringify(user)); // Сохраняем в localStorage
+          localStorage.setItem('userData', JSON.stringify(user));
 
           // Отправляем данные на сервер
           fetch('/api/user', {
@@ -66,13 +82,8 @@ export default function Home() {
               if (data.error) {
                 setError(data.error);
               } else {
-                // После успешного отправления получаем обновленные данные из базы
                 setUser(data);
-                
-                // Сохраняем обновленные данные в localStorage
                 localStorage.setItem('userData', JSON.stringify(data));
-
-                // Обновляем состояние в Zustand
                 setUserInStore(data);
               }
             })
@@ -85,7 +96,6 @@ export default function Home() {
           console.error('No user data available from Telegram:', initDataUnsafe);
         }
       } else {
-        // Если приложение не открыто в Telegram
         const searchParams = new URLSearchParams(window.location.hash.substring(1));
         const tgWebAppData = searchParams.get('tgWebAppData');
 
@@ -96,8 +106,8 @@ export default function Home() {
             const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
 
             if (userObject) {
-              const userData = {
-                id: userObject.id || 12345,
+              const userData: UserData = {
+                telegramId: String(userObject.id || '12345'), // telegramId вместо id
                 first_name: userObject.first_name || 'Имя',
                 last_name: userObject.last_name || 'Фамилия',
                 username: userObject.username || 'username',
@@ -118,13 +128,8 @@ export default function Home() {
                   if (data.error) {
                     setError(data.error);
                   } else {
-                    // После успешного отправления получаем обновленные данные из базы
                     setUser(data);
-                    
-                    // Сохраняем обновленные данные в localStorage
                     localStorage.setItem('userData', JSON.stringify(data));
-
-                    // Обновляем состояние в Zustand
                     setUserInStore(data);
                   }
                 })
@@ -141,9 +146,8 @@ export default function Home() {
             setError('Error parsing tgWebAppData');
           }
         } else {
-          // Устанавливаем тестовые данные
-          const testUserData = {
-            id: 12345,
+          const testUserData: UserData = {
+            telegramId: '12345', // Тестовые данные с telegramId
             first_name: 'Test User',
             last_name: 'Testov',
             username: 'testuser',
@@ -153,7 +157,6 @@ export default function Home() {
           setUserData(testUserData);
           localStorage.setItem('userData', JSON.stringify(testUserData));
 
-          // Отправляем тестовые данные на сервер
           fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -164,13 +167,8 @@ export default function Home() {
               if (data.error) {
                 setError(data.error);
               } else {
-                // После успешного отправления получаем обновленные данные из базы
                 setUser(data);
-                
-                // Сохраняем обновленные данные в localStorage
                 localStorage.setItem('userData', JSON.stringify(data));
-
-                // Обновляем состояние в Zustand
                 setUserInStore(data);
               }
             })
@@ -183,7 +181,7 @@ export default function Home() {
         }
       }
     }
-  }, [setUserInStore]); // Используем setUserInStore для изменения состояния в zustand
+  }, [setUserInStore]);
 
   return (
     <TabProvider>

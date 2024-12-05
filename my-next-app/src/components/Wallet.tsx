@@ -5,8 +5,7 @@ import DepositTab from './DepositTab';
 import WithdrawTab from './WithdrawTab';
 import Image from 'next/image';
 import { sun } from '@/images'; // Импортируем изображение солнца
-import { TonConnectButton, useTonConnectUI, SendTransactionRequest, useTonWallet, useTonAddress } from '@tonconnect/ui-react';
-import { TonConnect, TonProofItemReply, TonProofItemReplyError } from '@tonconnect/sdk';
+import { TonConnectButton, useTonConnectUI, useTonWallet, useTonAddress } from '@tonconnect/ui-react';
 import useUserStore from '@/stores/useUserStore'; // Подключаем хранилище пользователя
 
 const Wallet = () => {
@@ -21,7 +20,7 @@ const Wallet = () => {
 
   useEffect(() => {
     // Проверяем, что tonwallet не равен null и имеет account.address
-    if (userFriendlyAddress && user?.id) {
+    if (userFriendlyAddress && user?.TelegramId) {
       // Отправить адрес в API для сохранения в базе данных
       const saveWalletAddress = async () => {
         try {
@@ -31,8 +30,8 @@ const Wallet = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              userId: user.id, // передаем userId
-              walletAddress: userFriendlyAddress, // передаем адрес кошелька
+              telegramId: String(user.TelegramId), // Передаем telegramId как строку
+              walletAddress: userFriendlyAddress, // Передаем адрес кошелька
             }),
           });
 
@@ -49,7 +48,7 @@ const Wallet = () => {
 
       saveWalletAddress();
     }
-  }, [tonwallet, user?.id, userFriendlyAddress]); // Зависимости, чтобы запрос выполнялся, когда изменяется кошелек или данные пользователя
+  }, [tonwallet, user?.TelegramId, userFriendlyAddress]); // Зависимости, чтобы запрос выполнялся, когда изменяется кошелек или данные пользователя
 
   return (
     <div className="bg-black min-h-screen text-white">
@@ -66,7 +65,7 @@ const Wallet = () => {
         <div>
           <span>User-friendly address: {userFriendlyAddress}</span>
           <span>Raw address: {rawAddress}</span>
-          <span>UserID: {user.id}</span>
+          <span>Telegram ID: {String(user.TelegramId)}</span> {/* Отображение telegramId */}
         </div>
       )}
       {/* Полоска с балансом */}
@@ -102,4 +101,3 @@ const Wallet = () => {
 };
 
 export default Wallet;
-
