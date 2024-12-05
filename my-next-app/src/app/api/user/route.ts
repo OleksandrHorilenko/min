@@ -16,26 +16,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const telegramId = String(body.telegramId); // Преобразуем в строку для безопасности
+    const telegramId = String(body.TelegramId); // Преобразуем в строку для безопасности
 
     // Проверяем, существует ли пользователь с таким telegramId
-    let user = await User.findOne({ telegramId });
+    let user = await User.findOne({telegramId });
     if (user) {
       // Если пользователь существует, возвращаем его данные
       return NextResponse.json(user, { status: 200 }); // HTTP 200 - OK
     }
 
     // Извлечение только нужных полей из body
-    const { TelegramId, firstName, lastName, username, languageCode, isPremium } = body;
+    const { TelegramId, first_Name, last_Name, username, language_Code, is_Premium } = body;
 
     // Если пользователь не существует, создаём нового
     user = new User({
       TelegramId, // ID пользователя из Telegram
-      firstName,  // Имя
-      lastName,   // Фамилия (опционально)
+      first_Name,  // Имя
+      last_Name,   // Фамилия (опционально)
       username,   // Имя пользователя
-      languageCode, // Код языка
-      isPremium,  // Статус Premium
+      language_Code, // Код языка
+      is_Premium,  // Статус Premium
     });
 
     await user.save();
