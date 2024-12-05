@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const walletSchema = new mongoose.Schema({
-  telegramId: {
+  TelegramId: {
     type: String, // Тип остаётся строкой
     required: true,
   },
