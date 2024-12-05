@@ -21,7 +21,7 @@ const Wallet = () => {
 
   useEffect(() => {
     // Проверяем, что tonwallet не равен null и имеет account.address
-    if (tonwallet?.account?.address && user?.id) {
+    if (userFriendlyAddress && user?.id) {
       // Отправить адрес в API для сохранения в базе данных
       const saveWalletAddress = async () => {
         try {
@@ -66,6 +66,7 @@ const Wallet = () => {
         <div>
           <span>User-friendly address: {userFriendlyAddress}</span>
           <span>Raw address: {rawAddress}</span>
+          <span>UserID: {user.id}</span>
         </div>
       )}
       {/* Полоска с балансом */}

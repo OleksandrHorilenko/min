@@ -10,44 +10,38 @@ export async function POST(req: NextRequest) {
     try {
       const body = await req.json(); // Получаем данные из тела запроса
       const { userId, walletAddress } = body; // Деструктурируем данные
-      
-      if (!userId || !walletAddress) {
+      const userIdNumber = parseInt(userId, 10);
+  
+      if (!userIdNumber || !walletAddress) {
         return NextResponse.json(
           { error: 'Missing userId or walletAddress' },
           { status: 400 } // HTTP 400 - Bad Request
         );
       }
-      
-      // Проверяем, существует ли кошелек для данного userId
-      let wallet = await UserWallet.findOne({ userId });
   
-      if (wallet) {
-        // Если кошелек существует, проверяем, совпадает ли walletAddress
-        if (wallet.walletAddress === walletAddress) {
+      // Проверяем наличие записи с данным userId
+      const existingWallet = await UserWallet.findOne({ userIdNumber });
+  
+      if (existingWallet) {
+        // Если кошелек уже существует, проверяем совпадение адреса
+        if (existingWallet.walletAddress === walletAddress) {
           return NextResponse.json(
             { error: 'Wallet already exists with the same address' },
-            { status: 400 } // HTTP 400 - Bad Request
+            { status: 200 } // HTTP 200 - OK
           );
         } else {
-          // Если кошелек есть, но адрес отличается, создаем новый
-          wallet = new UserWallet({
-            userId,
-            walletAddress,
-          });
-          await wallet.save(); // Сохраняем новый кошелек в базе данных
-  
-          return NextResponse.json(wallet, { status: 201 }); // HTTP 201 - Created
+          // Если адрес кошелька отличается, обновляем запись
+          existingWallet.walletAddress = walletAddress;
+          await existingWallet.save();
+          return NextResponse.json(existingWallet, { status: 200 }); // HTTP 200 - OK
         }
-      } else {
-        // Если кошелька нет, создаем новый
-        wallet = new UserWallet({
-          userId,
-          walletAddress,
-        });
-        await wallet.save(); // Сохраняем новый кошелек в базе данных
-  
-        return NextResponse.json(wallet, { status: 201 }); // HTTP 201 - Created
       }
+  
+      // Если записи с данным userId нет, создаем новую
+      const newWallet = new UserWallet({ userIdNumber, walletAddress });
+      await newWallet.save(); // Сохраняем кошелек в базе данных
+  
+      return NextResponse.json(newWallet, { status: 201 }); // HTTP 201 - Created
     } catch (error) {
       console.error('Error saving wallet:', error);
       return NextResponse.json(
@@ -56,4 +50,3 @@ export async function POST(req: NextRequest) {
       );
     }
   }
-  
