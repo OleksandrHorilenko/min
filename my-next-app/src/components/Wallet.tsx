@@ -30,7 +30,7 @@ const Wallet = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              telegramId: String(user.TelegramId), // Передаем telegramId как строку
+              TelegramId: String(user.TelegramId), // Передаем telegramId как строку
               walletAddress: userFriendlyAddress, // Передаем адрес кошелька
             }),
           });
