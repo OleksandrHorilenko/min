@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connect from '../mongodb.js';
-import User from '../models/User'; // Модель User с полем telegramId
+import User from '../models/User';
 
 export async function POST(req: NextRequest) {
   await connect();
@@ -8,41 +8,37 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Проверяем, есть ли telegramId в запросе
-    if (!body.TelegramId) {
+    // Извлекаем данные из запроса
+    const { TelegramId, first_name, last_name, username, language_code, is_premium } = body;
+
+    // Проверяем, что обязательное поле TelegramId присутствует
+    if (!TelegramId) {
       return NextResponse.json(
-        { error: 'Поле telegramId отсутствует в запросе' },
+        { error: 'TelegramId является обязательным полем' },
         { status: 400 } // HTTP 400 - Bad Request
       );
     }
 
-    const telegramId = String(body.TelegramId); // Преобразуем в строку для безопасности
-
-    // Проверяем, существует ли пользователь с таким telegramId
-    let user = await User.findOne({telegramId });
+    // Проверяем, существует ли пользователь
+    let user = await User.findOne({ TelegramId });
     if (user) {
-      // Если пользователь существует, возвращаем его данные
-      return NextResponse.json(user, { status: 200 }); // HTTP 200 - OK
+      return NextResponse.json(user, { status: 200 }); // Пользователь найден
     }
 
-    // Извлечение только нужных полей из body
-    const { TelegramId, first_Name, last_Name, username, language_Code, is_Premium } = body;
-
-    // Если пользователь не существует, создаём нового
+    // Создаем нового пользователя
     user = new User({
-      TelegramId, // ID пользователя из Telegram
-      first_Name,  // Имя
-      last_Name,   // Фамилия (опционально)
-      username,   // Имя пользователя
-      language_Code, // Код языка
-      is_Premium,  // Статус Premium
+      TelegramId, // Сохраняем поле TelegramId
+      first_name,
+      last_name,
+      username,
+      language_code,
+      is_premium,
     });
-
     await user.save();
 
     return NextResponse.json(user, { status: 201 }); // HTTP 201 - Created
   } catch (error) {
-    console.error('Ошибка при создании пользователя:', error); // Логирование ошибки
+    console.error('Ошибка при создании пользователя:', error);
     return NextResponse.json(
       { error: 'Ошибка при создании пользователя' },
       { status: 500 } // HTTP 500 - Internal Server Error
