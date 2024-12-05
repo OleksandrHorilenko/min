@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Проверяем, есть ли telegramId в запросе
-    if (!body.telegramId) {
+    if (!body.TelegramId) {
       return NextResponse.json(
         { error: 'Поле telegramId отсутствует в запросе' },
         { status: 400 } // HTTP 400 - Bad Request
@@ -26,11 +26,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Извлечение только нужных полей из body
-    const { firstName, lastName, username, languageCode, isPremium } = body;
+    const { TelegramId, firstName, lastName, username, languageCode, isPremium } = body;
 
     // Если пользователь не существует, создаём нового
     user = new User({
-      telegramId, // ID пользователя из Telegram
+      TelegramId, // ID пользователя из Telegram
       firstName,  // Имя
       lastName,   // Фамилия (опционально)
       username,   // Имя пользователя

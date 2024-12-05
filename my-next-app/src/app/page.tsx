@@ -18,7 +18,7 @@ declare global {
 
 // Define the interface for user data
 interface UserData {
-  telegramId: string; // Заменяем id на telegramId
+  TelegramId: string; // Заменяем id на telegramId
   first_name: string;
   last_name?: string;
   username?: string;
@@ -60,7 +60,7 @@ export default function Home() {
 
           // Преобразуем id в telegramId
           const user: UserData = {
-            telegramId: String(rawUser.id), // Преобразование id в строку
+            TelegramId: String(rawUser.id), // Преобразование id в строку
             first_name: rawUser.first_name,
             last_name: rawUser.last_name,
             username: rawUser.username,
@@ -107,7 +107,7 @@ export default function Home() {
 
             if (userObject) {
               const userData: UserData = {
-                telegramId: String(userObject.id || '12345'), // telegramId вместо id
+                TelegramId: String(userObject.id || '12345'), // telegramId вместо id
                 first_name: userObject.first_name || 'Имя',
                 last_name: userObject.last_name || 'Фамилия',
                 username: userObject.username || 'username',
@@ -147,7 +147,7 @@ export default function Home() {
           }
         } else {
           const testUserData: UserData = {
-            telegramId: '12345', // Тестовые данные с telegramId
+            TelegramId: '12345', // Тестовые данные с telegramId
             first_name: 'Test User',
             last_name: 'Testov',
             username: 'testuser',
