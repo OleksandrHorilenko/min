@@ -30,10 +30,10 @@ const HomeTab = () => {
       {/* Кнопка для подключения кошелька */}
      
 
-      {/* Баланс PAWS */}
+      {/* Баланс*/}
       <div className="flex flex-col items-center mt-12">
         <Image src={sun} alt="sparkles" width={108} height={108} />
-        {/* <PawsLogo className="w-28 h-28 mb-4" /> */}
+        {/*  className="w-28 h-28 mb-4" /> */}
         <div className="flex items-center gap-1 text-center">
           <div className="text-6xl font-bold mb-1">4,646</div>
           <div className="text-white text-6xl">ECO</div>
