@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from "react";
 import { TonConnectButton, useTonConnectUI, SendTransactionRequest } from "@tonconnect/ui-react";
 import useUserStore from "@/stores/useUserStore";

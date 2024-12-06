@@ -1,7 +1,7 @@
 'use client'
 
 import { useTab } from '@/contexts/TabContext'
-import { FaHome, FaTrophy, FaUsers, FaGift, FaWallet } from 'react-icons/fa' // Импортируем иконки из react-icons/fa
+import { FaHome, FaTrophy, FaUsers, FaGift, FaWallet, FaStore } from 'react-icons/fa' // Импортируем иконки из react-icons/fa
 import { TabType } from '@/utils/types'
 
 const NavigationBar = () => {
@@ -9,7 +9,7 @@ const NavigationBar = () => {
 
     const tabs: { id: TabType; label: string; Icon: React.FC<{ className?: string }> }[] = [
         { id: 'home', label: 'Home', Icon: FaHome }, // Используем FaHome для Home
-        { id: 'leaderboard', label: 'Leaderboard', Icon: FaTrophy }, // Используем FaTrophy для Leaderboard
+        { id: 'leaderboard', label: 'Market', Icon: FaStore }, // Используем FaTrophy для Leaderboard
         { id: 'friends', label: 'Friends', Icon: FaUsers }, // Используем FaUsers для Friends
         { id: 'earn', label: 'Earn', Icon: FaGift }, // Используем FaGift для Earn
         { id: 'wallet', label: 'Wallet', Icon: FaWallet }, // Используем FaWallet для Wallet
