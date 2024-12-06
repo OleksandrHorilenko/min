@@ -8,6 +8,8 @@ interface User {
   username: string;
   language_code: string;
   is_premium: boolean;
+  ecobalance: number; 
+  wallets: []; // Пустой массив по умолчанию
 }
 
 // Типизация состояния хранилища
@@ -28,12 +30,14 @@ const useUserStore = create<UserStore>((set) => ({
     username: '',
     language_code: '',
     is_premium: false,
+    ecobalance: 0.0, // Устанавливаем значение по умолчанию
+    wallets: [] // Пустой массив по умолчанию 
   },
   setUser: (userData) => set({ user: { ...userData } }),
   updateUser: (updatedData) => set((state) => ({
     user: { ...state.user, ...updatedData }
   })),
-  clearUser: () => set({ user: { TelegramId: null, first_name: '', last_name: '', username: '', language_code: '', is_premium: false } }),
+  clearUser: () => set({ user: { TelegramId: null, first_name: '', last_name: '', username: '', language_code: '', is_premium: false, ecobalance: 0.0, wallets: []  } }),
   walletAddress: null, // Изначально адрес кошелька пустой
   setWalletAddress: (address) => set({ walletAddress: address }), // Обновление адреса кошелька
 }));

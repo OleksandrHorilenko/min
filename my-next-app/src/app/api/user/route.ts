@@ -47,3 +47,42 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+// Добавляем обработчик GET запроса
+export async function GET(req: NextRequest) {
+  await connect();
+
+  try {
+    // Получаем параметры query из URL
+    const searchParams = req.nextUrl.searchParams;
+    const TelegramId = searchParams.get('TelegramId'); // Извлекаем TelegramId
+
+    // Проверяем, что TelegramId присутствует в запросе
+    if (!TelegramId) {
+      return NextResponse.json(
+        { error: 'TelegramId является обязательным параметром' },
+        { status: 400 } // HTTP 400 - Bad Request
+      );
+    }
+
+    // Ищем пользователя в базе данных по TelegramId
+    const user = await User.findOne({ TelegramId });
+
+    // Если пользователь не найден, возвращаем ошибку 404
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Пользователь не найден' },
+        { status: 404 } // HTTP 404 - Not Found
+      );
+    }
+
+    // Возвращаем данные пользователя
+    return NextResponse.json(user, { status: 200 }); // HTTP 200 - OK
+  } catch (error) {
+    console.error('Ошибка при получении данных пользователя:', error);
+    return NextResponse.json(
+      { error: 'Ошибка при получении данных пользователя' },
+      { status: 500 } // HTTP 500 - Internal Server Error
+    );
+  }
+}

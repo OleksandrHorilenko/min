@@ -80,7 +80,7 @@ const Wallet = () => {
       <div className="flex justify-center items-center bg-[#1c1c1c] py-4 rounded-lg">
         <div className="flex items-center text-xl">
           <Image src={sun} alt="sparkles" width={24} height={24} />
-          <span className="ml-2 text-2xl font-bold">4,646</span>
+          <span className="ml-2 text-2xl font-bold">{String(user.ecobalance)}</span>
           <span className="ml-1">ECO</span>
         </div>
       </div>

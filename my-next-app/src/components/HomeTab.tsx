@@ -9,8 +9,12 @@ import Image from 'next/image';
 import ArrowRight from '@/icons/ArrowRight';
 import { sparkles } from '@/images';
 import { sun } from '@/images';
+import useUserStore from '@/stores/useUserStore'; // Подключаем хранилище пользователя
 
 const HomeTab = () => {
+
+  const { user } = useUserStore();
+
   // Определение транзакции
   const transaction: SendTransactionRequest = {
     validUntil: Date.now() + 5 * 60 * 1000, // 5 минут
@@ -35,7 +39,7 @@ const HomeTab = () => {
         <Image src={sun} alt="sparkles" width={108} height={108} />
         {/*  className="w-28 h-28 mb-4" /> */}
         <div className="flex items-center gap-1 text-center">
-          <div className="text-6xl font-bold mb-1">4,646</div>
+          <div className="text-6xl font-bold mb-1">{String(user.ecobalance)}</div>
           <div className="text-white text-6xl">ECO</div>
         </div>
         <div className="flex items-center gap-1 text-[#868686] rounded-full px-4 py-1.5 mt-2 cursor-pointer">

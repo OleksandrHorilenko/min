@@ -16,9 +16,9 @@ declare global {
   }
 }
 
-// Define the interface for user data
+// Интерфейс для данных пользователя
 interface UserData {
-  TelegramId: string; // Заменяем id на telegramId
+  TelegramId: string; // TelegramId вместо id
   first_name: string;
   last_name?: string;
   username?: string;
@@ -27,165 +27,84 @@ interface UserData {
 }
 
 export default function Home() {
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState('');
-  const [loader, setLoader] = useState(false);
 
-  // Доступ к состоянию из Zustand
-  const { setUser: setUserInStore } = useUserStore();
+  // Доступ к Zustand
+  const { setUser: setUserInStore, user } = useUserStore();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        tg.ready(); // Готовим WebApp
+    const fetchUserData = async (userData: UserData) => {
+      try {
+        const response = await fetch(`/api/user?TelegramId=${userData.TelegramId}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-        const initData = tg.initData || '';
-        const initDataUnsafe = tg.initDataUnsafe || {};
-
-        console.log('Telegram initData:', initData);
-        console.log('Telegram initDataUnsafe:', initDataUnsafe);
-
-        if (initDataUnsafe.user) {
-          const rawUser = initDataUnsafe.user as unknown as {
-            id: number;
-            first_name: string;
-            last_name?: string;
-            username?: string;
-            language_code: string;
-            is_premium?: boolean;
-          };
-
-          // Преобразуем id в telegramId
-          const user: UserData = {
-            TelegramId: String(rawUser.id), // Преобразование id в строку
-            first_name: rawUser.first_name,
-            last_name: rawUser.last_name,
-            username: rawUser.username,
-            language_code: rawUser.language_code,
-            is_premium: rawUser.is_premium,
-          };
-
-          setUserData(user);
-          localStorage.setItem('userData', JSON.stringify(user));
-
-          // Отправляем данные на сервер
-          fetch('/api/user', {
+        if (response.ok) {
+          // Если пользователь найден, добавляем данные в Zustand
+          const existingUser = await response.json();
+          setUserInStore(existingUser);
+        } else if (response.status === 404) {
+          // Если пользователь не найден, создаем нового
+          const createResponse = await fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(user),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.error) {
-                setError(data.error);
-              } else {
-                setUser(data);
-                localStorage.setItem('userData', JSON.stringify(data));
-                setUserInStore(data);
-              }
-            })
-            .catch((err) => {
-              console.error('Failed to fetch user data:', err);
-              setError('Failed to fetch user data');
-            });
-        } else {
-          setError('No user data available from Telegram');
-          console.error('No user data available from Telegram:', initDataUnsafe);
-        }
-      } else {
-        const searchParams = new URLSearchParams(window.location.hash.substring(1));
-        const tgWebAppData = searchParams.get('tgWebAppData');
+            body: JSON.stringify(userData),
+          });
 
-        if (tgWebAppData) {
-          try {
-            const userParam = new URLSearchParams(tgWebAppData).get('user');
-            const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
-            const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
-
-            if (userObject) {
-              const userData: UserData = {
-                TelegramId: String(userObject.id || '12345'), // telegramId вместо id
-                first_name: userObject.first_name || 'Имя',
-                last_name: userObject.last_name || 'Фамилия',
-                username: userObject.username || 'username',
-                language_code: userObject.language_code || 'en',
-                is_premium: userObject.is_premium || false,
-              };
-              setUserData(userData);
-              localStorage.setItem('userData', JSON.stringify(userData));
-
-              // Отправляем данные на сервер
-              fetch('/api/user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData),
-              })
-                .then((res) => res.json())
-                .then((data) => {
-                  if (data.error) {
-                    setError(data.error);
-                  } else {
-                    setUser(data);
-                    localStorage.setItem('userData', JSON.stringify(data));
-                    setUserInStore(data);
-                  }
-                })
-                .catch((err) => {
-                  console.error('Failed to send user data:', err);
-                  setError('Failed to send user data');
-                });
-            } else {
-              console.error('Failed to parse user data from URL.');
-              setError('Invalid user data in URL');
-            }
-          } catch (err) {
-            console.error('Error parsing tgWebAppData:', err);
-            setError('Error parsing tgWebAppData');
+          if (!createResponse.ok) {
+            throw new Error('Failed to create new user');
           }
+
+          const newUser = await createResponse.json();
+          setUserInStore(newUser);
         } else {
-          const testUserData: UserData = {
-            TelegramId: '12345', // Тестовые данные с telegramId
-            first_name: 'Test User',
-            last_name: 'Testov',
-            username: 'testuser',
-            language_code: 'en',
-            is_premium: true,
-          };
-          setUserData(testUserData);
-          localStorage.setItem('userData', JSON.stringify(testUserData));
-
-          fetch('/api/user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(testUserData),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.error) {
-                setError(data.error);
-              } else {
-                setUser(data);
-                localStorage.setItem('userData', JSON.stringify(data));
-                setUserInStore(data);
-              }
-            })
-            .catch((err) => {
-              console.error('Failed to send test user data:', err);
-              setError('Failed to send test user data');
-            });
-
-          setError('This app should be opened in Telegram');
+          throw new Error('Failed to fetch user data');
         }
+      } catch (err) {
+        console.error(err);
+        setError('Failed to synchronize user data');
       }
+    };
+
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+
+      const initDataUnsafe = tg.initDataUnsafe || {};
+
+      if (initDataUnsafe.user) {
+        const rawUser = initDataUnsafe.user as {
+          id: number;
+          first_name: string;
+          last_name?: string;
+          username?: string;
+          language_code: string;
+          is_premium?: boolean;
+        };
+
+        const userData: UserData = {
+          TelegramId: String(rawUser.id),
+          first_name: rawUser.first_name,
+          last_name: rawUser.last_name,
+          username: rawUser.username,
+          language_code: rawUser.language_code,
+          is_premium: rawUser.is_premium,
+        };
+
+        fetchUserData(userData);
+      } else {
+        setError('No user data available from Telegram');
+      }
+    } else {
+      setError('Telegram WebApp not initialized');
     }
   }, [setUserInStore]);
 
   return (
     <TabProvider>
       <main className="min-h-screen bg-black text-white">
+        {error && <p className="text-red-500">{error}</p>}
         <CheckFootprint />
         <TabContainer />
         <NavigationBar />
@@ -193,3 +112,4 @@ export default function Home() {
     </TabProvider>
   );
 }
+
