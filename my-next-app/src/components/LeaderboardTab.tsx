@@ -39,7 +39,7 @@ export default function CardCollection() {
     );
   }
   
-  function Card({ title, gradient }) {
+  function Card( { title, gradient }: { title: string; gradient: string } ) {
     return (
       <div className="relative w-[400px] h-auto flex flex-col items-center space-y-4 p-6 rounded-lg shadow-2xl">
         {/* Карта */}
@@ -93,7 +93,7 @@ export default function CardCollection() {
     );
   }
   
-  function Button({ label, color }) {
+  function Button({ label, color }: { label: string; color: string }) {
     return (
       <button
         className={`px-6 py-2 text-white rounded-full shadow-lg font-semibold hover:opacity-90 transition-all ${color}`}
