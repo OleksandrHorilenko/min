@@ -16,6 +16,8 @@ interface UserStore {
   setUser: (userData: User) => void;
   updateUser: (updatedData: Partial<User>) => void;
   clearUser: () => void;
+  walletAddress: string | null; // Добавлен адрес кошелька
+  setWalletAddress: (address: string) => void; // Функция для обновления адреса кошелька
 }
 
 const useUserStore = create<UserStore>((set) => ({
@@ -32,6 +34,8 @@ const useUserStore = create<UserStore>((set) => ({
     user: { ...state.user, ...updatedData }
   })),
   clearUser: () => set({ user: { TelegramId: null, first_name: '', last_name: '', username: '', language_code: '', is_premium: false } }),
+  walletAddress: null, // Изначально адрес кошелька пустой
+  setWalletAddress: (address) => set({ walletAddress: address }), // Обновление адреса кошелька
 }));
 
 export default useUserStore;

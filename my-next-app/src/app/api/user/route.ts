@@ -27,12 +27,14 @@ export async function POST(req: NextRequest) {
 
     // Создаем нового пользователя
     user = new User({
-      TelegramId, // Сохраняем поле TelegramId
+      TelegramId,
       first_name,
       last_name,
       username,
       language_code,
       is_premium,
+      ecobalance: 0.0, // Устанавливаем значение по умолчанию
+      wallets: [], // Пустой массив по умолчанию
     });
     await user.save();
 

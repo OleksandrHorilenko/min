@@ -14,9 +14,17 @@ const Wallet = () => {
   const [tonConnectUI] = useTonConnectUI();
   const userFriendlyAddress = useTonAddress();
   const rawAddress = useTonAddress(false);
+  const setWalletAddress = useUserStore((state) => state.setWalletAddress);
 
   // Получаем данные пользователя из Zustand
   const { user } = useUserStore();
+
+  useEffect(() => {
+    if (userFriendlyAddress) {
+      // Сохраняем адрес кошелька в Zustand
+      setWalletAddress(userFriendlyAddress);
+    }
+  }, [userFriendlyAddress, setWalletAddress]);
 
   useEffect(() => {
     // Проверяем, что tonwallet не равен null и имеет account.address
