@@ -6,6 +6,14 @@ interface Card {
   serialNumber: string;
   isActive: boolean;
   acquiredAt: string;
+  rarity: string;         // Редкость карты
+  title: string;          // Название карты
+  description: string;    // Описание карты
+  miningcoins: number;    // Количество добываемых монет
+  miningperiod: number;   // Период добычи
+  miningcycle: number;    // Цикл добычи
+  price: number;          // Цена карты
+  edition: number;        // Тираж карты
   _id: string;
 }
 
