@@ -4,14 +4,30 @@ import { CardData } from '@/components/types/CardData';
 
 
 export default function CardComponent({ card }: { card: CardData }) {
-  const { title, description, miningcoins, miningperiod, miningcycle, price } = card;
+  const { title, description, miningcoins, miningperiod, miningcycle, price, rarity } = card;
+
+  // Устанавливаем цвет фона в зависимости от редкости
+  const bgColor = (() => {
+    switch (rarity) {
+      case 'Common':
+        return 'bg-gray-100';
+      case 'Rare':
+        return 'bg-blue-300';
+      case 'Epic':
+        return 'bg-yellow-300';
+      default:
+        return 'bg-gray-200'; // Цвет по умолчанию
+    }
+  })();
 
   return (
-    <div className="relative w-[360px] h-[220px] bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 rounded-3xl shadow-2xl p-6 flex flex-col justify-between">
+    <div
+      className={`relative w-[360px] h-[220px] ${bgColor} rounded-3xl shadow-2xl p-6 flex flex-col justify-between`}
+    >
       {/* Верхняя часть */}
       <div className="flex justify-between items-center">
         <div>
-          <p className="text-sm text-gray-600 font-medium">Mining Card</p>
+          <p className="text-sm text-gray-600 font-medium">{rarity} Mining Card</p>
           <h2 className="text-lg font-bold text-gray-800">{title}</h2>
         </div>
         <div className="bg-gray-100 p-2 rounded-lg shadow-md">

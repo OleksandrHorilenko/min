@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connect from '../mongodb.js';
 import User from '../models/User';
+import UserCollection from '../models/UserCollection';
 
 export async function POST(req: NextRequest) {
   await connect();
@@ -37,6 +38,13 @@ export async function POST(req: NextRequest) {
       wallets: [], // Пустой массив по умолчанию
     });
     await user.save();
+
+    // Создаем коллекцию пользователя
+    const userCollection = new UserCollection({
+      TelegramId,
+      cards: [], // Пустой массив карт
+    });
+    await userCollection.save();
 
     return NextResponse.json(user, { status: 201 }); // HTTP 201 - Created
   } catch (error) {

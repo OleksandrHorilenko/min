@@ -19,17 +19,17 @@ const cards = [
       miningperiod: 100,
       miningcycle: 24, 
       price: 5000,
-      edition: 88888
+      edition: 8888
     },
     {
       cardId: 3,
-      title: "Epic",
+      rarity: "Epic",
       description: "First epic mining card",
       miningcoins: 100000,
       miningperiod: 90,
       miningcycle: 72, 
-      price: 5000,
-      edition: 88888
+      price: 50000,
+      edition: 888
     },
   ];
   
