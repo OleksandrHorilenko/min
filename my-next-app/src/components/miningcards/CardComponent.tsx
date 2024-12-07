@@ -1,10 +1,7 @@
 import { CardData } from '@/components/types/CardData';
 
-
-
-
 export default function CardComponent({ card }: { card: CardData }) {
-  const { title, description, miningcoins, miningperiod, miningcycle, price, rarity } = card;
+  const { title, description, miningcoins, miningperiod, miningcycle, price, rarity, cardId } = card;
 
   // Устанавливаем цвет фона в зависимости от редкости
   const bgColor = (() => {
@@ -19,6 +16,37 @@ export default function CardComponent({ card }: { card: CardData }) {
         return 'bg-gray-200'; // Цвет по умолчанию
     }
   })();
+
+  // Обработчик покупки карты
+  const handleBuyCard = async (currency: string) => {
+    const TelegramId = "user-telegram-id"; // Здесь должен быть реальный TelegramId пользователя
+    const acquiredAt = new Date().toISOString(); // Время покупки
+    const serialNumber = `${cardId}-${Date.now()}`; // Генерация серийного номера
+
+    try {
+      const response = await fetch('/api/updateUserCollectionInDB', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          TelegramId,
+          cardId,
+          serialNumber,
+          acquiredAt,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`Карта куплена за ${currency}:`, data);
+        // Здесь можно обновить UI, если требуется
+      } else {
+        const errorData = await response.json();
+        console.error('Ошибка при покупке карты:', errorData.error);
+      }
+    } catch (error) {
+      console.error('Сетевая ошибка при покупке карты:', error);
+    }
+  };
 
   return (
     <div
@@ -49,18 +77,27 @@ export default function CardComponent({ card }: { card: CardData }) {
       <div className="flex justify-between items-center">
         <p className="text-lg font-semibold text-green-500">Price: {price} TON</p>
         <div className="flex space-x-2">
-          <Button label="Buy ECO" color="bg-green-500" />
-          <Button label="Buy TON" color="bg-blue-500" />
-          <Button label="Buy STARS" color="bg-yellow-500" />
+          <Button label="Buy ECO" color="bg-green-500" onClick={() => handleBuyCard('ECO')} />
+          <Button label="Buy TON" color="bg-blue-500" onClick={() => handleBuyCard('TON')} />
+          <Button label="Buy STARS" color="bg-yellow-500" onClick={() => handleBuyCard('STARS')} />
         </div>
       </div>
     </div>
   );
 }
 
-function Button({ label, color }: { label: string; color: string }) {
+function Button({
+  label,
+  color,
+  onClick,
+}: {
+  label: string;
+  color: string;
+  onClick: () => void;
+}) {
   return (
     <button
+      onClick={onClick}
       className={`px-4 py-1 text-white rounded-full text-sm font-medium shadow-md hover:opacity-90 transition-all ${color}`}
     >
       {label}
