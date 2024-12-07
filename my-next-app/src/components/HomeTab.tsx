@@ -11,6 +11,7 @@ import ArrowRight from '@/icons/ArrowRight';
 import { sparkles } from '@/images';
 import { sun } from '@/images';
 import useUserStore from '@/stores/useUserStore'; // Подключаем хранилище пользователя
+import cards from '@/components/data/cards';
 
 const HomeTab = () => {
 
@@ -18,6 +19,25 @@ const HomeTab = () => {
   const [userCollection, setUserCollection] = useState<UserCard[]>([]);
   const [loading, setLoading] = useState(true); // Для управления загрузкой
   const collection = useUserStore((state) => state.collection); // Получаем коллекцию из Zustand
+
+  function mergeUserCollection(serverCollection: any[]): UserCard[] {
+    return serverCollection
+      .map((userCard) => {
+        const cardDetails = cards.find((card) => card.cardId === userCard.cardId);
+        if (!cardDetails) {
+          console.warn(`Карта с cardId ${userCard.cardId} не найдена в списке карт.`);
+          return null; // Если карта не найдена
+        }
+    
+        return {
+          ...cardDetails, // Берём детали из `cards`
+          serialNumber: userCard.serialNumber,
+          isActive: userCard.isActive,
+          acquiredAt: userCard.acquiredAt,
+        } as UserCard; // Явно указываем тип
+      })
+      .filter((card): card is UserCard => card !== null); // Исключаем null
+  }
 
   // Определение транзакции
   const transaction: SendTransactionRequest = {
@@ -32,6 +52,18 @@ const HomeTab = () => {
 
   // Использование хука для TON Connect
   const [tonConnectUI] = useTonConnectUI();
+
+  useEffect(() => {
+    if (collection) {
+      // Если коллекция пуста
+      if (collection.length === 0) {
+        setUserCollection([]); // Устанавливаем пустую коллекцию
+      } else {
+        const mergedCollection = mergeUserCollection(collection); // Объединяем данные карт
+        setUserCollection(mergedCollection);
+      }
+    }
+  }, [collection]);
 
   return (
     <div className={`home-tab-con transition-all duration-300`}>
