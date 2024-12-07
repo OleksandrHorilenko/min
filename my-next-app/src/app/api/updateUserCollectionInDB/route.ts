@@ -7,10 +7,23 @@ import { addCardToUserCollection } from '@/utils/database';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { TelegramId, cardId, serialNumber, acquiredAt } = body;
+    const {
+      TelegramId,
+      cardId,
+      serialNumber,
+      acquiredAt,
+      rarity,
+      title,
+      description,
+      miningcoins,
+      miningperiod,
+      miningcycle,
+      price,
+      edition,
+    } = body;
 
     // Проверяем, что обязательные поля переданы
-    if (!TelegramId || !cardId || !serialNumber || !acquiredAt) {
+    if (!TelegramId || !cardId || !serialNumber) {
       return NextResponse.json(
         { error: 'Необходимые данные отсутствуют' },
         { status: 400 } // HTTP 400 - Bad Request
@@ -21,7 +34,15 @@ export async function POST(req: NextRequest) {
     const updatedCollection = await addCardToUserCollection(TelegramId, {
       cardId,
       serialNumber,
-      acquiredAt,
+      acquiredAt: acquiredAt || new Date(), // По умолчанию текущая дата
+      rarity,
+      title,
+      description,
+      miningcoins,
+      miningperiod,
+      miningcycle,
+      price,
+      edition,
     });
 
     if (!updatedCollection) {

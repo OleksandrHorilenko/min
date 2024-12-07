@@ -23,35 +23,44 @@ export default function CardComponent({ card }: { card: CardData }) {
   })();
 
   // Обработчик покупки карты
-  const handleBuyCard = async (currency: string) => {
-    const TelegramId = user.TelegramId; // Здесь должен быть реальный TelegramId пользователя
-    const acquiredAt = new Date().toISOString(); // Время покупки
-    const serialNumber = card.cardId; // Генерация серийного номера
+const handleBuyCard = async (currency: string) => {
+  const TelegramId = user.TelegramId; // Здесь должен быть реальный TelegramId пользователя
+  const acquiredAt = new Date().toISOString(); // Время покупки
+  const serialNumber = card.cardId; // Генерация серийного номера
 
-    try {
-      const response = await fetch('/api/updateUserCollectionInDB', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-         TelegramId,
-          cardId,
-          serialNumber,
-         acquiredAt,
-        }),
-      });
+  try {
+    const response = await fetch('/api/updateUserCollectionInDB', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        TelegramId,
+        cardId: card.cardId,
+        serialNumber,
+        acquiredAt,
+        rarity: card.rarity,
+        title: card.title,
+        description: card.description,
+        miningcoins: card.miningcoins,
+        miningperiod: card.miningperiod,
+        miningcycle: card.miningcycle,
+        price: card.price,
+        edition: card.edition,
+      }),
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`Карта куплена за ${currency}:`, data);
-        // Здесь можно обновить UI, если требуется
-      } else {
-        const errorData = await response.json();
-        console.error('Ошибка при покупке карты:', errorData.error);
-      }
-    } catch (error) {
-      console.error('Сетевая ошибка при покупке карты:', error);
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`Карта куплена за ${currency}:`, data);
+      // Здесь можно обновить UI, если требуется
+    } else {
+      const errorData = await response.json();
+      console.error('Ошибка при покупке карты:', errorData.error);
     }
-  };
+  } catch (error) {
+    console.error('Сетевая ошибка при покупке карты:', error);
+  }
+};
+
 
   return (
     <div
