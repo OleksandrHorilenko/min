@@ -23,6 +23,7 @@ const cards = [
     },
     {
       cardId: 3,
+      title: "First epic miners",
       rarity: "Epic",
       description: "First epic mining card",
       miningcoins: 100000,
