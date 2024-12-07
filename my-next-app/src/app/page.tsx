@@ -24,6 +24,7 @@ interface UserData {
   username?: string;
   language_code: string;
   is_premium?: boolean;
+  ecobalance: Number;
 }
 
 export default function Home() {
@@ -66,10 +67,11 @@ export default function Home() {
             username: rawUser.username,
             language_code: rawUser.language_code,
             is_premium: rawUser.is_premium,
+            ecobalance: 0,
           };
 
-          setUserData(user);
-          localStorage.setItem('userData', JSON.stringify(user));
+          //setUserData(user);
+         // localStorage.setItem('userData', JSON.stringify(user));
 
           // Отправляем данные на сервер
           fetch('/api/user', {
@@ -82,9 +84,8 @@ export default function Home() {
               if (data.error) {
                 setError(data.error);
               } else {
-                setUser(data);
-                localStorage.setItem('userData', JSON.stringify(data));
-                setUserInStore(data);
+                // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
+               fetchUserData(user.TelegramId);  // Получаем данные о пользователе и коллекции
               }
             })
             .catch((err) => {
@@ -113,9 +114,10 @@ export default function Home() {
                 username: userObject.username || 'username',
                 language_code: userObject.language_code || 'en',
                 is_premium: userObject.is_premium || false,
+                ecobalance: 0,
               };
-              setUserData(userData);
-              localStorage.setItem('userData', JSON.stringify(userData));
+              //setUserData(userData);
+              //localStorage.setItem('userData', JSON.stringify(userData));
 
               // Отправляем данные на сервер
               fetch('/api/user', {
@@ -128,9 +130,8 @@ export default function Home() {
                   if (data.error) {
                     setError(data.error);
                   } else {
-                    setUser(data);
-                    localStorage.setItem('userData', JSON.stringify(data));
-                    setUserInStore(data);
+                    // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
+                    fetchUserData(userData.TelegramId);
                   }
                 })
                 .catch((err) => {
@@ -147,30 +148,30 @@ export default function Home() {
             setError('Error parsing tgWebAppData');
           }
         } else {
-          const testUserData: UserData = {
+          const UserData: UserData = {
             TelegramId: '12345', // Тестовые данные с telegramId
             first_name: 'Test User',
             last_name: 'Testov',
             username: 'testuser',
             language_code: 'en',
             is_premium: true,
+            ecobalance: 0
           };
-          setUserData(testUserData);
-          localStorage.setItem('userData', JSON.stringify(testUserData));
+         // setUserData(testUserData);
+          //localStorage.setItem('userData', JSON.stringify(testUserData));
 
           fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(testUserData),
+            body: JSON.stringify(UserData),
           })
             .then((res) => res.json())
             .then((data) => {
               if (data.error) {
                 setError(data.error);
               } else {
-                setUser(data);
-                localStorage.setItem('userData', JSON.stringify(data));
-                setUserInStore(data);
+                // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
+                fetchUserData(UserData.TelegramId);
               }
             })
             .catch((err) => {
@@ -180,15 +181,14 @@ export default function Home() {
             
           setError('This app should be opened in Telegram');
         }
-
       }
     }
   }, [setUserInStore]);
 
   // Функция для получения данных пользователя с сервера
-  const fetchUserData = async (userData: UserData) => {
+  const fetchUserData = async (TelegramId: string) => {
     try {
-      const response = await fetch(`/api/user?TelegramId=${userData.TelegramId}`, {
+      const response = await fetch(`/api/user?TelegramId=${TelegramId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -197,7 +197,7 @@ export default function Home() {
       if (data.error) {
         setError(data.error);
       } else {
-        setUser(data);
+        //setUser(data);  // Здесь данные включают пользователя и коллекцию
         localStorage.setItem('userData', JSON.stringify(data));
         setUserInStore(data);
       }
@@ -206,6 +206,12 @@ export default function Home() {
       setError('Failed to fetch user data');
     }
   };
+  
+
+
+  
+
+  
 
   return (
     <TabProvider>
@@ -217,3 +223,4 @@ export default function Home() {
     </TabProvider>
   );
 }
+
