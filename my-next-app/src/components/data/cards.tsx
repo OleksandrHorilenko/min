@@ -8,7 +8,11 @@ const cards = [
       miningperiod: 100,
       miningcycle: 8, 
       price: 700,
-      edition: 88888
+      edition: 88888,
+      serialNumber: "N/A",
+      isActive: true,
+      acquiredAt: new Date().toISOString(),
+
     },
     {
       cardId: 2,
@@ -19,7 +23,10 @@ const cards = [
       miningperiod: 100,
       miningcycle: 24, 
       price: 5000,
-      edition: 8888
+      edition: 8888,
+      serialNumber: "N/A",
+      isActive: true,
+      acquiredAt: new Date().toISOString(),
     },
     {
       cardId: 3,
@@ -30,7 +37,10 @@ const cards = [
       miningperiod: 90,
       miningcycle: 72, 
       price: 50000,
-      edition: 888
+      edition: 888,
+      serialNumber: "N/A",
+      isActive: true,
+      acquiredAt: new Date().toISOString(),
     },
   ];
   
