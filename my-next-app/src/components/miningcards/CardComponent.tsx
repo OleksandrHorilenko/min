@@ -1,7 +1,12 @@
 import { CardData } from '@/components/types/CardData';
+import useUserStore from '@/stores/useUserStore'; // Подключаем хранилище пользователя
+
 
 export default function CardComponent({ card }: { card: CardData }) {
   const { title, description, miningcoins, miningperiod, miningcycle, price, rarity, cardId } = card;
+  // Получаем данные пользователя из Zustand
+  const { user } = useUserStore();
+  
 
   // Устанавливаем цвет фона в зависимости от редкости
   const bgColor = (() => {
@@ -19,9 +24,9 @@ export default function CardComponent({ card }: { card: CardData }) {
 
   // Обработчик покупки карты
   const handleBuyCard = async (currency: string) => {
-    const TelegramId = "user-telegram-id"; // Здесь должен быть реальный TelegramId пользователя
+    const TelegramId = user.TelegramId; // Здесь должен быть реальный TelegramId пользователя
     const acquiredAt = new Date().toISOString(); // Время покупки
-    const serialNumber = `${cardId}-${Date.now()}`; // Генерация серийного номера
+    const serialNumber = card.cardId; // Генерация серийного номера
 
     try {
       const response = await fetch('/api/updateUserCollectionInDB', {
