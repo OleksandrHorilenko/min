@@ -1,66 +1,67 @@
-import { CardData } from '@/components/types/CardData';
-import useUserStore from '@/stores/useUserStore'; // Подключаем хранилище пользователя
-
+import { CardData } from "@/components/types/CardData";
+import useUserStore from "@/stores/useUserStore"; // Подключаем хранилище пользователя
+import fetchUserCollection from "@/app/functions/fetchUserCollection"; // Функция для обновления коллекции
 
 export default function CardComponent({ card }: { card: CardData }) {
   const { title, description, miningcoins, miningperiod, miningcycle, price, rarity, cardId } = card;
-  // Получаем данные пользователя из Zustand
   const { user } = useUserStore();
-  
 
   // Устанавливаем цвет фона в зависимости от редкости
   const bgColor = (() => {
     switch (rarity) {
-      case 'Common':
-        return 'bg-gray-100';
-      case 'Rare':
-        return 'bg-blue-300';
-      case 'Epic':
-        return 'bg-yellow-300';
+      case "Common":
+        return "bg-gray-100";
+      case "Rare":
+        return "bg-blue-300";
+      case "Epic":
+        return "bg-yellow-300";
       default:
-        return 'bg-gray-200'; // Цвет по умолчанию
+        return "bg-gray-200"; // Цвет по умолчанию
     }
   })();
 
   // Обработчик покупки карты
-const handleBuyCard = async (currency: string) => {
-  const TelegramId = user.TelegramId; // Здесь должен быть реальный TelegramId пользователя
-  const acquiredAt = new Date().toISOString(); // Время покупки
-  const serialNumber = card.cardId; // Генерация серийного номера
+  const handleBuyCard = async (currency: string) => {
+    const TelegramId = user.TelegramId;
+    const acquiredAt = new Date().toISOString();
+    const serialNumber = card.cardId;
 
-  try {
-    const response = await fetch('/api/updateUserCollectionInDB', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        TelegramId,
-        cardId: card.cardId,
-        serialNumber,
-        acquiredAt,
-        rarity: card.rarity,
-        title: card.title,
-        description: card.description,
-        miningcoins: card.miningcoins,
-        miningperiod: card.miningperiod,
-        miningcycle: card.miningcycle,
-        price: card.price,
-        edition: card.edition,
-      }),
-    });
+    try {
+      const response = await fetch("/api/updateUserCollectionInDB", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          TelegramId,
+          cardId: card.cardId,
+          serialNumber,
+          acquiredAt,
+          rarity: card.rarity,
+          title: card.title,
+          description: card.description,
+          miningcoins: card.miningcoins,
+          miningperiod: card.miningperiod,
+          miningcycle: card.miningcycle,
+          price: card.price,
+          edition: card.edition,
+        }),
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`Карта куплена за ${currency}:`, data);
-      // Здесь можно обновить UI, если требуется
-    } else {
-      const errorData = await response.json();
-      console.error('Ошибка при покупке карты:', errorData.error);
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`Карта куплена за ${currency}:`, data);
+
+        // Добавляем паузу перед обновлением коллекции
+        setTimeout(() => {
+          fetchUserCollection(TelegramId);
+        }, 2000); // Пауза 2 секунды
+      } else {
+        const errorData = await response.json();
+        console.error("Ошибка при покупке карты:", errorData.error);
+      }
+    } catch (error) {
+      console.error("Сетевая ошибка при покупке карты:", error);
     }
-  } catch (error) {
-    console.error('Сетевая ошибка при покупке карты:', error);
-  }
-};
-
+  };
 
   return (
     <div
@@ -91,9 +92,9 @@ const handleBuyCard = async (currency: string) => {
       <div className="flex justify-between items-center">
         <p className="text-lg font-semibold text-green-500">Price: {price} TON</p>
         <div className="flex space-x-2">
-          <Button label="Buy ECO" color="bg-green-500" onClick={() => handleBuyCard('ECO')} />
-          <Button label="Buy TON" color="bg-blue-500" onClick={() => handleBuyCard('TON')} />
-          <Button label="Buy STARS" color="bg-yellow-500" onClick={() => handleBuyCard('STARS')} />
+          <Button label="Buy ECO" color="bg-green-500" onClick={() => handleBuyCard("ECO")} />
+          <Button label="Buy TON" color="bg-blue-500" onClick={() => handleBuyCard("TON")} />
+          <Button label="Buy STARS" color="bg-yellow-500" onClick={() => handleBuyCard("STARS")} />
         </div>
       </div>
     </div>

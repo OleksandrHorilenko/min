@@ -19,7 +19,7 @@ interface Card {
 
 // Типизация данных пользователя
 interface User {
-  TelegramId: string | null;
+  TelegramId: string;
   first_name: string;
   last_name: string;
   username: string;
@@ -43,7 +43,7 @@ interface UserStore {
 
 const useUserStore = create<UserStore>((set) => ({
   user: {
-    TelegramId: null,
+    TelegramId: '',
     first_name: '',
     last_name: '',
     username: '',
@@ -60,7 +60,7 @@ const useUserStore = create<UserStore>((set) => ({
   clearUser: () =>
     set({
       user: {
-        TelegramId: null,
+        TelegramId: '',
         first_name: '',
         last_name: '',
         username: '',
