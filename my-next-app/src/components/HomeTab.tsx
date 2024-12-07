@@ -1,10 +1,11 @@
 'use client';
-
+import { useEffect, useState } from "react";
 import Wallet from '@/icons/Wallet';
 import { TonConnectButton, useTonConnectUI, SendTransactionRequest } from '@tonconnect/ui-react';
 import PawsLogo from '@/icons/PawsLogo';
 import Community from '@/icons/Community';
 import Star from '@/icons/Star';
+import { UserCard } from '@/utils/types';
 import Image from 'next/image';
 import ArrowRight from '@/icons/ArrowRight';
 import { sparkles } from '@/images';
@@ -14,6 +15,9 @@ import useUserStore from '@/stores/useUserStore'; // Подключаем хра
 const HomeTab = () => {
 
   const { user } = useUserStore();
+  const [userCollection, setUserCollection] = useState<UserCard[]>([]);
+  const [loading, setLoading] = useState(true); // Для управления загрузкой
+  const collection = useUserStore((state) => state.collection); // Получаем коллекцию из Zustand
 
   // Определение транзакции
   const transaction: SendTransactionRequest = {
@@ -76,17 +80,26 @@ const HomeTab = () => {
         </div>
 
         {/* Пример блока описаний */}
-        <div className="shine-effect w-full bg-[#ffffff0d] border-[1px] border-[#2d2d2e] rounded-lg px-4 py-2 grid grid-cols-3 gap-4">
-          {[...Array(9)].map((_, index) => (
-            <div
-              key={index}
-              className="flex flex-col items-center justify-center bg-[#2d2d2e] text-white rounded-md p-2"
-            >
-              <div className="text-sm font-medium">{`Title ${index + 1}`}</div>
-              <div className="text-xs text-[#ffffff80]">{`Description ${index + 1}`}</div>
-            </div>
-          ))}
-        </div>
+        <div className="shine-effect w-full bg-[#ffffff0d] border-[1px] border-[#2d2d2e] rounded-lg px-4 py-2 space-y-4">
+  {userCollection.map((card) => (
+    <div
+      key={card.cardId}
+      className="flex items-center justify-between bg-[#2d2d2e] text-white rounded-md p-4"
+    >
+      <div>
+        <h3 className="text-lg font-semibold">{card.title}</h3>
+        <p className="text-sm text-[#ffffff80]">{card.description}</p>
+        <p className="text-xs text-[#ffffff50]">Serial Number: {card.serialNumber}</p>
+      </div>
+      <div className="text-right">
+        <p className={`text-sm font-medium ${card.isActive ? "text-green-400" : "text-red-400"}`}>
+          {card.isActive ? "Active" : "Inactive"}
+        </p>
+        <p className="text-xs text-[#ffffff80]">Acquired: {new Date(card.acquiredAt).toLocaleDateString()}</p>
+      </div>
+    </div>
+  ))}
+</div>
       </div>
     </div>
   );

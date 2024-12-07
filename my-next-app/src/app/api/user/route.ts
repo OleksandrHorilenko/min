@@ -84,8 +84,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Возвращаем данные пользователя
-    return NextResponse.json(user, { status: 200 }); // HTTP 200 - OK
+    // Получаем коллекцию пользователя
+    const userCollection = await UserCollection.find({ TelegramId });
+
+    // Формируем объединенный ответ
+    const response = {
+      user,
+      collection: userCollection,
+    };
+
+    // Возвращаем данные пользователя и его коллекции
+    return NextResponse.json(response, { status: 200 }); // HTTP 200 - OK
   } catch (error) {
     console.error('Ошибка при получении данных пользователя:', error);
     return NextResponse.json(
