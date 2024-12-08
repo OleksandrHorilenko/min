@@ -4,8 +4,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
-import Head from "next/head"; // Импорт компонента Head
+import Head from "next/head";
 import Script from "next/script";
+import { useEffect } from "react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -18,16 +19,29 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-//export const metadata: Metadata = {
-// title: "ECOMINE - application for mining cryptocurrency",
- // description: "Application for mining cryptocurrency from Telegram",
-//};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Добавляем эффект для вибрации при клике на кнопки
+  useEffect(() => {
+    const handleButtonClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.tagName === "BUTTON") {
+        if (navigator.vibrate) {
+          navigator.vibrate(50); // Вибрация на 50 мс
+        }
+      }
+    };
+
+    document.addEventListener("click", handleButtonClick);
+
+    return () => {
+      document.removeEventListener("click", handleButtonClick);
+    };
+  }, []);
+
   return (
     <html lang="en">
       <head>
@@ -39,11 +53,14 @@ export default function RootLayout({
           />
         </Head>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><TonConnectUIProvider manifestUrl="https://min-liard.vercel.app/tonconnect-manifest.json">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <TonConnectUIProvider manifestUrl="https://min-liard.vercel.app/tonconnect-manifest.json">
           {children}
-        
         </TonConnectUIProvider>
       </body>
     </html>
   );
 }
+

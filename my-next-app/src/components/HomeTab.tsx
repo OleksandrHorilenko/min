@@ -46,12 +46,12 @@ const HomeTab = () => {
           </button>
         </div>
         <UserCollection />
-        <pre>{JSON.stringify(user, null, 2)}</pre>
+       
       </div>
     </div>
   );
 };
-
+/// <pre>{JSON.stringify(user, null, 2)}</pre>
 export default HomeTab;
 
 
