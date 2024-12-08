@@ -7,6 +7,7 @@ import { TonConnectUIProvider } from "@tonconnect/ui-react";
 import Head from "next/head";
 import Script from "next/script";
 import { useEffect } from "react";
+import GlobalHapticFeedback from "@/components/GlobalHapticFeedback";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -57,7 +58,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TonConnectUIProvider manifestUrl="https://min-liard.vercel.app/tonconnect-manifest.json">
+        <GlobalHapticFeedback>
           {children}
+          </GlobalHapticFeedback>
         </TonConnectUIProvider>
       </body>
     </html>
