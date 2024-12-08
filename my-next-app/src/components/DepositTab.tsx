@@ -57,6 +57,7 @@ const DepositTab = () => {
         body: JSON.stringify({
           TelegramId: user.TelegramId, // TelegramId текущего пользователя
           ecobalance: coinsToAdd,
+          action: "increment"
         }),
       });
 

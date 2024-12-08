@@ -5,27 +5,32 @@ const SoldCardSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     auto: true, // Эквивалент автоматической генерации ID
   },
+
+  owner: { type: String, required: true },
+
+
+
   cardId: { 
     type: Number, // ID карты из тиража (числовой)
     required: true 
   },
-  serialNumber: { 
-    type: Number, 
-    required: true 
-  }, // Номер карты в рамках тиража
-  owner: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "User", // Ссылка на владельца карты
-    required: true 
-  }, 
+  //serialNumber: { 
+  //  type: Number, 
+ //   required: true 
+ // }, // Номер карты в рамках тиража
+
+ price: { 
+  type: Number, // ID карты из тиража (числовой)
+  
+},
+  
   soldAt: { 
     type: Date, 
     default: Date.now 
   }, // Дата продажи
 });
 
-// Устанавливаем уникальность для сочетания `cardId` и `serialNumber`
-SoldCardSchema.index({ cardId: 1, serialNumber: 1 }, { unique: true });
+
 
 // Экспортируем модель
 const SoldCard = models.SoldCard || model("SoldCard", SoldCardSchema);

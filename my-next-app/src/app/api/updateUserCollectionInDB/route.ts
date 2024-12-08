@@ -10,20 +10,21 @@ export async function POST(req: NextRequest) {
     const {
       TelegramId,
       cardId,
-      serialNumber,
-      acquiredAt,
+      //serialNumber,
+      
       rarity,
       title,
       description,
       miningcoins,
       miningperiod,
-      miningcycle,
+      //miningcycle,
       price,
       edition,
+      acquiredAt,
     } = body;
 
     // Проверяем, что обязательные поля переданы
-    if (!TelegramId || !cardId || !serialNumber) {
+    if (!TelegramId || !cardId) {
       return NextResponse.json(
         { error: 'Необходимые данные отсутствуют' },
         { status: 400 } // HTTP 400 - Bad Request
@@ -33,16 +34,18 @@ export async function POST(req: NextRequest) {
     // Добавляем карту в коллекцию
     const updatedCollection = await addCardToUserCollection(TelegramId, {
       cardId,
-      serialNumber,
-      acquiredAt: acquiredAt || new Date(), // По умолчанию текущая дата
+      //serialNumber,
       rarity,
+      
       title,
       description,
       miningcoins,
       miningperiod,
-      miningcycle,
+      //miningcycle,
       price,
       edition,
+      acquiredAt: acquiredAt || new Date(), // По умолчанию текущая дата
+      
     });
 
     if (!updatedCollection) {

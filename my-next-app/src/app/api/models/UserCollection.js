@@ -16,18 +16,15 @@ const UserCollectionSchema = new Schema({
         type: Number, // ID карты
         required: true,
       },
-      serialNumber: {
-        type: Number, // Уникальный номер карты в рамках тиража
-        required: true,
-      },
-      isActive: {
-        type: Boolean,
-        default: false, // Карта неактивна по умолчанию
-      },
-      acquiredAt: {
-        type: Date,
-        default: Date.now, // Дата приобретения карты
-      },
+     // serialNumber: {
+       // type: Number, // Уникальный номер карты в рамках тиража
+       // required: true,
+    //  },
+     // isActive: {
+     //   type: Boolean,
+     //   default: false, // Карта неактивна по умолчанию
+    //  },
+      
       rarity: {
         type: String, // Редкость карты
         required: true,
@@ -48,10 +45,10 @@ const UserCollectionSchema = new Schema({
         type: Number, // Период добычи
         required: true,
       },
-      miningcycle: {
-        type: Number, // Цикл добычи
-        required: true,
-      },
+     // miningcycle: {
+     //   type: Number, // Цикл добычи
+     //   required: true,
+    //  },
       price: {
         type: Number, // Цена карты
         required: true,
@@ -60,15 +57,16 @@ const UserCollectionSchema = new Schema({
         type: Number, // Тираж карты
         required: true,
       },
+
+      acquiredAt: {
+        type: Date,
+        default: Date.now, // Дата приобретения карты
+      },
     },
   ],
 });
 
-// Уникальность карты в коллекции пользователя
-UserCollectionSchema.index(
-  { TelegramId: 1, "cards.cardId": 1, "cards.serialNumber": 1 },
-  { unique: true }
-);
+
 
 // Экспорт модели
 const UserCollection =
