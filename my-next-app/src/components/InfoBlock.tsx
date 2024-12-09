@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import LinearProgress from '@mui/material/LinearProgress';
+//import LinearProgress from '@mui/material/LinearProgress';
 // or
-//import { LinearProgress } from '@mui/material';
+import { LinearProgress } from '@mui/material';
 import useUserStore from "@/stores/useUserStore"; // Для получения данных пользователя
 import fetchUserCollection from "@/app/functions/fetchUserCollection"; // Для получения коллекции карт
 
