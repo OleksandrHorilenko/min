@@ -8,6 +8,7 @@ import Community from '@/icons/Community';
 import Star from '@/icons/Star';
 import { sun, sparkles } from '@/images';
 import UserCollection from "./UserCollection";
+import InfoBlock from '@/components/InfoBlock';
 
 const HomeTab = () => {
   const user = useUserStore((state) => state.user);
@@ -44,7 +45,15 @@ const HomeTab = () => {
             </div>
             <ArrowRight className="w-6 h-6 text-gray-400" />
           </button>
-        </div>
+          
+        </div><div className="p-4">
+      <InfoBlock 
+        
+        //activeBoosters={0} 
+        progress={32} 
+        //totalProfit={9.76} 
+      />
+    </div>
         <UserCollection />
        
       </div>
