@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import connect from '../mongodb.js';
 import User from '../models/User';
 import UserCollection from '../models/UserCollection';
+import UserMining from '../models/UserMining'; // Модель для usermining
 
 export async function POST(req: NextRequest) {
-  await connect();
+  await connect(); // Подключаемся к базе данных
 
   try {
     const body = await req.json();
@@ -46,6 +47,16 @@ export async function POST(req: NextRequest) {
     });
     await userCollection.save();
 
+    // Создаем начальную запись в usermining для нового пользователя
+    const userMining = new UserMining({
+      TelegramId,
+      minedCoins: 0, // Начальное количество намайненных монет
+      bonusCoins: 0, // Начальное количество бонусных монет
+      burnedCoins: 0, // Начальное количество сожженных монет
+      
+    });
+    await userMining.save(); // Сохраняем запись в коллекцию usermining
+
     return NextResponse.json(user, { status: 201 }); // HTTP 201 - Created
   } catch (error) {
     console.error('Ошибка при создании пользователя:', error);
@@ -55,6 +66,7 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
 
 // Получаем данные пользователя
 export async function GET(req: NextRequest) {

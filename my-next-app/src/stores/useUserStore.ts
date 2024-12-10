@@ -1,11 +1,11 @@
 import { create } from "zustand";
 
 // Типизация карточки из коллекции
-interface Card {
+export interface Card {
   cardId: number;
   serialNumber: string;
   isActive: boolean;
-  acquiredAt: string;
+  acquiredAt: string | Date;
   rarity: string;         // Редкость карты
   title: string;          // Название карты
   description: string;    // Описание карты
@@ -15,6 +15,12 @@ interface Card {
   price: number;          // Цена карты
   edition: number;        // Тираж карты
   _id: string;
+}
+
+export interface UpdatedCard extends Card {
+  minedCoins: number;      // Количество намайненных монет
+  remainingCoins: number;  // Оставшиеся монеты
+
 }
 
 // Типизация данных пользователя
@@ -39,6 +45,8 @@ interface UserStore {
   setUserCollection: (collectionData: Card[]) => void; // Метод для обновления коллекции
   walletAddress: string | null;
   setWalletAddress: (address: string) => void;
+  totalProfit: number; // Тип уже задан как number
+  setTotalProfit: (profit: number) => void; // Убедитесь, что параметр profit имеет тип number
 }
 
 const useUserStore = create<UserStore>((set) => ({
@@ -50,8 +58,11 @@ const useUserStore = create<UserStore>((set) => ({
     language_code: '',
     is_premium: false,
     ecobalance: 0.0,
+    
     wallets: []
   },
+  totalProfit: 0,
+  setTotalProfit: (profit) => set({ totalProfit: profit }), // Реализуем сеттер
   userCollection: [], // Изначально коллекция пуста
   setUser: (userData) => set({ user: { ...userData } }),
   updateUser: (updatedData) => set((state) => ({
