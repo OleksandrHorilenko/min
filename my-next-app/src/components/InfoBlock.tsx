@@ -19,20 +19,16 @@ const InfoBlock: React.FC = () => {
   }, []); // Этот useEffect срабатывает один раз при монтировании компонента
 
   useEffect(() => {
-    const fetchServerTime = async () => {
-      try {
-        const response = await fetch('/api/getServerTime');
-        const data = await response.json();
-        setServerTime(new Date(data.serverTime));
-      } catch (error) {
-        console.error("Ошибка при получении серверного времени:", error);
-      }
-    };
+    // Получаем локальное время на клиенте
+    const localTime = new Date();
+    setServerTime(localTime); // Устанавливаем время на клиенте
 
-    fetchServerTime();
-    const interval = setInterval(fetchServerTime, 60000);
+    const interval = setInterval(() => {
+      setServerTime(new Date()); // Обновляем время каждую минуту
+    }, 2000); // обновляем каждую минуту
+
     return () => clearInterval(interval); // Очистка интервала при размонтировании компонента
-  }, []); // Этот useEff
+  }, []); // Этот useEffect срабатывает один раз при монтировании компонента
 
   useEffect(() => {
     // Проверяем, если lastClaim еще не установлено, пытаемся получить его из localStorage
@@ -170,7 +166,6 @@ const InfoBlock: React.FC = () => {
       console.error('Ошибка при обновлении данных:', error);
     }
   };
-  
 
   return (
     <div className="bg-[#121212]  flex flex-col items-center">
