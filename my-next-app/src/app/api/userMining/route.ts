@@ -4,7 +4,7 @@ import UserMining from '../models/UserMining'; // Путь к модели
 // Обработчик для GET запроса
 export async function GET(req: NextRequest) {
   // Получаем telegramId из query-параметров URL
-  const telegramId = req.nextUrl.searchParams.get('telegramId'); 
+  const telegramId = req.nextUrl.searchParams.get('TelegramId'); 
 
   if (!telegramId) {
     return NextResponse.json({ message: 'TelegramId is required' }, { status: 400 });

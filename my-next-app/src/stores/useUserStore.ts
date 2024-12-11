@@ -17,6 +17,14 @@ export interface Card {
   _id: string;
 }
 
+// Типизация для майнинга
+export interface Mining {
+  minedCoins: number;     // Количество добытых монет
+  bonusCoins: number;     // Количество бонусных монет
+  burnedCoins: number;    // Количество сожженных монет
+  lastClaim: string;      // Дата последнего запроса (например, ISO 8601 строка)
+}
+
 export interface UpdatedCard extends Card {
   minedCoins: number;      // Количество намайненных монет
   remainingCoins: number;  // Оставшиеся монеты
@@ -47,6 +55,11 @@ interface UserStore {
   setWalletAddress: (address: string) => void;
   totalProfit: number; // Тип уже задан как number
   setTotalProfit: (profit: number) => void; // Убедитесь, что параметр profit имеет тип number
+
+   // Добавляем состояния для майнинга
+   mining: Mining;             // Добавляем объект для майнинга
+   setMining: (miningData: Mining) => void; // Метод для обновления данных майнинга
+   updateMining: (updatedData: Partial<Mining>) => void; // Метод для обновления части данных майнинга
 }
 
 const useUserStore = create<UserStore>((set) => ({
@@ -85,7 +98,21 @@ const useUserStore = create<UserStore>((set) => ({
   setUserCollection: (collectionData) =>
     set({ userCollection: collectionData }), // Метод для обновления коллекции
   walletAddress: null,
-  setWalletAddress: (address) => set({ walletAddress: address })
+  setWalletAddress: (address) => set({ walletAddress: address }),
+
+ // Добавляем данные для майнинга
+ mining: {
+  minedCoins: 0.0,      // Изначально 0 монет
+  bonusCoins: 0.0,      // Изначально 0 бонусных монет
+  burnedCoins: 0.0,     // Изначально 0 сожженных монет
+  lastClaim: '',        // Изначально пустая строка
+},
+
+setMining: (miningData) => set({ mining: { ...miningData } }),
+updateMining: (updatedData) => set((state) => ({
+  mining: { ...state.mining, ...updatedData }
+}))
+
 }));
 
 export default useUserStore;

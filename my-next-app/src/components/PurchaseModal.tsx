@@ -28,6 +28,36 @@ const PurchaseModal = ({ card, onClose }: ModalProps) => {
         return;
       }
   
+      // Проверяем, сколько карт в коллекции пользователя
+      const userCollectionResponse = await fetch(`/api/getUserCollection?TelegramId=${user.TelegramId}`);
+
+      if (!userCollectionResponse.ok) {
+        const errorData = await userCollectionResponse.json();
+        console.error("Ошибка при получении коллекции пользователя:", errorData.error);
+        return;
+      }
+  
+      const userCollection = await userCollectionResponse.json();
+      
+      // Если в коллекции 0 карт, добавляем lastClaim в userMining
+     // if (userCollection?.cards?.length < 1) {
+       // const response = await fetch('/api/userMining', {
+       //   method: 'PUT',
+       //   headers: {
+       //     'Content-Type': 'application/json',
+       //   },
+      //    body: JSON.stringify({
+      //      telegramId: user.TelegramId,
+      //      action: 'increment',
+       //     amount: 0,
+      //    }),
+      //  });
+    //
+       // if (!response.ok) {
+       //   throw new Error('Ошибка при обновлении данных на сервере.');
+      //  }
+     // }
+  
       // Создаем данные для обновления коллекции пользователя
       const userCollectionUpdate = {
         TelegramId: user.TelegramId,
@@ -85,6 +115,7 @@ const PurchaseModal = ({ card, onClose }: ModalProps) => {
       console.error("Ошибка при обработке покупки:", error);
     }
   };
+  
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-end p-4">

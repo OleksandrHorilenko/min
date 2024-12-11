@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       username,
       language_code,
       is_premium,
-      ecobalance: 0.0, // Устанавливаем значение по умолчанию
+      ecobalance: 100000.0, // Устанавливаем значение по умолчанию
       wallets: [], // Пустой массив по умолчанию
     });
     await user.save();

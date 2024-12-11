@@ -33,6 +33,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState('');
   const [loader, setLoader] = useState(false);
+  const [userMining, setUserMining] = useState<any>(null);
+  const [lastClaim, setLastClaim] = useState<Date | null>(null);
+  
+
 
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
@@ -86,6 +90,7 @@ export default function Home() {
               } else {
                 // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                fetchUserData(user.TelegramId);  // Получаем данные о пользователе и коллекции
+               fetchUserMining(user.TelegramId);
               }
             })
             .catch((err) => {
@@ -132,6 +137,7 @@ export default function Home() {
                   } else {
                     // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                     fetchUserData(userData.TelegramId);
+                    fetchUserMining(userData.TelegramId);
                   }
                 })
                 .catch((err) => {
@@ -172,6 +178,7 @@ export default function Home() {
               } else {
                 // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                 fetchUserData(UserData.TelegramId);
+                fetchUserMining(UserData.TelegramId);
               }
             })
             .catch((err) => {
@@ -197,7 +204,7 @@ export default function Home() {
       if (data.error) {
         setError(data.error);
       } else {
-        //setUser(data);  // Здесь данные включают пользователя и коллекцию
+        setUser(data);  // Здесь данные включают пользователя и коллекцию
         localStorage.setItem('userData', JSON.stringify(data));
         setUserInStore(data);
       }
@@ -207,6 +214,30 @@ export default function Home() {
     }
   };
   
+  // Функция для получения данных пользователя с сервера
+  const fetchUserMining = async (TelegramId: string) => {
+    try {
+      const response = await fetch(`/api/userMining?TelegramId=${TelegramId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setUserMining(data);  
+        localStorage.setItem('userMining', JSON.stringify(data));
+        // Преобразуем строку lastClaim в Date и сохраняем в состоянии
+      const lastClaimDate = new Date(data.lastClaim);
+      setLastClaim(lastClaimDate); // Устанавливаем состояние lastClaim
+        
+      }
+    } catch (err) {
+      console.error('Failed to fetch user data:', err);
+      setError('Failed to fetch user data');
+    }
+  };
 
 
   
