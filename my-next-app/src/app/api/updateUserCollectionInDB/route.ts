@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Коллекция обновлена успешно' }, { status: 200 });
 
   } catch (error) {
-    console.error('Ошибка в обработчике обновления коллекции карт:', error);
+    //console.error('Ошибка в обработчике обновления коллекции карт:', error);
     return NextResponse.json(
       { error: 'Ошибка сервера' },
       { status: 500 }
