@@ -62,14 +62,22 @@ const PurchaseModal = ({ card, onClose }: ModalProps) => {
       const userCollectionUpdate = {
         TelegramId: user.TelegramId,
         cardId: card.cardId,
+        serialNumber: card.serialNumber,
+        isActive: card.isActive,
+        acquiredAt: new Date().toISOString(),
         rarity: card.rarity,
         title: card.title,
         description: card.description,
         miningcoins: card.miningcoins,
         miningperiod: card.miningperiod,
+        miningcycle: card.miningcycle,
+        profitperhour: card.profitperhour,
+        minedcoins: card.minedcoins,
+        remainingcoins: card.remainingcoins,
         price: card.price,
         edition: card.edition,
-        acquiredAt: new Date().toISOString(),
+        cardlastcaim: new Date().toISOString(),
+        //acquiredAt: new Date().toISOString(),
       };
   
       const soldCardUpdate = {

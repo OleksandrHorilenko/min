@@ -17,7 +17,13 @@ const CardSchema = new Schema({
   price: { type: Number, required: true },
   edition: { type: Number, required: true }, // Общее количество тиража
   sold: { type: Number, default: 0 }, // Количество проданных карт
-  available: { type: Boolean, default: true }, // Признак доступности для продажи
+  isActive: { type: Boolean, default: true }, 
+  available: { type: Boolean, default: true },
+  acquiredAt: { type: Date, default: Date.now },
+  profitperhour: { type: Number, required: true },
+  minedcoins: { type: Number, required: true },
+  remainingcoins:{ type: Number, required: true },
+  cardlastclaim:{ type: Date, default: Date.now },
   soldCopies: [
     {
       serialNumber: { type: Number, required: true },

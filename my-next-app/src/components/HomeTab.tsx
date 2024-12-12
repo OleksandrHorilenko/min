@@ -9,9 +9,17 @@ import Star from '@/icons/Star';
 import { sun, sparkles } from '@/images';
 import UserCollection from "./UserCollection";
 import InfoBlock from '@/components/InfoBlock';
+import Link from 'next/link';
+import { useRouter } from 'next/router'
+import { useState } from 'react';
+import { useTab } from '@/contexts/TabContext'
 
 const HomeTab = () => {
   const user = useUserStore((state) => state.user);
+  //const router = useRouter();
+  //const user = useUserStore((state) => state.user);
+  const [currentTab, setCurrentTab] = useState('leaderboard');
+  const { activeTab, setActiveTab } = useTab()
 
   return (
     <div className={`home-tab-con transition-all duration-300`}>
@@ -33,6 +41,8 @@ const HomeTab = () => {
         <div className="flex gap-4 px-4">
           <button
             className="shine-effect flex-1 bg-[#ffffff0d] border-[1px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-between"
+            key={'leaderboard'}
+                                onClick={() => setActiveTab('leaderboard')}
           >
             <div className="flex items-center gap-3 font-medium">
               <Community className="w-8 h-8" />

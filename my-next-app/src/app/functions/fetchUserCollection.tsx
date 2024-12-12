@@ -19,6 +19,7 @@ const fetchUserCollection = async (TelegramId: string): Promise<any[]> => {
     const userCards = data[0]?.cards || []; // Берём `cards` из первого объекта
     console.log("Saving cards to Zustand:", userCards); // Проверяем данные перед сохранением
     setUserCollection(userCards); // Сохраняем в Zustand Store
+    localStorage.setItem('userCards', JSON.stringify(data));
 
     return userCards; // Возвращаем карты
   } catch (err) {

@@ -11,9 +11,13 @@ export interface Card {
   description: string;    // Описание карты
   miningcoins: number;    // Количество добываемых монет
   miningperiod: number;   // Период добычи
-  miningcycle: number;    // Цикл добычи
+  miningcycle: number;
+  profitperhour: number;
+  minedcoins: number;
+  remainingcoins: number;   
   price: number;          // Цена карты
-  edition: number;        // Тираж карты
+  edition: number; 
+  cardlastclaim: string | Date;     
   _id: string;
 }
 

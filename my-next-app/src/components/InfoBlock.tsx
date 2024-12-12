@@ -1,58 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { LinearProgress, Button } from '@mui/material';
-import useUserStore, { UpdatedCard } from "@/stores/useUserStore";
+import useUserStore from "@/stores/useUserStore";
 import fetchUserCollection from "@/app/functions/fetchUserCollection";
+
+interface Card {
+  cardId: number;
+  serialNumber: string;
+  isActive: boolean;
+  acquiredAt: string;
+  rarity: string;
+  title: string;
+  description: string;
+  miningcoins: number;
+  miningperiod: number;
+  miningcycle: number;
+  profitperhour: number;
+  minedcoins: number;
+  remainingcoins: number;
+  price: number;
+  edition: number;
+  cardlastclaim: string;
+}
 
 const InfoBlock: React.FC = () => {
   const [serverTime, setServerTime] = useState<Date | null>(null);
-  const [totalMinedCoins, setTotalMinedCoins] = useState<number>(0);
-  const [lastClaim, setLastClaim] = useState<Date | undefined>(undefined);
-  const [userCollection, setUserCollection] = useState<UpdatedCard[]>([]);
+  const [userCollection, setUserCollection] = useState<Card[]>([]);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const user = useUserStore((state) => state.user);
 
-  // useEffect для получения сохраненных данных из localStorage
   useEffect(() => {
-    const storedTotalMinedCoins = localStorage.getItem('totalMinedCoins');
-    if (storedTotalMinedCoins) {
-      setTotalMinedCoins(Number(storedTotalMinedCoins)); // Преобразуем в число и устанавливаем
-    }
-  }, []); // Этот useEffect срабатывает один раз при монтировании компонента
-
-  useEffect(() => {
-    // Получаем локальное время на клиенте
-    const localTime = new Date();
-    setServerTime(localTime); // Устанавливаем время на клиенте
-
     const interval = setInterval(() => {
-      setServerTime(new Date()); // Обновляем время каждую минуту
-    }, 2000); // обновляем каждую минуту
+      setServerTime(new Date());
+    }, 1000); // Обновляем время каждую секунду
 
-    return () => clearInterval(interval); // Очистка интервала при размонтировании компонента
-  }, []); // Этот useEffect срабатывает один раз при монтировании компонента
-
-  useEffect(() => {
-    // Проверяем, если lastClaim еще не установлено, пытаемся получить его из localStorage
-    if (!lastClaim) {
-      const storedUserMining = localStorage.getItem('userMining');
-      if (storedUserMining) {
-        const parsedUserMining = JSON.parse(storedUserMining);
-        const storedLastClaim = parsedUserMining?.lastClaim;
-
-        if (storedLastClaim) {
-          // Если lastClaim найден в localStorage, обновляем state
-          setLastClaim(new Date(storedLastClaim));
-        } else {
-          // Если значения нет, можно установить значение по умолчанию или выполнить другое действие
-          console.log('lastClaim не найден в localStorage, устанавливаем значение по умолчанию');
-          setLastClaim(new Date());  // Устанавливаем текущую дату
-        }
-      } else {
-        // Если ключ userMining отсутствует в localStorage
-        console.log('userMining не найден в localStorage');
-        setLastClaim(new Date());  // Устанавливаем значение по умолчанию
-      }
-    }
-  }, [lastClaim]);  
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (user && user.TelegramId) {
@@ -68,171 +51,134 @@ const InfoBlock: React.FC = () => {
     }
   }, [user]);
 
-  const calculateProfitPerSecond = (miningcoins: number, miningperiod: number) => {
-    const totalSecondsInPeriod = miningperiod * 24 * 60 * 60;
-    return miningcoins / totalSecondsInPeriod;
+  const calculateMinedCoins = (card: Card, currentTime: Date) => {
+    const { cardlastclaim, miningcoins, miningperiod, remainingcoins } = card;
+    const lastClaimDate = new Date(cardlastclaim);
+    const elapsedSeconds = (currentTime.getTime() - lastClaimDate.getTime()) / 1000;
+
+    const profitPerSecond = miningcoins / (miningperiod * 24 * 60 * 60);
+    const minedSinceLastClaim = Math.min(remainingcoins, profitPerSecond * elapsedSeconds);
+
+    return minedSinceLastClaim;
   };
 
-  useEffect(() => {
-    if (lastClaim && userCollection.length > 0 && serverTime) {
-  
-      const totalMined = userCollection.reduce((acc, card) => {
-        const cardProfitPerSecond = calculateProfitPerSecond(card.miningcoins, card.miningperiod);
-        const timeDifferenceInSeconds = Math.max(0, (serverTime.getTime() - lastClaim.getTime()) / 1000);
-        const minedCoinsForCard = cardProfitPerSecond * timeDifferenceInSeconds;
-        console.log("Server Time:", serverTime);
-        console.log("Last Claim:", lastClaim);
-        // Логируем данные для расчета
-        console.log("Card:", card);
-        console.log("Card Profit Per Second:", cardProfitPerSecond);
-        console.log("Time Difference in Seconds:", timeDifferenceInSeconds);
-        console.log("Mined Coins for Card:", minedCoinsForCard);
-  
-        return acc + minedCoinsForCard;
-      }, 0);
-  
-      console.log("Total Mined Coins calculated:", totalMined);
-      setTotalMinedCoins(totalMined);
-      localStorage.setItem('totalMinedCoins', totalMined.toString());
-    }
-  }, [lastClaim, userCollection, serverTime]);
+  const getTotalMinedCoins = () => {
+    if (!serverTime) return 0;
 
-  const handleUpdateMiningData = async () => {
-    if (!user || !lastClaim || !serverTime) {
-      console.error('Не хватает данных для обновления');
+    return userCollection.reduce((total, card) => {
+      return total + calculateMinedCoins(card, serverTime);
+    }, 0);
+  };
+
+  const handleClaim = async () => {
+    if (!user || !serverTime) {
+      console.error("Не хватает данных для обновления");
       return;
     }
-  
+
+    const totalMinedCoins = getTotalMinedCoins();
+
     try {
-      const newMinedCoins = totalMinedCoins;
-      const newLastClaim = serverTime.toISOString();
-  
-      // Отправляем обновленные данные на сервер для увеличения баланса
-      const response = await fetch('/api/userMining', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          telegramId: user.TelegramId,
-          action: 'increment',
-          amount: newMinedCoins,
-        }),
+      const updatedCollection = userCollection.map((card) => {
+        const minedCoins = calculateMinedCoins(card, serverTime);
+        return {
+          ...card,
+          minedcoins: card.minedcoins + minedCoins,
+          remainingcoins: card.remainingcoins - minedCoins,
+          cardlastclaim: serverTime.toISOString(),
+        };
       });
-  
-      if (!response.ok) {
-        throw new Error('Ошибка при обновлении данных на сервере.');
-      }
-  
-      // Обновляем баланс пользователя на сервере
-      const responseuser = await fetch('/api/updateUserBalance', {
+
+      // Обновляем баланс пользователя
+      await fetch('/api/updateUserBalance', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           TelegramId: user.TelegramId,
+          ecobalance: totalMinedCoins,
           action: 'increment',
-          ecobalance: newMinedCoins,
         }),
       });
-  
-      if (!responseuser.ok) {
-        throw new Error('Ошибка при обновлении баланса на сервере.');
-      }
-  
-      // Обновляем локальный стейт и localStorage
-      user.ecobalance += newMinedCoins; // Обновляем баланс на клиенте
-      setLastClaim(new Date(newLastClaim)); // Обновляем lastClaim
-  
-      // Сохраняем обновленный объект с userMining в localStorage
-      const userMiningData = localStorage.getItem('userMining');
-      if (userMiningData) {
-        const parsedData = JSON.parse(userMiningData);
-        parsedData.lastClaim = newLastClaim; // Обновляем lastClaim в объекте
-        parsedData.minedCoins = newMinedCoins; // Обновляем minedCoins
-        localStorage.setItem('userMining', JSON.stringify(parsedData)); // Сохраняем обновленные данные
-      } else {
-        // Если данных нет, создаем новый объект и сохраняем
-        localStorage.setItem('userMining', JSON.stringify({
-          TelegramId: user.TelegramId,
-          minedCoins: newMinedCoins,
-          lastClaim: newLastClaim,
-        }));
-      }
-  
-      console.log('Данные успешно обновлены!');
+      // Обновляем баланс пользователя на клиенте
+    const updatedUser = {
+      ...user,
+      ecobalance: user.ecobalance + totalMinedCoins,
+    };
+
+    useUserStore.setState({ user: updatedUser }); // Обновляем состояние
+    localStorage.setItem('UserData', JSON.stringify(updatedUser)); // Сохраняем в localStorage
+      // Обновляем коллекцию карт
+      setUserCollection(updatedCollection);
+
+       // Активируем таймер блокировки кнопки
+       setIsButtonDisabled(true);
+       setCountdown(300); // 5 минут = 300 секунд
+
+      console.log("Данные успешно обновлены!");
     } catch (error) {
-      console.error('Ошибка при обновлении данных:', error);
+      console.error("Ошибка при обновлении данных:", error);
     }
   };
+  
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0) {
+      setIsButtonDisabled(false);
+    }
+  }, [countdown]);
 
   return (
-    <div className="bg-[#121212]  flex flex-col items-center">
+    <div className="bg-[#121212] flex flex-col items-center">
       <div className="w-full max-w-4xl bg-[#1a1a1a] rounded-2xl shadow-lg p-6 flex flex-col space-y-6">
         <div className="text-white text-lg font-bold hover:text-gray-300 transition-colors flex flex-col items-center justify-center">
-          <span>Ready to claim:</span>
-          <span className="text-4xl">{totalMinedCoins.toFixed(3)}</span>
+          <span>Total mined since last claim:</span>
+          <span className="text-4xl">{getTotalMinedCoins().toFixed(3)}</span>
         </div>
+
         <Button
           variant="contained"
           color="primary"
-          onClick={handleUpdateMiningData}
-          className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition duration-300 ease-in-out transform hover:scale-105"
+          onClick={handleClaim}
+          disabled={isButtonDisabled}
+          className={`bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg ${
+            isButtonDisabled ? "opacity-50 cursor-not-allowed" : "hover:from-blue-600 hover:to-purple-600 transition duration-300 ease-in-out transform hover:scale-105"
+          }`}
         >
-          Claim
+          {isButtonDisabled ? `Wait ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')}` : "Claim All"}
         </Button>
 
         {userCollection.length > 0 &&
           userCollection.map((card, index) => {
-            const cardProfitPerSecond = calculateProfitPerSecond(card.miningcoins, card.miningperiod);
-            const timeDifferenceInSecondsLastClaim = Math.max(
-              0,
-              (serverTime!.getTime() - lastClaim!.getTime()) / 1000
-            );
-            const minedCoinsForCardLastClaim = cardProfitPerSecond * timeDifferenceInSecondsLastClaim;
-
-            const timeDifferenceInSecondsAcquiredAt = card.acquiredAt
-              ? Math.max(0, (serverTime!.getTime() - new Date(card.acquiredAt).getTime()) / 1000)
-              : 0;
-            const minedCoinsForCardAcquiredAt = cardProfitPerSecond * timeDifferenceInSecondsAcquiredAt;
+            const minedCoins = calculateMinedCoins(card, serverTime || new Date());
 
             return (
               <div
                 key={index}
                 className="w-full bg-[#2a2a2a] rounded-2xl shadow-lg p-6 flex flex-col space-y-1 text-white hover:shadow-2xl transition-shadow duration-300 ease-in-out"
               >
-                <div className="flex justify-between items-center space-y-0.5">
+                <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Card Name:</span>
                   <span className="font-bold">{card.title}</span>
                 </div>
-                <div className="flex justify-between items-center space-y-0.5">
-                  <span className="text-sm font-medium">Profit P/Sec:</span>
-                  <span className="font-bold">{cardProfitPerSecond.toFixed(8)}</span>
-                </div>
-                <div className="flex justify-between items-center space-y-0.5">
-                  <span className="text-sm font-medium">Mined to Claim:</span>
-                  <span className="font-bold">{minedCoinsForCardLastClaim.toFixed(8)}</span>
-                </div>
-                <div className="flex justify-between items-center space-y-0.5">
+                <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Mined Coins:</span>
-                  <span className="font-bold">{minedCoinsForCardAcquiredAt.toFixed(8)}</span>
+                  <span className="font-bold">{(card.minedcoins + minedCoins).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center space-y-0.5">
-                  <span className="text-sm font-medium">Card Coins:</span>
-                  <span className="font-bold">{card.miningcoins}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Remaining Coins:</span>
+                  <span className="font-bold">{(card.remainingcoins - minedCoins).toFixed(2)}</span>
                 </div>
-                <div className="relative w-full">
-                  <LinearProgress
-                    variant="determinate"
-                    value={(card.miningcoins / totalMinedCoins) * 100 || 0}
-                    color="primary"
-                    className="my-4 rounded-lg"
-                  />
-                  <span className="absolute top-5 right-0 text-sm text-gray-400">
-                    {`${(((card.miningcoins - totalMinedCoins) / card.miningcoins) * 100).toFixed(2)}%`}
-                  </span>
-                </div>
+                <LinearProgress
+                  variant="determinate"
+                  value={(card.minedcoins + minedCoins) / card.miningcoins * 100}
+                  color="primary"
+                  className="my-4 rounded-lg"
+                />
               </div>
             );
           })}
@@ -242,6 +188,9 @@ const InfoBlock: React.FC = () => {
 };
 
 export default InfoBlock;
+
+
+
 
 
 

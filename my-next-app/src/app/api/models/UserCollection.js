@@ -16,14 +16,15 @@ const UserCollectionSchema = new Schema({
         type: Number, // ID карты
         required: true,
       },
-     // serialNumber: {
-       // type: Number, // Уникальный номер карты в рамках тиража
-       // required: true,
-    //  },
-     // isActive: {
-     //   type: Boolean,
-     //   default: false, // Карта неактивна по умолчанию
-    //  },
+     serialNumber: {
+        type: String, // Уникальный номер карты в рамках тиража
+         default: "N/A",
+     },
+
+     isActive: {
+        type: Boolean,
+        default: true, // Карта активна по умолчанию
+      },
       
       rarity: {
         type: String, // Редкость карты
@@ -45,17 +46,39 @@ const UserCollectionSchema = new Schema({
         type: Number, // Период добычи
         required: true,
       },
-     // miningcycle: {
-     //   type: Number, // Цикл добычи
-     //   required: true,
-    //  },
+     miningcycle: {
+        type: Number, // Цикл добычи
+        
+      },
+      profitperhour: {
+        type: Number,
+        required: true,
+        
+      },
+      
+      minedcoins: {
+        type: Number,
+      },
+      remainingcoins: {
+        type: Number,
+      },
+
+
+
       price: {
         type: Number, // Цена карты
         required: true,
       },
+
+
       edition: {
         type: Number, // Тираж карты
         required: true,
+      },
+
+      cardlastclaim: {
+        type: Date,
+        default: Date.now, // Дата приобретения карты
       },
 
       acquiredAt: {

@@ -10,17 +10,21 @@ export async function POST(req: NextRequest) {
     const {
       TelegramId,
       cardId,
-      //serialNumber,
-      
+      serialNumber,
+      isActive,
       rarity,
       title,
       description,
       miningcoins,
       miningperiod,
-      //miningcycle,
+      miningcycle,
+      profitperhour,
+      minedcoins,
+      remainingcoins,
       price,
       edition,
       acquiredAt,
+      cardlastclaim,
     } = body;
 
     // Проверяем, что обязательные поля переданы
@@ -33,18 +37,24 @@ export async function POST(req: NextRequest) {
 
     // Добавляем карту в коллекцию
     const updatedCollection = await addCardToUserCollection(TelegramId, {
+      TelegramId,
       cardId,
-      //serialNumber,
+      serialNumber,
+      isActive,
       rarity,
-      
       title,
       description,
       miningcoins,
       miningperiod,
-      //miningcycle,
+      miningcycle,
+      profitperhour,
+      minedcoins,
+      remainingcoins,
       price,
       edition,
       acquiredAt: acquiredAt || new Date(), // По умолчанию текущая дата
+      cardlastclaim: cardlastclaim || new Date(),
+      
       
     });
 
