@@ -55,11 +55,19 @@ const InfoBlock: React.FC = () => {
 
 
   // Функция для вычисления оставшегося времени для каждой карты
-  const calculateRemainingTime = (card: Card, currentTime: Date) => {
+  const calculateTimeSinceLastClaim = (card: Card, currentTime: Date) => {
     const lastClaimDate = new Date(card.cardlastclaim);
-    const elapsedSeconds = (currentTime.getTime() - lastClaimDate.getTime()) / 1000;
-    const timeLeft = card.miningcycle * card.miningperiod * 3600 - elapsedSeconds; // Вычисляем оставшееся время
-    return Math.max(timeLeft, 0);
+    const elapsedSeconds = (currentTime.getTime() - lastClaimDate.getTime()) / 1000; // Время в секундах
+    return elapsedSeconds;
+  };
+
+   // Вычисление общего времени
+   const getMinTimeSinceLastClaim = () => {
+    if (!serverTime || userCollection.length === 0) return 0;
+
+    // Находим минимальное время, прошедшее с последнего обновления среди всех карт
+    const times = userCollection.map(card => calculateTimeSinceLastClaim(card, serverTime));
+    return Math.min(...times); // Минимальное время (в секундах)
   };
 
   const calculateMinedCoins = (card: Card, currentTime: Date) => {
@@ -157,18 +165,16 @@ if (response.status !== 200) {
     }
   };
 
-  // Используем минимальное оставшееся время среди всех карт для контроля таймера кнопки
+  // Привязка времени на основе минимального времени с последнего обновления
   useEffect(() => {
     if (!serverTime || userCollection.length === 0) return;
-    
-    const remainingTimes = userCollection.map(card => calculateRemainingTime(card, serverTime));
-    const minTime = Math.min(...remainingTimes); // Минуты до активации кнопки
 
-    if (minTime <= 0) {
-      setIsButtonDisabled(false); // Если прошло необходимое время для всех карт
-    } else {
+    const minTimeSinceLastClaim = getMinTimeSinceLastClaim();
+    if (minTimeSinceLastClaim < 300) { // Если прошло меньше 5 минут (300 секунд)
       setIsButtonDisabled(true);
-      setCountdown(minTime); // Устанавливаем таймер в зависимости от минимального оставшегося времени
+      setCountdown(300 - Math.floor(minTimeSinceLastClaim)); // Оставшееся время до 5 минут
+    } else {
+      setIsButtonDisabled(false);
     }
   }, [serverTime, userCollection]);
 
@@ -180,6 +186,7 @@ if (response.status !== 200) {
       setIsButtonDisabled(false);
     }
   }, [countdown]);
+
 
   return (
     <div className="bg-[#121212] flex flex-col items-center">
