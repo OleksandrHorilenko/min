@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { CardData } from "@/components/types/CardData";
 import useUserStore from "@/stores/useUserStore"; 
-import fetchUserCollection from "@/app/functions/fetchUserCollection";
 import PurchaseModal from "@/components/PurchaseModal"; // Импортируем компонент модального окна
 
 export default function CardComponent({ card }: { card: CardData }) {
@@ -24,7 +23,7 @@ export default function CardComponent({ card }: { card: CardData }) {
     }
   })();
 
-  const handleBuyCard = (currency: string) => {
+  const handleBuyCard = () => {
     setSelectedCard(card);
     setModalOpen(true);
   };
@@ -33,39 +32,39 @@ export default function CardComponent({ card }: { card: CardData }) {
     setModalOpen(false);
   };
 
+  
+
   return (
     <div
-      className={`relative w-[320px] h-[200px] ${bgColor} border-2 rounded-2xl shadow-lg p-4 flex flex-col justify-between `}
+      className={`relative w-[320px] h-[200px] ${bgColor} border-2 rounded-2xl shadow-lg p-6 flex flex-col justify-between mb-6`}
       style={{
         backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)',
       }}
     >
       <div className="flex justify-between items-center">
         <div>
-          <p className="text-sm text-gray-400 font-medium">{rarity} Mining Card</p>
-          <h2 className="text-lg font-bold text-white">{title}</h2>
+          <p className="text-xs text-gray-300 font-bold"></p>
+          <h2 className="text-xl font-bold text-white">{title}</h2>
         </div>
         <div className="bg-white/10 p-2 rounded-lg shadow-md">
-          <span className="text-xs font-bold text-gray-300">Edition</span>
-          <p className="text-xs font-semibold text-gray-200">#{card.edition}</p>
+          <p className="text-xs font-semibold text-gray-300">{rarity}</p>
         </div>
       </div>
 
-      <div className="text-center space-y-2">
+      <div className="mt-4">
         <p className="text-gray-300">
-          <strong className="text-xl text-green-400">{miningcoins} ECO</strong> over{" "}
-          <span className="font-medium">{miningperiod} days</span>
+          <strong className="text-4xl text-yellow-400">{miningcoins}</strong>
+          <span className="text-xl text-gray-300"> ECO</span>
         </p>
+        <p className="text-sm text-gray-300 mt-1">{miningperiod} days</p>
       </div>
 
-      <div className="flex flex-col items-center space-y-2">
+      <div className="flex flex-col items-start space-y-2 mt-4">
         <p className="text-sm font-medium text-gray-300">
-          Price: <span className="text-lg text-green-400">{price} ECO</span>
+          Price: <span className="text-lg text-orange-500">{price} ECO</span>
         </p>
-        <div className="flex space-x-2">
-          <Button label="ECO" color="bg-green-500" onClick={() => handleBuyCard("ECO")} />
-          <Button label="TON" color="bg-blue-500" onClick={() => handleBuyCard("TON")} />
-          <Button label="STARS" color="bg-yellow-500" onClick={() => handleBuyCard("STARS")} />
+        <div className="w-full mt-4">
+          <Button label="BUY NOW" color="bg-orange-600" onClick={handleBuyCard} />
         </div>
       </div>
 
@@ -78,7 +77,7 @@ function Button({ label, color, onClick }: { label: string; color: string; onCli
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-1 text-white rounded-full text-xs font-medium shadow-md hover:opacity-90 transition-all ${color}`}
+      className={`w-full px-5 py-2 text-white rounded-lg text-lg font-semibold shadow-md hover:opacity-90 transition-all ${color}`}
     >
       {label}
     </button>

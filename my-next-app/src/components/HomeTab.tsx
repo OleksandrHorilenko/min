@@ -25,7 +25,7 @@ const HomeTab = () => {
     <div className={`home-tab-con transition-all duration-300`}>
       <div className="flex flex-col items-center mt-12">
         <Image src={sun} alt="Sun" width={108} height={108} />
-        <div className="text-6xl font-bold mb-1">
+        <div className="text-4xl font-bold mb-1">
   {user.ecobalance.toFixed(2)} ECO
 </div>
         

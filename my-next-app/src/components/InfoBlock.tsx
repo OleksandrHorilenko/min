@@ -209,35 +209,54 @@ if (response.status !== 200) {
         </Button>
 
         {userCollection.length > 0 &&
-          userCollection.map((card, index) => {
-            const minedCoins = calculateMinedCoins(card, serverTime || new Date());
+  userCollection.map((card, index) => {
+    const minedCoins = calculateMinedCoins(card, serverTime || new Date());
 
-            return (
-              <div
-                key={index}
-                className="w-full bg-[#2a2a2a] rounded-2xl shadow-lg p-6 flex flex-col space-y-1 text-white hover:shadow-2xl transition-shadow duration-300 ease-in-out"
-              >
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Card Name:</span>
-                  <span className="font-bold">{card.title}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Mined Coins:</span>
-                  <span className="font-bold">{(card.minedcoins + minedCoins).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Remaining Coins:</span>
-                  <span className="font-bold">{(card.remainingcoins - minedCoins).toFixed(2)}</span>
-                </div>
-                <LinearProgress
-                  variant="determinate"
-                  value={(card.minedcoins + minedCoins) / card.miningcoins * 100}
-                  color="primary"
-                  className="my-4 rounded-lg"
-                />
-              </div>
-            );
-          })}
+    // Вычисляем процент оставшихся монет
+    const remainingPercentage = ((card.remainingcoins / card.miningcoins) * 100).toFixed(2);
+
+    return (
+      <div
+        key={index}
+        className="w-full bg-[#2a2a2a] rounded-2xl shadow-lg p-6 flex flex-col space-y-1 text-white hover:shadow-2xl transition-shadow duration-300 ease-in-out"
+      >
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-medium">Card Name:</span>
+          <span className="font-bold">{card.title}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-medium">Mined Coins:</span>
+          <span className="font-bold">{(card.minedcoins + minedCoins).toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-medium">Remaining Coins:</span>
+          <span className="font-bold">{(card.remainingcoins - minedCoins).toFixed(2)}</span>
+        </div>
+
+        <div className="my-4">
+          <LinearProgress
+            variant="determinate"
+            value={(card.minedcoins + minedCoins) / card.miningcoins * 100}
+            color="primary"
+            className="rounded-lg"
+          />
+        </div>
+
+        <div className="text-center mt-2 text-gray-300">
+          <span className="text-lg font-bold">{remainingPercentage}%</span>
+          <p className="text-sm"> </p>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-gray-300">
+            <strong className="text-4xl text-yellow-400">{card.miningcoins}</strong>
+            <span className="text-xl text-gray-300"> ECO</span>
+          </p>
+          <p className="text-sm text-gray-300 mt-1">{card.miningperiod} days</p>
+        </div>
+      </div>
+    );
+  })}
       </div>
     </div>
   );
