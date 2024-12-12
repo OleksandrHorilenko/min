@@ -39,80 +39,63 @@ const PurchaseModal = ({ card, onClose }: ModalProps) => {
   
       const userCollection = await userCollectionResponse.json();
       
-      // Если в коллекции 0 карт, добавляем lastClaim в userMining
-     // if (userCollection?.cards?.length < 1) {
-       // const response = await fetch('/api/userMining', {
-       //   method: 'PUT',
-       //   headers: {
-       //     'Content-Type': 'application/json',
-       //   },
-      //    body: JSON.stringify({
-      //      telegramId: user.TelegramId,
-      //      action: 'increment',
-       //     amount: 0,
-      //    }),
-      //  });
-    //
-       // if (!response.ok) {
-       //   throw new Error('Ошибка при обновлении данных на сервере.');
-      //  }
-     // }
+      
   
-      // Создаем данные для обновления коллекции пользователя
-      const userCollectionUpdate = {
-        TelegramId: user.TelegramId,
-        cardId: card.cardId,
-        serialNumber: card.serialNumber,
-        isActive: card.isActive,
-        acquiredAt: new Date().toISOString(),
-        rarity: card.rarity,
-        title: card.title,
-        description: card.description,
-        miningcoins: card.miningcoins,
-        miningperiod: card.miningperiod,
-        miningcycle: card.miningcycle,
-        profitperhour: card.profitperhour,
-        minedcoins: card.minedcoins,
-        remainingcoins: card.remainingcoins,
-        price: card.price,
-        edition: card.edition,
-        cardlastcaim: new Date().toISOString(),
-        //acquiredAt: new Date().toISOString(),
-      };
+      // Создаем данные для добавления новой карты в коллекцию
+const newCard = {
+  cardId: card.cardId,
+  serialNumber: card.serialNumber,
+  isActive: card.isActive,
+  acquiredAt: new Date().toISOString(),
+  rarity: card.rarity,
+  title: card.title,
+  description: card.description,
+  miningcoins: card.miningcoins,
+  miningperiod: card.miningperiod,
+  miningcycle: card.miningcycle,
+  profitperhour: card.profitperhour,
+  minedcoins: card.minedcoins,
+  remainingcoins: card.remainingcoins,
+  price: card.price,
+  edition: card.edition,
+  cardlastclaim: new Date().toISOString(),
+};
+
+// Создаем данные для запроса, включая TelegramId и новую карту
+const requestData = {
+  TelegramId: user.TelegramId,
+  newCard: newCard, // Новая карта, которую нужно добавить
+};
+
+// Отправляем запрос на добавление карты в коллекцию пользователя
+const response = await fetch("/api/addCardToUserCollection", {
+  method: "POST",
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(requestData),
+});
+
+if (!response.ok) {
+  const errorData = await response.json();
+  console.error("Ошибка при добавлении карты в коллекцию:", errorData.error);
+  return;
+}
+
+// Если все прошло успешно, можно выполнить дальнейшие действия
+console.log('Новая карта добавлена в коллекцию!');
   
-      const soldCardUpdate = {
-        owner: user.TelegramId,
-        cardId: card.cardId,
-        price: card.price,
-        soldAt: new Date().toISOString(),
-      };
+    // Отправляем запрос для добавления карты в коллекцию проданных карт
+     // const soldCardResponse = await fetch("/api/soldCards", {
+     //   method: "POST",
+     //   headers: { "Content-Type": "application/json" },
+     //   body: JSON.stringify(soldCardUpdate),
+    //  });
   
-      // Обновляем коллекцию пользователя
-      const response = await fetch("/api/updateUserCollectionInDB", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userCollectionUpdate),
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Ошибка при добавлении карты в коллекцию:", errorData.error);
-        return;
-      }
-  
-      // Отправляем запрос для добавления карты в коллекцию проданных карт
-      const soldCardResponse = await fetch("/api/soldCards", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(soldCardUpdate),
-      });
-  
-      if (!soldCardResponse.ok) {
-        const errorData = await soldCardResponse.json();
-        console.error("Ошибка при добавлении карты в коллекцию проданных карт:", errorData.error);
-        return;
-      }
-  
+    //  if (!soldCardResponse.ok) {
+    //    const errorData = await soldCardResponse.json();
+    //    console.error("Ошибка при добавлении карты в коллекцию проданных карт:", errorData.error);
+   //     return;
+   //   }
+  //
       // Обновляем коллекцию пользователя и состояние хранилища
       fetchUserCollection(user.TelegramId); // Обновляем коллекцию пользователя
       updateUser({ ecobalance: newBalance }); // Обновляем состояние хранилища
