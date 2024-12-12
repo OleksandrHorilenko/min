@@ -109,57 +109,52 @@ console.log('Новая карта добавлена в коллекцию!');
   
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-end p-4">
-      <div className="bg-black w-full max-w-full rounded-t-2xl p-6 shadow-lg border-2 border-gray-300 transform transition-all duration-300 translate-y-0 text-white flex relative">
-        {/* Кнопка закрытия в правом верхнем углу */}
+    <div
+    className="fixed inset-x-0 bottom-0 z-50 bg-black flex justify-center   items-start p-4"
+    
+  >
+    <div className="relative bg-black w-full max-w-md rounded-t-2xl p-6 shadow-2xl text-white border-t-2 border-gray-200 max-h-[80vh]">
+      <button
+        onClick={onClose}
+        className="absolute top-2 right-2 text-xl text-gray-400"
+      >
+        X
+      </button>
+      <h2 className="text-xl font-bold mb-4">{card.title}</h2>
+      <p className="text-sm font-semibold">Price:</p>
+      <p className="text-lg font-bold mb-4">{card.price} ECO</p>
+      <p className="text-sm font-semibold">Mining Coins:</p>
+      <p className="text-lg font-bold mb-4">{card.miningcoins} ECO</p>
+      <p className="text-sm font-semibold">Mining Period:</p>
+      <p className="text-lg font-bold mb-4">{card.miningperiod} days</p>
+      <p className="text-sm font-semibold">Description:</p>
+      <p className="text-md mb-6">{card.description}</p>
+      <div className="flex justify-between space-x-4">
         <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-lg font-semibold text-gray-400 hover:text-white"
+          onClick={() => handleBuyECO ()}
+          className="w-1/3 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-lg py-2"
         >
-          X
+          Buy ECO
         </button>
-
-        {/* Содержимое карты (градиентный фон на всю ширину) */}
-        <div className="flex flex-grow bg-gradient-to-r from-gray-700 to-gray-900 p-6 rounded-lg shadow-lg space-x-6">
-          {/* Данные карты */}
-          <div className="flex flex-col w-2/3 space-y-4">
-            <h2 className="text-xl font-bold">{card.title}</h2>
-            <div>
-              <p className="text-sm font-semibold">Price:</p>
-              <p className="text-lg font-bold">{card.price} ECO</p>
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Mining Coins:</p>
-              <p className="text-lg font-bold">{card.miningcoins} ECO</p>
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Mining Period:</p>
-              <p className="text-lg font-bold">{card.miningperiod} days</p>
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Description:</p>
-              <p className="text-md">{card.description}</p>
-            </div>
-          </div>
-
-          {/* Кнопки справа с одинаковой шириной */}
-          <div className="flex flex-col justify-between items-center w-1/3 space-y-3">
-            <button
-              onClick={handleBuyECO}
-              className="px-6 py-3 w-full bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition-all"
-            >
-              Buy ECO
-            </button>
-            <button className="px-6 py-3 w-full bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-all">
-              Buy TON
-            </button>
-            <button className="px-6 py-3 w-full bg-yellow-500 text-white rounded-lg shadow-md hover:bg-yellow-600 transition-all">
-              Buy STARS
-            </button>
-          </div>
-        </div>
+        <button
+          onClick={() => console.log("Buy TON")}
+          className="w-1/3 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-lg py-2"
+        >
+          Buy TON
+        </button>
+        <button
+          onClick={() => console.log("Buy STARS")}
+          className="w-1/3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-lg py-2"
+        >
+          Buy STARS
+        </button>
       </div>
     </div>
+  </div>
+  
+
+  
+
   );
 };
 

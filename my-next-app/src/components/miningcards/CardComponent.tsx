@@ -8,83 +8,77 @@ export default function CardComponent({ card }: { card: CardData }) {
   const { title, description, miningcoins, miningperiod, price, rarity, cardId } = card;
   const { user } = useUserStore();
 
-  const [isModalOpen, setModalOpen] = useState(false); // Состояние для открытия модального окна
-  const [selectedCard, setSelectedCard] = useState<CardData | null>(null); // Храним выбранную карту для модалки
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
 
   const bgColor = (() => {
     switch (rarity) {
       case "Common":
-        return "bg-gray-100";
+        return "bg-gray-800 border-gray-600";
       case "Rare":
-        return "bg-blue-300";
+        return "bg-blue-900 border-blue-500";
       case "Epic":
-        return "bg-yellow-300";
+        return "bg-yellow-900 border-yellow-500";
       default:
-        return "bg-gray-200";
+        return "bg-gray-700 border-gray-500";
     }
   })();
 
   const handleBuyCard = (currency: string) => {
-    setSelectedCard(card); // Устанавливаем выбранную карту
-    setModalOpen(true); // Открываем модальное окно
+    setSelectedCard(card);
+    setModalOpen(true);
   };
 
   const handleCloseModal = () => {
-    setModalOpen(false); // Закрываем модальное окно
+    setModalOpen(false);
   };
 
   return (
-    <div className={`relative w-[320px] h-[200px] ${bgColor} rounded-2xl shadow-lg p-4 flex flex-col justify-between`}>
+    <div
+      className={`relative w-[320px] h-[200px] ${bgColor} border-2 rounded-2xl shadow-lg p-4 flex flex-col justify-between `}
+      style={{
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)',
+      }}
+    >
       <div className="flex justify-between items-center">
         <div>
-          <p className="text-sm text-gray-600 font-medium">{rarity} Mining Card</p>
-          <h2 className="text-md font-bold text-gray-800">{title}</h2>
+          <p className="text-sm text-gray-400 font-medium">{rarity} Mining Card</p>
+          <h2 className="text-lg font-bold text-white">{title}</h2>
         </div>
-        <div className="bg-gray-100 p-2 rounded-lg shadow-md">
-          <span className="text-xs font-bold text-gray-700">Edition</span>
-          <p className="text-xs font-semibold text-gray-800">#{card.edition}</p>
+        <div className="bg-white/10 p-2 rounded-lg shadow-md">
+          <span className="text-xs font-bold text-gray-300">Edition</span>
+          <p className="text-xs font-semibold text-gray-200">#{card.edition}</p>
         </div>
       </div>
 
       <div className="text-center space-y-2">
-        <p className="text-gray-700">
-          <strong className="text-lg text-green-600">{miningcoins} ECO</strong> over{" "}
+        <p className="text-gray-300">
+          <strong className="text-xl text-green-400">{miningcoins} ECO</strong> over{" "}
           <span className="font-medium">{miningperiod} days</span>
         </p>
       </div>
 
       <div className="flex flex-col items-center space-y-2">
-        <p className="text-sm font-medium text-gray-800">
-          Price: <span className="text-lg text-green-600">{price} ECO</span>
+        <p className="text-sm font-medium text-gray-300">
+          Price: <span className="text-lg text-green-400">{price} ECO</span>
         </p>
-        <div className="flex space-x-1">
+        <div className="flex space-x-2">
           <Button label="ECO" color="bg-green-500" onClick={() => handleBuyCard("ECO")} />
           <Button label="TON" color="bg-blue-500" onClick={() => handleBuyCard("TON")} />
           <Button label="STARS" color="bg-yellow-500" onClick={() => handleBuyCard("STARS")} />
         </div>
       </div>
 
-      {/* Модальное окно */}
-      {isModalOpen && selectedCard && (
-        <PurchaseModal card={selectedCard} onClose={handleCloseModal} />
-      )}
+      {isModalOpen && selectedCard && <PurchaseModal card={selectedCard} onClose={handleCloseModal} />}
     </div>
   );
 }
 
-function Button({
-  label,
-  color,
-  onClick,
-}: {
-  label: string;
-  color: string;
-  onClick: () => void;
-}) {
+function Button({ label, color, onClick }: { label: string; color: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 text-white rounded-full text-xs font-medium shadow-md hover:opacity-90 transition-all ${color}`}
+      className={`px-4 py-1 text-white rounded-full text-xs font-medium shadow-md hover:opacity-90 transition-all ${color}`}
     >
       {label}
     </button>
