@@ -52,6 +52,16 @@ const InfoBlock: React.FC = () => {
     }
   }, [user]);
 
+
+
+  // Функция для вычисления оставшегося времени для каждой карты
+  const calculateRemainingTime = (card: Card, currentTime: Date) => {
+    const lastClaimDate = new Date(card.cardlastclaim);
+    const elapsedSeconds = (currentTime.getTime() - lastClaimDate.getTime()) / 1000;
+    const timeLeft = card.miningcycle * card.miningperiod * 3600 - elapsedSeconds; // Вычисляем оставшееся время
+    return Math.max(timeLeft, 0);
+  };
+
   const calculateMinedCoins = (card: Card, currentTime: Date) => {
     const { cardlastclaim, miningcoins, miningperiod, remainingcoins } = card;
 
@@ -146,6 +156,21 @@ if (response.status !== 200) {
       console.error("Ошибка при обновлении данных:", error);
     }
   };
+
+  // Используем минимальное оставшееся время среди всех карт для контроля таймера кнопки
+  useEffect(() => {
+    if (!serverTime || userCollection.length === 0) return;
+    
+    const remainingTimes = userCollection.map(card => calculateRemainingTime(card, serverTime));
+    const minTime = Math.min(...remainingTimes); // Минуты до активации кнопки
+
+    if (minTime <= 0) {
+      setIsButtonDisabled(false); // Если прошло необходимое время для всех карт
+    } else {
+      setIsButtonDisabled(true);
+      setCountdown(minTime); // Устанавливаем таймер в зависимости от минимального оставшегося времени
+    }
+  }, [serverTime, userCollection]);
 
   useEffect(() => {
     if (countdown > 0) {
