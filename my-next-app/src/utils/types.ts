@@ -10,6 +10,7 @@ export type TabType = 'home' | 'wallet' | 'leaderboard' | 'friends' | 'earn';
 
 
 export interface UserCard {
+    _id: string;
     cardId: number; // ID карты
     rarity: string;
     title: string;
