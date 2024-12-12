@@ -32,7 +32,7 @@ const InfoBlock: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setServerTime(new Date());
-    }, 1000); // Обновляем время каждую секунду
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -43,6 +43,7 @@ const InfoBlock: React.FC = () => {
         try {
           const collection = await fetchUserCollection(user.TelegramId);
           setUserCollection(collection);
+          localStorage.setItem('userCollection', JSON.stringify(collection));
         } catch (error) {
           console.error("Ошибка при получении коллекции карт:", error);
         }
@@ -53,20 +54,23 @@ const InfoBlock: React.FC = () => {
 
   const calculateMinedCoins = (card: Card, currentTime: Date) => {
     const { cardlastclaim, miningcoins, miningperiod, remainingcoins } = card;
+
     const lastClaimDate = new Date(cardlastclaim);
+
     const elapsedSeconds = (currentTime.getTime() - lastClaimDate.getTime()) / 1000;
 
-    const profitPerSecond = miningcoins / (miningperiod * 24 * 60 * 60);
-    const minedSinceLastClaim = Math.min(remainingcoins, profitPerSecond * elapsedSeconds);
+   const profitPerSecond = card.profitperhour / 3600;
+   const minedSinceLastClaim = Math.min(remainingcoins, profitPerSecond * elapsedSeconds);
 
     return minedSinceLastClaim;
   };
 
   const getTotalMinedCoins = () => {
     if (!serverTime) return 0;
-
+  
     return userCollection.reduce((total, card) => {
-      return total + calculateMinedCoins(card, serverTime);
+      const minedSinceLastClaim = calculateMinedCoins(card, serverTime);
+      return total + minedSinceLastClaim;
     }, 0);
   };
 
@@ -75,9 +79,9 @@ const InfoBlock: React.FC = () => {
       console.error("Не хватает данных для обновления");
       return;
     }
-
+  
     const totalMinedCoins = getTotalMinedCoins();
-
+  
     try {
       const updatedCollection = userCollection.map((card) => {
         const minedCoins = calculateMinedCoins(card, serverTime);
@@ -88,40 +92,60 @@ const InfoBlock: React.FC = () => {
           cardlastclaim: serverTime.toISOString(),
         };
       });
+  
+      // Отправка обновленной коллекции на сервер
+// Отправка обновленной коллекции на сервер
+const response = await fetch('/api/updateUserCollectionInDB', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    TelegramId: user.TelegramId,
+    cards: updatedCollection.map((card) => ({  // Переименовали с "collection" на "cards"
+      cardId: card.cardId,  // Убедитесь, что cardId есть в данных
+      serialNumber: card.serialNumber,
+      isActive: card.isActive,
+      rarity: card.rarity,
+      title: card.title,
+      description: card.description,
+      miningcoins: card.miningcoins,
+      miningperiod: card.miningperiod,
+      miningcycle: card.miningcycle,
+      profitperhour: card.profitperhour,
+      minedcoins: card.minedcoins,
+      remainingcoins: card.remainingcoins,
+      price: card.price,
+      edition: card.edition,
+      cardlastclaim: card.cardlastclaim,
+      acquiredAt: card.acquiredAt,
+    })),
+  }),
+});
 
-      // Обновляем баланс пользователя
-      await fetch('/api/updateUserBalance', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          TelegramId: user.TelegramId,
-          ecobalance: totalMinedCoins,
-          action: 'increment',
-        }),
-      });
-      // Обновляем баланс пользователя на клиенте
-    const updatedUser = {
-      ...user,
-      ecobalance: user.ecobalance + totalMinedCoins,
-    };
+const data = await response.json();
 
-    useUserStore.setState({ user: updatedUser }); // Обновляем состояние
-    localStorage.setItem('UserData', JSON.stringify(updatedUser)); // Сохраняем в localStorage
-      // Обновляем коллекцию карт
+if (response.status !== 200) {
+  throw new Error(data.error || 'Не удалось обновить коллекцию');
+}
+
+  
+      // Обновляем данные пользователя локально
+      useUserStore.setState({ user: { ...user, ecobalance: user.ecobalance + totalMinedCoins } });
+  
+      // Обновляем состояние коллекции в приложении
       setUserCollection(updatedCollection);
-
-       // Активируем таймер блокировки кнопки
-       setIsButtonDisabled(true);
-       setCountdown(300); // 5 минут = 300 секунд
-
+      localStorage.setItem('userCollection', JSON.stringify(updatedCollection));
+  
+      // Активируем таймер блокировки кнопки
+      setIsButtonDisabled(true);
+      setCountdown(300); // 5 минут = 300 секунд
+  
       console.log("Данные успешно обновлены!");
     } catch (error) {
       console.error("Ошибка при обновлении данных:", error);
     }
   };
-  
 
   useEffect(() => {
     if (countdown > 0) {
@@ -188,6 +212,7 @@ const InfoBlock: React.FC = () => {
 };
 
 export default InfoBlock;
+
 
 
 

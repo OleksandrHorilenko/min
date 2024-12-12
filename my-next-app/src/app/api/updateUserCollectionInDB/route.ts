@@ -1,76 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { addCardToUserCollection } from '@/utils/database';
+import connect from '../mongodb.js'; // Подключение к базе данных
+import UserCollection from '../models/UserCollection'; // Импорт модели коллекции карт
 
 /**
- * Обработчик для добавления карты в коллекцию пользователя.
+ * Обработчик для обновления коллекции карт пользователя.
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const {
-      TelegramId,
-      cardId,
-      serialNumber,
-      isActive,
-      rarity,
-      title,
-      description,
-      miningcoins,
-      miningperiod,
-      miningcycle,
-      profitperhour,
-      minedcoins,
-      remainingcoins,
-      price,
-      edition,
-      acquiredAt,
-      cardlastclaim,
-    } = body;
+    // Подключаемся к базе данных
+    await connect();
 
-    // Проверяем, что обязательные поля переданы
-    if (!TelegramId || !cardId) {
+    // Получаем данные из запроса
+    const body = await req.json();
+    console.log('Полученные данные:', body); // Логируем данные для отладки
+
+    const { TelegramId, cards } = body;
+
+    // Проверяем обязательные поля
+    if (!TelegramId || !cards || cards.length === 0) {
       return NextResponse.json(
         { error: 'Необходимые данные отсутствуют' },
-        { status: 400 } // HTTP 400 - Bad Request
+        { status: 400 }
       );
     }
 
-    // Добавляем карту в коллекцию
-    const updatedCollection = await addCardToUserCollection(TelegramId, {
-      TelegramId,
-      cardId,
-      serialNumber,
-      isActive,
-      rarity,
-      title,
-      description,
-      miningcoins,
-      miningperiod,
-      miningcycle,
-      profitperhour,
-      minedcoins,
-      remainingcoins,
-      price,
-      edition,
-      acquiredAt: acquiredAt || new Date(), // По умолчанию текущая дата
-      cardlastclaim: cardlastclaim || new Date(),
-      
-      
-    });
+    // Находим пользователя в базе
+    const user = await UserCollection.findOne({ TelegramId });
 
-    if (!updatedCollection) {
+    // Если пользователь не найден
+    if (!user) {
       return NextResponse.json(
-        { error: 'Не удалось обновить коллекцию пользователя' },
-        { status: 500 } // HTTP 500 - Internal Server Error
+        { error: 'Пользователь не найден' },
+        { status: 404 }
       );
     }
 
-    return NextResponse.json(updatedCollection, { status: 200 }); // HTTP 200 - OK
+    // Обновляем коллекцию карт пользователя
+    user.cards = cards; // Обновляем массив карт
+
+    // Сохраняем изменения в базе
+    await user.save();
+
+    return NextResponse.json({ message: 'Коллекция обновлена успешно' }, { status: 200 });
+
   } catch (error) {
-    console.error('Ошибка в обработчике добавления карты:', error);
+    console.error('Ошибка в обработчике обновления коллекции карт:', error.message);
     return NextResponse.json(
       { error: 'Ошибка сервера' },
-      { status: 500 } // HTTP 500 - Internal Server Error
+      { status: 500 }
     );
   }
 }
