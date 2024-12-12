@@ -18,7 +18,6 @@ export interface Card {
   price: number;          // Цена карты
   edition: number; 
   cardlastclaim: string | Date;     
-  _id: string;
 }
 
 // Типизация для майнинга

@@ -18,7 +18,7 @@ const UserCollection = () => {
   return (
     <div className="flex flex-wrap justify-center gap-6 py-8">
       {userCollection.map((card) => (
-        <CardView key={card._id} card={card} />
+        <CardView key={card.cardId} card={card} />
       ))}
     </div>
   );

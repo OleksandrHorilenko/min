@@ -15,5 +15,4 @@ export interface CardData {
     price: number;
     edition: number;
     cardlastclaim: string | Date;   
-    _id: string;
   }
