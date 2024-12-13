@@ -35,6 +35,8 @@ export default function Home() {
   const [loader, setLoader] = useState(false);
   const [userMining, setUserMining] = useState<any>(null);
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
+  const [initData, setInitData] = useState('')
+  const [startParam, setStartParam] = useState('')
   
 
 

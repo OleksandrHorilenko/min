@@ -110,7 +110,39 @@ const InfoBlock: React.FC = () => {
           cardlastclaim: serverTime.toISOString(),
         };
       });
-  
+  /////Добавленіе на кошелек
+
+
+// Обновляем данные пользователя на сервере
+await fetch('/api/updateUserBalance', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    TelegramId: user.TelegramId,
+    ecobalance: totalMinedCoins,
+    action: 'increment',
+  }),
+});
+
+// Обновляем состояние пользователя
+const updatedUser = {
+  ...user,
+  ecobalance: user.ecobalance + totalMinedCoins,
+};
+
+useUserStore.setState({ user: updatedUser });
+localStorage.setItem('userData', JSON.stringify(updatedUser));
+
+
+
+
+
+
+
+
+
       // Отправка обновленной коллекции на сервер
 // Отправка обновленной коллекции на сервер
 const response = await fetch('/api/updateUserCollectionInDB', {
