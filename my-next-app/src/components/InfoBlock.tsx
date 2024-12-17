@@ -243,40 +243,37 @@ if (response.status !== 200) {
         {userCollection.length > 0 &&
   userCollection.map((card, index) => {
     const minedCoins = calculateMinedCoins(card, serverTime || new Date());
-
-    // Вычисляем процент оставшихся монет
     const remainingPercentage = ((card.remainingcoins / card.miningcoins) * 100).toFixed(2);
+
+    const bgColor = (() => {
+      switch (card.rarity) {
+        case "Common":
+      return "bg-[#121212] border-[#8A2BE2]"; // Темный фон с фиолетовым обрамлением
+    case "Rare":
+      return "bg-[#1B0036] border-[#00FFFF]"; // Темно-фиолетовый фон с неоновым голубым
+    case "Epic":
+      return "bg-[#30003B] border-[#FF00FF]"; // Глубокий пурпурный фон с ярким розовым
+    default:
+      return "bg-[#1A1A1A] border-[#C0C0C0]"; // Серый фон с светлым металлическим контуром
+      }
+    })();
 
     return (
       <div
         key={index}
-        className="w-full bg-[#2a2a2a] rounded-2xl shadow-lg p-6 flex flex-col space-y-1 text-white hover:shadow-2xl transition-shadow duration-300 ease-in-out"
+        className={`relative w-[320px] h-[200px] ${bgColor} border-2 rounded-2xl shadow-lg p-6 flex flex-col justify-between mb-6`}
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)',
+        }}
       >
         <div className="flex justify-between items-center">
-          <span className="text-sm font-medium">Card Name:</span>
-          <span className="font-bold">{card.title}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-medium">Mined Coins:</span>
-          <span className="font-bold">{(card.minedcoins + minedCoins).toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-medium">Remaining Coins:</span>
-          <span className="font-bold">{(card.remainingcoins - minedCoins).toFixed(2)}</span>
-        </div>
-
-        <div className="my-4">
-          <LinearProgress
-            variant="determinate"
-            value={(card.minedcoins + minedCoins) / card.miningcoins * 100}
-            color="primary"
-            className="rounded-lg"
-          />
-        </div>
-
-        <div className="text-center mt-2 text-gray-300">
-          <span className="text-lg font-bold">{remainingPercentage}%</span>
-          <p className="text-sm"> </p>
+          <div>
+            <p className="text-xs text-gray-300 font-bold">Card Name</p>
+            <h2 className="text-xl font-bold text-white">{card.title}</h2>
+          </div>
+          <div className="bg-white/10 p-2 rounded-lg shadow-md">
+            <p className="text-xs font-semibold text-gray-300">{card.rarity}</p>
+          </div>
         </div>
 
         <div className="mt-4">
@@ -286,9 +283,24 @@ if (response.status !== 200) {
           </p>
           <p className="text-sm text-gray-300 mt-1">{card.miningperiod} days</p>
         </div>
+
+        <div className="my-2">
+  <LinearProgress
+    variant="determinate"
+    value={((card.minedcoins + minedCoins) / card.miningcoins) * 100}
+    color="primary"
+    className="rounded-lg"
+  />
+</div>
+
+<div className="flex justify-end items-center mt-1 space-x-2">
+  <p className="text-xs text-gray-400">Remaining Coins</p>
+  <p className="text-xs font-bold text-gray-300">{remainingPercentage}%</p>
+</div>
       </div>
     );
   })}
+
       </div>
     </div>
   );

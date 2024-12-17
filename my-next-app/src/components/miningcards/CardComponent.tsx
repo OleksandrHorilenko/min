@@ -13,13 +13,13 @@ export default function CardComponent({ card }: { card: CardData }) {
   const bgColor = (() => {
     switch (rarity) {
       case "Common":
-        return "bg-gray-800 border-gray-600";
-      case "Rare":
-        return "bg-blue-900 border-blue-500";
-      case "Epic":
-        return "bg-yellow-900 border-yellow-500";
-      default:
-        return "bg-gray-700 border-gray-500";
+      return "bg-[#121212] border-[#8A2BE2]"; // Темный фон с фиолетовым обрамлением
+    case "Rare":
+      return "bg-[#1B0036] border-[#00FFFF]"; // Темно-фиолетовый фон с неоновым голубым
+    case "Epic":
+      return "bg-[#30003B] border-[#FF00FF]"; // Глубокий пурпурный фон с ярким розовым
+    default:
+      return "bg-[#1A1A1A] border-[#C0C0C0]"; // Серый фон с светлым металлическим контуром
     }
   })();
 
