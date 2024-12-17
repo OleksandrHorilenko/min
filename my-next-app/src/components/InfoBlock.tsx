@@ -260,44 +260,44 @@ if (response.status !== 200) {
 
     return (
       <div
-        key={index}
-        className={`relative w-[320px] h-[200px] ${bgColor} border-2 rounded-2xl shadow-lg p-6 flex flex-col justify-between mb-6`}
-        style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)',
-        }}
-      >
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-xs text-gray-300 font-bold">Card Name</p>
-            <h2 className="text-xl font-bold text-white">{card.title}</h2>
-          </div>
-          <div className="bg-white/10 p-2 rounded-lg shadow-md">
-            <p className="text-xs font-semibold text-gray-300">{card.rarity}</p>
-          </div>
+      key={index}
+      className={`relative w-[90%] sm:w-[320px] h-[200px] ${bgColor} border-2 rounded-2xl shadow-lg p-6 flex flex-col justify-between mb-6 mx-auto`}
+      style={{
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)',
+      }}
+    >
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-xs text-gray-300 font-bold">Card Name</p>
+          <h2 className="text-xl font-bold text-white">{card.title}</h2>
         </div>
-
-        <div className="mt-4">
-          <p className="text-gray-300">
-            <strong className="text-4xl text-yellow-400">{card.miningcoins}</strong>
-            <span className="text-xl text-gray-300"> ECO</span>
-          </p>
-          <p className="text-sm text-gray-300 mt-1">{card.miningperiod} days</p>
+        <div className="bg-white/10 p-2 rounded-lg shadow-md">
+          <p className="text-xs font-semibold text-gray-300">{card.rarity}</p>
         </div>
-
-        <div className="my-2">
-  <LinearProgress
-    variant="determinate"
-    value={((card.minedcoins + minedCoins) / card.miningcoins) * 100}
-    color="primary"
-    className="rounded-lg"
-  />
-</div>
-
-<div className="flex justify-end items-center mt-1 space-x-2">
-  <p className="text-xs text-gray-400">Remaining Coins</p>
-  <p className="text-xs font-bold text-gray-300">{remainingPercentage}%</p>
-</div>
       </div>
+    
+      <div className="mt-4">
+        <p className="text-gray-300">
+          <strong className="text-4xl text-yellow-400">{card.miningcoins}</strong>
+          <span className="text-xl text-gray-300"> ECO</span>
+        </p>
+        <p className="text-sm text-gray-300 mt-1">{card.miningperiod} days</p>
+      </div>
+    
+      <div className="my-2">
+        <LinearProgress
+          variant="determinate"
+          value={((card.minedcoins + minedCoins) / card.miningcoins) * 100}
+          color="primary"
+          className="rounded-lg"
+        />
+      </div>
+    
+      <div className="flex justify-end items-center mt-1 space-x-2">
+        <p className="text-xs text-gray-400">Remaining Coins</p>
+        <p className="text-xs font-bold text-gray-300">{remainingPercentage}%</p>
+      </div>
+    </div>
     );
   })}
 
