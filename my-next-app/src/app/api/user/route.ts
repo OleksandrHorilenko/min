@@ -1,30 +1,34 @@
+
+
 import { NextRequest, NextResponse } from 'next/server';
 import connect from '../mongodb.js';
 import User from '../models/User';
 import UserCollection from '../models/UserCollection';
-import UserMining from '../models/UserMining'; // Модель для usermining
+import UserMining from '../models/UserMining';
+import Referal from '../models/Referal'; // Модель для referals
+
+// Функция для генерации уникального реферального кода
+function generateReferralCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase(); // Пример: 'A1B2C3'
+}
 
 export async function POST(req: NextRequest) {
-  await connect(); // Подключаемся к базе данных
+  await connect();
 
   try {
     const body = await req.json();
-
-    // Извлекаем данные из запроса
     const { TelegramId, first_name, last_name, username, language_code, is_premium } = body;
 
-    // Проверяем, что обязательное поле TelegramId присутствует
     if (!TelegramId) {
       return NextResponse.json(
         { error: 'TelegramId является обязательным полем' },
-        { status: 400 } // HTTP 400 - Bad Request
+        { status: 400 }
       );
     }
 
-    // Проверяем, существует ли пользователь
     let user = await User.findOne({ TelegramId });
     if (user) {
-      return NextResponse.json(user, { status: 200 }); // Пользователь найден
+      return NextResponse.json(user, { status: 200 });
     }
 
     // Создаем нового пользователя
@@ -35,37 +39,46 @@ export async function POST(req: NextRequest) {
       username,
       language_code,
       is_premium,
-      ecobalance: 100000.0, // Устанавливаем значение по умолчанию
-      wallets: [], // Пустой массив по умолчанию
+      ecobalance: 100000.0,
+      wallets: [],
     });
     await user.save();
 
     // Создаем коллекцию пользователя
     const userCollection = new UserCollection({
       TelegramId,
-      cards: [], // Пустой массив карт
+      cards: [],
     });
     await userCollection.save();
 
-    // Создаем начальную запись в usermining для нового пользователя
+    // Создаем начальную запись в usermining
     const userMining = new UserMining({
       TelegramId,
-      minedCoins: 0, // Начальное количество намайненных монет
-      bonusCoins: 0, // Начальное количество бонусных монет
-      burnedCoins: 0, // Начальное количество сожженных монет
-      
+      minedCoins: 0,
+      bonusCoins: 0,
+      burnedCoins: 0,
     });
-    await userMining.save(); // Сохраняем запись в коллекцию usermining
+    await userMining.save();
 
-    return NextResponse.json(user, { status: 201 }); // HTTP 201 - Created
+    // Создаем запись в коллекции referals
+    const referralCode = generateReferralCode();
+    const referal = new Referal({
+      TelegramId,
+      referralCode,
+      referrals: [], // Пустой массив для приглашённых
+    });
+    await referal.save();
+
+    return NextResponse.json(user, { status: 201 });
   } catch (error) {
     console.error('Ошибка при создании пользователя:', error);
     return NextResponse.json(
       { error: 'Ошибка при создании пользователя' },
-      { status: 500 } // HTTP 500 - Internal Server Error
+      { status: 500 }
     );
   }
 }
+
 
 
 // Получаем данные пользователя

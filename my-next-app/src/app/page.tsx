@@ -42,6 +42,7 @@ export default function Home() {
 
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
+  
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

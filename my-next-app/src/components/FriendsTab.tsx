@@ -1,57 +1,99 @@
+'use client';
 
+import { sun } from '@/images';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import useUserStore from "@/stores/useUserStore";
 
-'use client'
-
-import { sun } from '@/images'
-import Image from 'next/image'
+const INVITE_URL = 'https://example.com/invite'; // URL для реферальной ссылки
 
 const FriendsTab = () => {
-    return (
-        <div className={`friends-tab-con px-4 pb-24 transition-all duration-300`}>
-            {/* Header Text */}
-            <div className="pt-8 space-y-1">
-                <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
-                <div className="text-xl">
-                    <span className="font-semibold">SHARE</span>
-                    <span className="ml-2 text-gray-500">YOUR INVITATION</span>
-                </div>
-                <div className="text-xl">
-                    <span className="text-gray-500">LINK &</span>
-                    <span className="ml-2 font-semibold">GET 10%</span>
-                    <span className="ml-2 text-gray-500">OF</span>
-                </div>
-                <div className="text-gray-500 text-xl">
-                    FRIEND'S POINTS
-                </div>
-            </div>
+  const [referralCode, setReferralCode] = useState('');
+  const [referrals, setReferrals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useUserStore();  // Получаем пользователя из Zustand
 
-            {/* Empty State */}
-            <div className="mt-8 mb-2">
-                <div className="bg-[#151516] w-full rounded-2xl p-8 flex flex-col items-center">
-                    <Image
-                        src={sun}
-                        alt="Paws"
-                        width={171}
-                        height={132}
-                        className="mb-4"
-                    />
-                    <p className="text-xl text-[#8e8e93] text-center">
-                        There is nothing else.<br />
-                        Invite to get more rewards.
-                    </p>
-                </div>
-            </div>
+  useEffect(() => {
+    // Функция для получения данных о реферальном коде и рефералах
+    const fetchReferralData = async () => {
+      try {
+        const response = await fetch(`/api/referrals?telegramId=${user.TelegramId}`);// Укажите актуальный TelegramId
+        if (!response.ok) throw new Error('Failed to fetch referral data');
+        const data = await response.json();
+        setReferralCode(data.referralCode);
+        setReferrals(data.referrals || []);
+      } catch (error) {
+        console.error('Error fetching referral data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            {/* Fixed Invite Button */}
-            <div className="fixed bottom-[80px] left-0 right-0 py-4 flex justify-center">
-                <div className="w-full max-w-md px-4">
-                    <button className="w-full bg-[#4c9ce2] text-white py-4 rounded-xl text-lg font-medium">
-                        Invite
-                    </button>
-                </div>
-            </div>
+    fetchReferralData();
+  }, []);
+
+  // Функция для копирования ссылки
+  const handleCopyLink = () => {
+    const inviteLink = `${INVITE_URL}?startapp=${referralCode}`;
+    navigator.clipboard.writeText(inviteLink);
+    alert('Invite link copied to clipboard!');
+  };
+
+  if (loading) {
+    return <p className="text-center text-xl text-gray-500">Loading...</p>;
+  }
+
+  return (
+    <div className="friends-tab-con px-4 pb-24 transition-all duration-300">
+      {/* Header Text */}
+      <div className="pt-8 space-y-1">
+        <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
+        <div className="text-xl">
+          <span className="font-semibold">SHARE</span>
+          <span className="ml-2 text-gray-500">YOUR INVITATION</span>
         </div>
-    )
-}
+        <div className="text-xl">
+          <span className="text-gray-500">LINK &</span>
+          <span className="ml-2 font-semibold">GET 10%</span>
+          <span className="ml-2 text-gray-500">OF</span>
+        </div>
+        <div className="text-gray-500 text-xl">FRIEND'S POINTS</div>
+      </div>
 
-export default FriendsTab
+      {/* Referral Code and Referrals List */}
+      <div className="mt-8">
+        <div className="bg-[#151516] w-full rounded-2xl p-8">
+          <h2 className="text-xl font-bold text-white">Your Referral Code</h2>
+          <p className="text-lg text-gray-300 mt-2">{referralCode}</p>
+
+          <h2 className="text-xl font-bold text-white mt-6">Your Referrals</h2>
+          {referrals.length > 0 ? (
+            <ul className="mt-2 space-y-2">
+              {referrals.map((referral, index) => (
+                <li key={index} className="text-lg text-gray-300">
+                  {referral}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500 mt-2">No referrals yet.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Fixed Invite Button */}
+      <div className="fixed bottom-[80px] left-0 right-0 py-4 flex justify-center">
+        <div className="w-full max-w-md px-4">
+          <button
+            onClick={handleCopyLink}
+            className="w-full bg-[#4c9ce2] text-white py-4 rounded-xl text-lg font-medium"
+          >
+            Copy Invite Link
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FriendsTab;
