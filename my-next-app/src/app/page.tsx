@@ -16,9 +16,8 @@ declare global {
   }
 }
 
-// Define the interface for user data
 interface UserData {
-  TelegramId: string; // Заменяем id на telegramId
+  TelegramId: string;
   first_name: string;
   last_name?: string;
   username?: string;
@@ -38,7 +37,6 @@ export default function Home() {
   const [initData, setInitData] = useState('');
   const [startParam, setStartParam] = useState('');
 
-  // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
 
   useEffect(() => {
@@ -63,9 +61,8 @@ export default function Home() {
             is_premium?: boolean;
           };
 
-          // Преобразуем id в telegramId
           const user: UserData = {
-            TelegramId: String(rawUser.id), // Преобразование id в строку
+            TelegramId: String(rawUser.id),
             first_name: rawUser.first_name,
             last_name: rawUser.last_name,
             username: rawUser.username,
@@ -74,7 +71,6 @@ export default function Home() {
             ecobalance: 0,
           };
 
-          // Отправляем данные на сервер
           fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -84,16 +80,14 @@ export default function Home() {
             .then((data) => {
               if (data.error) {
                 setError(data.error);
-                alert('Ошибка: ' + data.error); // Добавили alert
+                alert('Ошибка: ' + data.error);
               } else {
-                // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                 fetchUserData(user.TelegramId);
                 fetchUserMining(user.TelegramId);
 
-                // Проверяем наличие реферального кода
                 const referralCode = getReferralCode();
                 if (referralCode) {
-                  alert('Реферальный код: ' + referralCode); // Добавили alert
+                  alert('Реферальный код: ' + referralCode);
                   addReferral(user.TelegramId, referralCode);
                 } else {
                   alert('Реферальный код не найден');
@@ -122,7 +116,7 @@ export default function Home() {
 
             if (userObject) {
               const userData: UserData = {
-                TelegramId: String(userObject.id || '12345'), // telegramId вместо id
+                TelegramId: String(userObject.id || '12345'),
                 first_name: userObject.first_name || 'Имя',
                 last_name: userObject.last_name || 'Фамилия',
                 username: userObject.username || 'username',
@@ -131,7 +125,6 @@ export default function Home() {
                 ecobalance: 0,
               };
 
-              // Отправляем данные на сервер
               fetch('/api/user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -141,15 +134,14 @@ export default function Home() {
                 .then((data) => {
                   if (data.error) {
                     setError(data.error);
-                    alert('Ошибка: ' + data.error); // Добавили alert
+                    alert('Ошибка: ' + data.error);
                   } else {
                     fetchUserData(userData.TelegramId);
                     fetchUserMining(userData.TelegramId);
 
-                    // Извлекаем реферальный код из URL
                     const referralCode = getReferralCode();
                     if (referralCode) {
-                      alert('Реферальный код: ' + referralCode); // Добавили alert
+                      alert('Реферальный код: ' + referralCode);
                       addReferral(userData.TelegramId, referralCode);
                     } else {
                       alert('Реферальный код не найден');
@@ -173,7 +165,7 @@ export default function Home() {
           }
         } else {
           const UserData: UserData = {
-            TelegramId: '12345', // Тестовые данные с telegramId
+            TelegramId: '12345',
             first_name: 'Test User',
             last_name: 'Testov',
             username: 'testuser',
@@ -191,15 +183,14 @@ export default function Home() {
             .then((data) => {
               if (data.error) {
                 setError(data.error);
-                alert('Ошибка: ' + data.error); // Добавили alert
+                alert('Ошибка: ' + data.error);
               } else {
                 fetchUserData(UserData.TelegramId);
                 fetchUserMining(UserData.TelegramId);
 
-                // Извлекаем реферальный код из URL
                 const referralCode = getReferralCode();
                 if (referralCode) {
-                  alert('Реферальный код: ' + referralCode); // Добавили alert
+                  alert('Реферальный код: ' + referralCode);
                   addReferral(UserData.TelegramId, referralCode);
                 } else {
                   alert('Реферальный код не найден');
@@ -219,7 +210,6 @@ export default function Home() {
     }
   }, [setUserInStore]);
 
-  // Функция для получения данных пользователя с сервера
   const fetchUserData = async (TelegramId: string) => {
     try {
       const response = await fetch(`/api/user?TelegramId=${TelegramId}`, {
@@ -230,9 +220,9 @@ export default function Home() {
       const data = await response.json();
       if (data.error) {
         setError(data.error);
-        alert('Ошибка: ' + data.error); // Добавили alert
+        alert('Ошибка: ' + data.error);
       } else {
-        setUser(data);  // Здесь данные включают пользователя и коллекцию
+        setUser(data);
         localStorage.setItem('userData', JSON.stringify(data));
         setUserInStore(data);
       }
@@ -244,21 +234,22 @@ export default function Home() {
   };
 
   const getReferralCode = () => {
-    // Попробуем извлечь реферальный код из search
+    // Логируем URL с которого извлекаем параметры
+    console.log('Current URL:', window.location.href);
+
     const urlParams = new URLSearchParams(window.location.search);
     let referralCode = urlParams.get('startapp');
-  
-    // Если search пустой, попробуем извлечь из hash
+    console.log('Referral code from search:', referralCode);
+
     if (!referralCode) {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       referralCode = hashParams.get('startapp');
+      console.log('Referral code from hash:', referralCode);
     }
-  
-    console.log('Extracted referralCode:', referralCode);
+
     return referralCode;
   };
-  
-  // Функция для получения данных пользователя с сервера
+
   const fetchUserMining = async (TelegramId: string) => {
     try {
       const response = await fetch(`/api/userMining?TelegramId=${TelegramId}`, {
@@ -269,13 +260,12 @@ export default function Home() {
       const data = await response.json();
       if (data.error) {
         setError(data.error);
-        alert('Ошибка: ' + data.error); // Добавили alert
+        alert('Ошибка: ' + data.error);
       } else {
-        setUserMining(data);  
+        setUserMining(data);
         localStorage.setItem('userMining', JSON.stringify(data));
-        // Преобразуем строку lastClaim в Date и сохраняем в состоянии
         const lastClaimDate = new Date(data.lastClaim);
-        setLastClaim(lastClaimDate); // Устанавливаем состояние lastClaim
+        setLastClaim(lastClaimDate);
       }
     } catch (err) {
       console.error('Failed to fetch user data:', err);
@@ -284,7 +274,6 @@ export default function Home() {
     }
   };
 
-  // Функция для добавления реферала
   const addReferral = (TelegramId: string, referralCode: string) => {
     fetch('/api/referrals', {
       method: 'POST',
@@ -315,11 +304,18 @@ export default function Home() {
     <TabProvider>
       <main className="min-h-screen bg-black text-white">
         <CheckFootprint />
-        <TabContainer />
+        
+        <TabContainer /><div>
+          <p>Текущий URL: {window.location.href}</p>
+          <p>Реферальный код: {getReferralCode()}</p>
+        </div>
         <NavigationBar />
+        {/* Выводим URL и реферальный код */}
+        <div>
+          <p>Текущий URL: {window.location.href}</p>
+          <p>Реферальный код: {getReferralCode()}</p>
+        </div>
       </main>
     </TabProvider>
   );
 }
-
-
