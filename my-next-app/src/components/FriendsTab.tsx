@@ -10,6 +10,7 @@ const INVITE_URL = 'https://t.me/smchangebot/tabtest'; // URL для рефер�
 const FriendsTab = () => {
   const [referralCode, setReferralCode] = useState<string>(''); // Указали тип для referralCode
   const [referrals, setReferrals] = useState<string[]>([]); // Указали тип для referrals
+  const [myRefCode, setMyRefCode] = useState<string>(''); // Указали тип для referrals
   const [loading, setLoading] = useState<boolean>(true); // Указали тип для loading
   const { user } = useUserStore();  // Получаем пользователя из Zustand
   const startParam = useUserStore((state) => state.startParam); // Получаем startParam
@@ -47,6 +48,7 @@ const FriendsTab = () => {
         if (!response.ok) throw new Error('Failed to fetch referral data');
         const data = await response.json();
         setReferrals(data.referrals || []);
+        setMyRefCode(data.referralCode || '');
       } catch (error) {
         console.error('Error fetching referral data:', error);
       } finally {
@@ -59,7 +61,7 @@ const FriendsTab = () => {
 
   // Функция для копирования ссылки
   const handleCopyLink = () => {
-    const inviteLink = `${INVITE_URL}?startapp=${referralCode}`;
+    const inviteLink = `${INVITE_URL}?startapp=${myRefCode}`;
     navigator.clipboard.writeText(inviteLink);
     alert('Invite link copied to clipboard!');
   };
@@ -89,7 +91,7 @@ const FriendsTab = () => {
       <div className="mt-8">
         <div className="bg-[#151516] w-full rounded-2xl p-8">
           <h2 className="text-xl font-bold text-white">Your Referral Code</h2>
-          <p className="text-lg text-gray-300 mt-2">{referralCode}</p>
+          <p className="text-lg text-gray-300 mt-2">{myRefCode}</p>
           <p>Start Param: {startParam}</p>
           <h2 className="text-xl font-bold text-white mt-6">Your Referrals</h2>
           {referrals.length > 0 ? (
