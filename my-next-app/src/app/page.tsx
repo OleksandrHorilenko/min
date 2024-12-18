@@ -46,20 +46,25 @@ export default function Home() {
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
    
-
   useEffect(() => {
     const initWebApp = async () => {
       if (typeof window !== 'undefined') {
         const WebApp = (await import('@twa-dev/sdk')).default;
-        WebApp.ready();
-        setInitData(WebApp.initData);
-        setUserId(WebApp.initDataUnsafe.user?.id.toString() || '');
-        setStartParam(WebApp.initDataUnsafe.start_param || '');
+        WebApp.ready(); // Подготовка SDK
+
+        setInitData(WebApp.initData); // Инициализация данных
+        setUserId(WebApp.initDataUnsafe.user?.id.toString() || ''); // Получаем ID пользователя
+
+        // Извлекаем start_param, который может содержать реферальный код
+        const referralCode = WebApp.initDataUnsafe.start_param || '';
+        setStartParam(referralCode); // Сохраняем реферальный код
+        console.log('Referral Code:', referralCode); // Для отладки
       }
     };
 
     initWebApp();
-  }, [])
+  }, []);
+
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
