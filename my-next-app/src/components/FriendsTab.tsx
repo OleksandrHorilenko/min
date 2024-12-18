@@ -5,6 +5,13 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import useUserStore from "@/stores/useUserStore";
 
+interface FriendsTabProps {
+    initData: string
+    userId: string
+    startParam: string
+  }
+
+
 const INVITE_URL = ' https://t.me/smchangebot/tabtest'; // URL для реферальной ссылки
 
 const FriendsTab = () => {

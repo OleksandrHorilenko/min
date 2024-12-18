@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
 //import WebApp from '@twa-dev/sdk';
 import useUserStore from '../stores/useUserStore'; // Импортируем zustand хранилище
+import FriendsTab from '@/components/FriendsTab'
 
 declare global {
   interface Window {
@@ -38,12 +39,27 @@ export default function Home() {
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
   const [initData, setInitData] = useState('')
   const [startParam, setStartParam] = useState('')
+  const [userId, setUserId] = useState('')
   
   //const telegram = window.Telegram.WebApp;
 
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
-  
+   
+
+  useEffect(() => {
+    const initWebApp = async () => {
+      if (typeof window !== 'undefined') {
+        const WebApp = (await import('@twa-dev/sdk')).default;
+        WebApp.ready();
+        setInitData(WebApp.initData);
+        setUserId(WebApp.initDataUnsafe.user?.id.toString() || '');
+        setStartParam(WebApp.initDataUnsafe.start_param || '');
+      }
+    };
+
+    initWebApp();
+  }, [])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -53,14 +69,14 @@ export default function Home() {
   
         const initData = tg.initData || '';
         const initDataUnsafe = tg.initDataUnsafe || {};
-        const startParam = initDataUnsafe.start_param;
+        //const startParam = initDataUnsafe.start_param;
   
         console.log('Telegram initData:', initData);
         console.log('Telegram initDataUnsafe:', initDataUnsafe);
   
         // Проверяем наличие start_param
         if (initDataUnsafe.start_param) {
-          setStartParam(initDataUnsafe.start_param);
+         // setStartParam(initDataUnsafe.start_param);
           console.log('Referral code (start_param):', initDataUnsafe.start_param);
         }
   
@@ -114,7 +130,7 @@ export default function Home() {
         const referralCode = searchParams.get('startapp'); // Проверяем реферальный код
   
         if (referralCode) {
-          setStartParam(referralCode);
+          //setStartParam(referralCode);
           console.log('Referral code from URL:', referralCode);
         }
   
@@ -163,7 +179,7 @@ export default function Home() {
           }
         } else {
           // Тестовые данные
-          const testReferralCode = searchParams.get('start_param') || 'TEST_CODE';
+          const testReferralCode = searchParams.get('startapp') || 'TEST_CODE';
           setStartParam(testReferralCode);
   
           const UserData: UserData = {
