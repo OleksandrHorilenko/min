@@ -65,13 +65,14 @@ export async function POST(request: NextRequest) {
 
 
 // GET-запрос: получить рефералов пользователя по его TelegramId
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   await connect(); // Подключаемся к базе данных
 
   // Получаем TelegramId из query-параметра
-  const telegramId = request.nextUrl.searchParams.get('TelegramId');
+  const searchParams = req.nextUrl.searchParams;
+  const TelegramId = searchParams.get('TelegramId'); // Извлекаем TelegramId
 
-  if (!telegramId) {
+  if (!TelegramId) {
     return NextResponse.json(
       { error: 'TelegramId является обязательным параметром' },
       { status: 400 } // HTTP 400 - Bad Request
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Ищем запись в коллекции referals по TelegramId
-    const referalData = await Referal.findOne({ TelegramId: telegramId });
+    const referalData = await Referal.findOne({ TelegramId: TelegramId });
 
     if (!referalData) {
       return NextResponse.json(
