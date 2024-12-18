@@ -90,11 +90,10 @@ export default function Home() {
                 fetchUserMining(user.TelegramId);
 
                 // Проверяем наличие реферального кода
-                const urlParams = new URLSearchParams(window.location.search);
-                const referralCode = urlParams.get('startapp');
-                if (referralCode) {
-                  addReferral(user.TelegramId, referralCode);  // Добавляем реферала
-                }
+                const referralCode = getReferralCode();
+if (referralCode) {
+  addReferral(user.TelegramId, referralCode);
+}
               }
             })
             .catch((err) => {
@@ -142,11 +141,10 @@ export default function Home() {
                     fetchUserMining(userData.TelegramId);
 
                     // Извлекаем реферальный код из URL
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const referralCode = urlParams.get('startapp');
-                    if (referralCode) {
-                      addReferral(userData.TelegramId, referralCode);  // Добавляем реферала
-                    }
+                    const referralCode = getReferralCode();
+if (referralCode) {
+  addReferral(user.TelegramId, referralCode);
+}
                   }
                 })
                 .catch((err) => {
@@ -186,11 +184,10 @@ export default function Home() {
                 fetchUserMining(UserData.TelegramId);
 
                 // Извлекаем реферальный код из URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const referralCode = urlParams.get('startapp');
-                if (referralCode) {
-                  addReferral(UserData.TelegramId, referralCode);  // Добавляем реферала
-                }
+                const referralCode = getReferralCode();
+if (referralCode) {
+  addReferral(user.TelegramId, referralCode);
+}
               }
             })
             .catch((err) => {
@@ -224,6 +221,22 @@ export default function Home() {
       console.error('Failed to fetch user data:', err);
       setError('Failed to fetch user data');
     }
+  };
+
+
+  const getReferralCode = () => {
+    // Попробуем извлечь реферальный код из search
+    const urlParams = new URLSearchParams(window.location.search);
+    let referralCode = urlParams.get('startapp');
+  
+    // Если search пустой, попробуем извлечь из hash
+    if (!referralCode) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      referralCode = hashParams.get('startapp');
+    }
+  
+    console.log('Extracted referralCode:', referralCode);
+    return referralCode;
   };
   
   // Функция для получения данных пользователя с сервера
