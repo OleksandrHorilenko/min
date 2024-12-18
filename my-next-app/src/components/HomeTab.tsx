@@ -77,7 +77,7 @@ const HomeTab = () => {
           </button>
           
         </div><div className="p-4"><div>
-          <p>Текущий URL: {window.location.href}</p>
+          <p>Текущий URL: </p>
           <p>Реферальный код: {getReferralCode()}</p>
         </div>
       <InfoBlock 
