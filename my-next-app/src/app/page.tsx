@@ -6,6 +6,7 @@ import TabContainer from '@/components/TabContainer';
 import { TabProvider } from '@/contexts/TabContext';
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
+//import WebApp from '@twa-dev/sdk';
 import useUserStore from '../stores/useUserStore'; // Импортируем zustand хранилище
 
 declare global {
@@ -35,29 +36,34 @@ export default function Home() {
   const [loader, setLoader] = useState(false);
   const [userMining, setUserMining] = useState<any>(null);
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
-  const [initData, setInitData] = useState('');
-  const [startParam, setStartParam] = useState('');
+  const [initData, setInitData] = useState('')
+  const [startParam, setStartParam] = useState('')
+  
+  //const telegram = window.Telegram.WebApp;
 
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
+  
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         tg.ready(); // Готовим WebApp
-
+  
+        const initData = tg.initData || '';
         const initDataUnsafe = tg.initDataUnsafe || {};
-        const startParamFromWebApp = initDataUnsafe.start_param;
-
+        const startParam = initDataUnsafe.start_param;
+  
+        console.log('Telegram initData:', initData);
         console.log('Telegram initDataUnsafe:', initDataUnsafe);
-
-        // Проверяем наличие start_param в WebApp
-        if (startParamFromWebApp) {
-          setStartParam(startParamFromWebApp);
-          console.log('Referral code (start_param) from WebApp:', startParamFromWebApp);
+  
+        // Проверяем наличие start_param
+        if (initDataUnsafe.start_param) {
+          setStartParam(initDataUnsafe.start_param);
+          console.log('Referral code (start_param):', initDataUnsafe.start_param);
         }
-
+  
         if (initDataUnsafe.user) {
           const rawUser = initDataUnsafe.user as unknown as {
             id: number;
@@ -67,7 +73,7 @@ export default function Home() {
             language_code: string;
             is_premium?: boolean;
           };
-
+  
           // Преобразуем id в telegramId
           const user: UserData = {
             TelegramId: String(rawUser.id), // Преобразование id в строку
@@ -78,7 +84,7 @@ export default function Home() {
             is_premium: rawUser.is_premium,
             ecobalance: 0,
           };
-
+  
           fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -102,26 +108,22 @@ export default function Home() {
           console.error('No user data available from Telegram:', initDataUnsafe);
         }
       } else {
-        // Если WebApp не доступен, извлекаем параметры из URL
+        // Обработка URL параметров, если не доступен WebApp
         const searchParams = new URLSearchParams(window.location.search);
-        const referralCodeFromURL = searchParams.get('startapp'); // Параметр startapp для реферального кода
-
-        if (referralCodeFromURL) {
-          setStartParam(referralCodeFromURL);
-          console.log('Referral code from URL:', referralCodeFromURL);
-        } else {
-          // Если реферальный код не найден, можно установить дефолтное значение
-          setStartParam('DEFAULT_CODE');
-          console.log('No referral code in URL, using default code');
-        }
-
         const tgWebAppData = searchParams.get('tgWebAppData');
+        const referralCode = searchParams.get('startapp'); // Проверяем реферальный код
+  
+        if (referralCode) {
+          setStartParam(referralCode);
+          console.log('Referral code from URL:', referralCode);
+        }
+  
         if (tgWebAppData) {
           try {
             const userParam = new URLSearchParams(tgWebAppData).get('user');
             const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
             const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
-
+  
             if (userObject) {
               const userData: UserData = {
                 TelegramId: String(userObject.id || '12345'),
@@ -132,7 +134,7 @@ export default function Home() {
                 is_premium: userObject.is_premium || false,
                 ecobalance: 0,
               };
-
+  
               fetch('/api/user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -160,11 +162,47 @@ export default function Home() {
             setError('Error parsing tgWebAppData');
           }
         } else {
+          // Тестовые данные
+          const testReferralCode = searchParams.get('start_param') || 'TEST_CODE';
+          setStartParam(testReferralCode);
+  
+          const UserData: UserData = {
+            TelegramId: '12345', // Тестовые данные
+            first_name: 'Test User',
+            last_name: 'Testov',
+            username: 'testuser',
+            language_code: 'en',
+            is_premium: true,
+            ecobalance: 0,
+          };
+  
+          console.log('Test referral code:', testReferralCode);
+  
+          fetch('/api/user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(UserData),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.error) {
+                setError(data.error);
+              } else {
+                fetchUserData(UserData.TelegramId);
+                fetchUserMining(UserData.TelegramId);
+              }
+            })
+            .catch((err) => {
+              console.error('Failed to send test user data:', err);
+              setError('Failed to send test user data');
+            });
+  
           setError('This app should be opened in Telegram');
         }
       }
     }
   }, [setUserInStore]);
+  
 
   // Функция для получения данных пользователя с сервера
   const fetchUserData = async (TelegramId: string) => {
@@ -187,7 +225,7 @@ export default function Home() {
       setError('Failed to fetch user data');
     }
   };
-
+  
   // Функция для получения данных пользователя с сервера
   const fetchUserMining = async (TelegramId: string) => {
     try {
@@ -203,14 +241,20 @@ export default function Home() {
         setUserMining(data);  
         localStorage.setItem('userMining', JSON.stringify(data));
         // Преобразуем строку lastClaim в Date и сохраняем в состоянии
-        const lastClaimDate = new Date(data.lastClaim);
-        setLastClaim(lastClaimDate); // Устанавливаем состояние lastClaim
+      const lastClaimDate = new Date(data.lastClaim);
+      setLastClaim(lastClaimDate); // Устанавливаем состояние lastClaim
+        
       }
     } catch (err) {
       console.error('Failed to fetch user data:', err);
       setError('Failed to fetch user data');
     }
   };
+
+
+  
+
+  
 
   return (
     <TabProvider>
