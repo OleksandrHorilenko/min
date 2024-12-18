@@ -109,7 +109,7 @@ export default function Home() {
         // Обработка URL параметров, если не доступен WebApp
         const searchParams = new URLSearchParams(window.location.search);
         const tgWebAppData = searchParams.get('tgWebAppData');
-        const referralCode = searchParams.get('start_param'); // Проверяем реферальный код
+        const referralCode = searchParams.get('startapp'); // Проверяем реферальный код
   
         if (referralCode) {
           setStartParam(referralCode);
