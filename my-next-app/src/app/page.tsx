@@ -84,6 +84,7 @@ export default function Home() {
             .then((data) => {
               if (data.error) {
                 setError(data.error);
+                alert('Ошибка: ' + data.error); // Добавили alert
               } else {
                 // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                 fetchUserData(user.TelegramId);
@@ -91,17 +92,22 @@ export default function Home() {
 
                 // Проверяем наличие реферального кода
                 const referralCode = getReferralCode();
-if (referralCode) {
-  addReferral(user.TelegramId, referralCode);
-}
+                if (referralCode) {
+                  alert('Реферальный код: ' + referralCode); // Добавили alert
+                  addReferral(user.TelegramId, referralCode);
+                } else {
+                  alert('Реферальный код не найден');
+                }
               }
             })
             .catch((err) => {
               console.error('Failed to send user data:', err);
               setError('Failed to send user data');
+              alert('Не удалось отправить данные пользователя');
             });
         } else {
           setError('No user data available from Telegram');
+          alert('Нет данных о пользователе');
           console.error('No user data available from Telegram:', initDataUnsafe);
         }
       } else {
@@ -135,29 +141,35 @@ if (referralCode) {
                 .then((data) => {
                   if (data.error) {
                     setError(data.error);
+                    alert('Ошибка: ' + data.error); // Добавили alert
                   } else {
-                    // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                     fetchUserData(userData.TelegramId);
                     fetchUserMining(userData.TelegramId);
 
                     // Извлекаем реферальный код из URL
                     const referralCode = getReferralCode();
-if (referralCode) {
-  addReferral(user.TelegramId, referralCode);
-}
+                    if (referralCode) {
+                      alert('Реферальный код: ' + referralCode); // Добавили alert
+                      addReferral(userData.TelegramId, referralCode);
+                    } else {
+                      alert('Реферальный код не найден');
+                    }
                   }
                 })
                 .catch((err) => {
                   console.error('Failed to send user data:', err);
                   setError('Failed to send user data');
+                  alert('Не удалось отправить данные пользователя');
                 });
             } else {
               console.error('Failed to parse user data from URL.');
               setError('Invalid user data in URL');
+              alert('Ошибка в данных пользователя');
             }
           } catch (err) {
             console.error('Error parsing tgWebAppData:', err);
             setError('Error parsing tgWebAppData');
+            alert('Ошибка парсинга данных');
           }
         } else {
           const UserData: UserData = {
@@ -179,23 +191,29 @@ if (referralCode) {
             .then((data) => {
               if (data.error) {
                 setError(data.error);
+                alert('Ошибка: ' + data.error); // Добавили alert
               } else {
                 fetchUserData(UserData.TelegramId);
                 fetchUserMining(UserData.TelegramId);
 
                 // Извлекаем реферальный код из URL
                 const referralCode = getReferralCode();
-if (referralCode) {
-  addReferral(user.TelegramId, referralCode);
-}
+                if (referralCode) {
+                  alert('Реферальный код: ' + referralCode); // Добавили alert
+                  addReferral(UserData.TelegramId, referralCode);
+                } else {
+                  alert('Реферальный код не найден');
+                }
               }
             })
             .catch((err) => {
               console.error('Failed to send test user data:', err);
               setError('Failed to send test user data');
+              alert('Не удалось отправить тестовые данные пользователя');
             });
 
           setError('This app should be opened in Telegram');
+          alert('Приложение должно быть открыто в Telegram');
         }
       }
     }
@@ -212,6 +230,7 @@ if (referralCode) {
       const data = await response.json();
       if (data.error) {
         setError(data.error);
+        alert('Ошибка: ' + data.error); // Добавили alert
       } else {
         setUser(data);  // Здесь данные включают пользователя и коллекцию
         localStorage.setItem('userData', JSON.stringify(data));
@@ -220,9 +239,9 @@ if (referralCode) {
     } catch (err) {
       console.error('Failed to fetch user data:', err);
       setError('Failed to fetch user data');
+      alert('Не удалось получить данные пользователя');
     }
   };
-
 
   const getReferralCode = () => {
     // Попробуем извлечь реферальный код из search
@@ -250,6 +269,7 @@ if (referralCode) {
       const data = await response.json();
       if (data.error) {
         setError(data.error);
+        alert('Ошибка: ' + data.error); // Добавили alert
       } else {
         setUserMining(data);  
         localStorage.setItem('userMining', JSON.stringify(data));
@@ -260,6 +280,7 @@ if (referralCode) {
     } catch (err) {
       console.error('Failed to fetch user data:', err);
       setError('Failed to fetch user data');
+      alert('Не удалось получить данные майнинга');
     }
   };
 
@@ -277,13 +298,16 @@ if (referralCode) {
       .then((data) => {
         if (data.error) {
           setError(data.error);
+          alert('Ошибка при добавлении реферала: ' + data.error);
         } else {
           setNotification('Referral added successfully!');
+          alert('Реферал добавлен успешно!');
         }
       })
       .catch((err) => {
         console.error('Failed to add referral:', err);
         setError('Failed to add referral');
+        alert('Не удалось добавить реферал');
       });
   };
 
