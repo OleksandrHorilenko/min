@@ -21,6 +21,23 @@ const HomeTab = () => {
   const [currentTab, setCurrentTab] = useState('leaderboard');
   const { activeTab, setActiveTab } = useTab()
 
+  const getReferralCode = () => {
+    // Логируем URL с которого извлекаем параметры
+    console.log('Current URL:', window.location.href);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let referralCode = urlParams.get('startapp');
+    console.log('Referral code from search:', referralCode);
+
+    if (!referralCode) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      referralCode = hashParams.get('startapp');
+      console.log('Referral code from hash:', referralCode);
+    }
+
+    return referralCode;
+  };
+
   return (
     <div className={`home-tab-con transition-all duration-300`}>
       <div className="flex flex-col items-center mt-12">
@@ -59,7 +76,10 @@ const HomeTab = () => {
             <ArrowRight className="w-6 h-6 text-gray-400" />
           </button>
           
-        </div><div className="p-4">
+        </div><div className="p-4"><div>
+          <p>Текущий URL: {window.location.href}</p>
+          <p>Реферальный код: {getReferralCode()}</p>
+        </div>
       <InfoBlock 
         
         //activeBoosters={0} 

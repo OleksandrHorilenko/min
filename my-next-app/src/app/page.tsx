@@ -305,16 +305,10 @@ export default function Home() {
       <main className="min-h-screen bg-black text-white">
         <CheckFootprint />
         
-        <TabContainer /><div>
-          <p>Текущий URL: {window.location.href}</p>
-          <p>Реферальный код: {getReferralCode()}</p>
-        </div>
+        <TabContainer />
         <NavigationBar />
         {/* Выводим URL и реферальный код */}
-        <div>
-          <p>Текущий URL: {window.location.href}</p>
-          <p>Реферальный код: {getReferralCode()}</p>
-        </div>
+        
       </main>
     </TabProvider>
   );
