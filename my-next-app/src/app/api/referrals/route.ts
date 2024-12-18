@@ -4,8 +4,10 @@ import Referal from '../models/Referal';
 
 // Генерация уникального реферального кода
 function generateReferralCode() {
-  return `ref-${Math.random().toString(36).substr(2, 9)}`;
+  return `ref-${Math.random().toString(36).slice(2, 11)}`;
 }
+
+
 
 // POST-запрос: новый пользователь приходит по реферальной ссылке
 export async function POST(request: NextRequest) {
@@ -21,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Проверяем, существует ли уже запись для данного TelegramId
     let user = await Referal.findOne({ TelegramId: telegramId });
     if (user) {
-      return NextResponse.json({ message: 'User already exists' });
+      return NextResponse.json({ message: 'User already exists' }, { status: 400 });
     }
 
     // Генерируем новый реферальный код для нового пользователя
@@ -58,12 +60,16 @@ export async function POST(request: NextRequest) {
   }
 }
 
+
+
+
+
 // GET-запрос: получить рефералов пользователя по его TelegramId
 export async function GET(request: NextRequest) {
   await connect(); // Подключаемся к базе данных
 
   // Получаем TelegramId из query-параметра
-  const telegramId = request.nextUrl.searchParams.get('telegramId');
+  const telegramId = request.nextUrl.searchParams.get('TelegramId');
 
   if (!telegramId) {
     return NextResponse.json(

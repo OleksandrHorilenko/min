@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import useUserStore from "@/stores/useUserStore";
 
-const INVITE_URL = 'https://example.com/invite'; // URL для реферальной ссылки
+const INVITE_URL = ' https://t.me/smchangebot/tabtest'; // URL для реферальной ссылки
 
 const FriendsTab = () => {
   const [referralCode, setReferralCode] = useState('');
@@ -16,8 +16,17 @@ const FriendsTab = () => {
   useEffect(() => {
     // Функция для получения данных о реферальном коде и рефералах
     const fetchReferralData = async () => {
+      if (!user?.TelegramId) {
+        console.error('TelegramId is missing');
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/referrals?telegramId=${user.TelegramId}`);// Укажите актуальный TelegramId
+        const response = await fetch(`/api/referrals?TelegramId=${user.TelegramId}`, {
+          method: "GET", // Указываем метод GET
+          headers: { "Content-Type": "application/json" }, // Указываем заголовки
+        });
+
         if (!response.ok) throw new Error('Failed to fetch referral data');
         const data = await response.json();
         setReferralCode(data.referralCode);
@@ -30,7 +39,7 @@ const FriendsTab = () => {
     };
 
     fetchReferralData();
-  }, []);
+  }, [user]);
 
   // Функция для копирования ссылки
   const handleCopyLink = () => {
@@ -97,3 +106,4 @@ const FriendsTab = () => {
 };
 
 export default FriendsTab;
+

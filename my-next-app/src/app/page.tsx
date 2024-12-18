@@ -24,7 +24,7 @@ interface UserData {
   username?: string;
   language_code: string;
   is_premium?: boolean;
-  ecobalance: Number;
+  ecobalance: number;
 }
 
 export default function Home() {
@@ -35,14 +35,11 @@ export default function Home() {
   const [loader, setLoader] = useState(false);
   const [userMining, setUserMining] = useState<any>(null);
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
-  const [initData, setInitData] = useState('')
-  const [startParam, setStartParam] = useState('')
-  
-
+  const [initData, setInitData] = useState('');
+  const [startParam, setStartParam] = useState('');
 
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
-  
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -77,9 +74,6 @@ export default function Home() {
             ecobalance: 0,
           };
 
-          //setUserData(user);
-         // localStorage.setItem('userData', JSON.stringify(user));
-
           // Отправляем данные на сервер
           fetch('/api/user', {
             method: 'POST',
@@ -92,13 +86,20 @@ export default function Home() {
                 setError(data.error);
               } else {
                 // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
-               fetchUserData(user.TelegramId);  // Получаем данные о пользователе и коллекции
-               fetchUserMining(user.TelegramId);
+                fetchUserData(user.TelegramId);
+                fetchUserMining(user.TelegramId);
+
+                // Проверяем наличие реферального кода
+                const urlParams = new URLSearchParams(window.location.search);
+                const referralCode = urlParams.get('startapp');
+                if (referralCode) {
+                  addReferral(user.TelegramId, referralCode);  // Добавляем реферала
+                }
               }
             })
             .catch((err) => {
-              console.error('Failed to fetch user data:', err);
-              setError('Failed to fetch user data');
+              console.error('Failed to send user data:', err);
+              setError('Failed to send user data');
             });
         } else {
           setError('No user data available from Telegram');
@@ -124,8 +125,6 @@ export default function Home() {
                 is_premium: userObject.is_premium || false,
                 ecobalance: 0,
               };
-              //setUserData(userData);
-              //localStorage.setItem('userData', JSON.stringify(userData));
 
               // Отправляем данные на сервер
               fetch('/api/user', {
@@ -141,13 +140,19 @@ export default function Home() {
                     // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                     fetchUserData(userData.TelegramId);
                     fetchUserMining(userData.TelegramId);
+
+                    // Извлекаем реферальный код из URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const referralCode = urlParams.get('startapp');
+                    if (referralCode) {
+                      addReferral(userData.TelegramId, referralCode);  // Добавляем реферала
+                    }
                   }
                 })
                 .catch((err) => {
                   console.error('Failed to send user data:', err);
                   setError('Failed to send user data');
                 });
-                  
             } else {
               console.error('Failed to parse user data from URL.');
               setError('Invalid user data in URL');
@@ -166,8 +171,6 @@ export default function Home() {
             is_premium: true,
             ecobalance: 0
           };
-         // setUserData(testUserData);
-          //localStorage.setItem('userData', JSON.stringify(testUserData));
 
           fetch('/api/user', {
             method: 'POST',
@@ -179,16 +182,22 @@ export default function Home() {
               if (data.error) {
                 setError(data.error);
               } else {
-                // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                 fetchUserData(UserData.TelegramId);
                 fetchUserMining(UserData.TelegramId);
+
+                // Извлекаем реферальный код из URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const referralCode = urlParams.get('startapp');
+                if (referralCode) {
+                  addReferral(UserData.TelegramId, referralCode);  // Добавляем реферала
+                }
               }
             })
             .catch((err) => {
               console.error('Failed to send test user data:', err);
               setError('Failed to send test user data');
             });
-            
+
           setError('This app should be opened in Telegram');
         }
       }
@@ -232,9 +241,8 @@ export default function Home() {
         setUserMining(data);  
         localStorage.setItem('userMining', JSON.stringify(data));
         // Преобразуем строку lastClaim в Date и сохраняем в состоянии
-      const lastClaimDate = new Date(data.lastClaim);
-      setLastClaim(lastClaimDate); // Устанавливаем состояние lastClaim
-        
+        const lastClaimDate = new Date(data.lastClaim);
+        setLastClaim(lastClaimDate); // Устанавливаем состояние lastClaim
       }
     } catch (err) {
       console.error('Failed to fetch user data:', err);
@@ -242,10 +250,29 @@ export default function Home() {
     }
   };
 
-
-  
-
-  
+  // Функция для добавления реферала
+  const addReferral = (TelegramId: string, referralCode: string) => {
+    fetch('/api/addReferral', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        TelegramId,
+        referralCode,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setNotification('Referral added successfully!');
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to add referral:', err);
+        setError('Failed to add referral');
+      });
+  };
 
   return (
     <TabProvider>
@@ -257,4 +284,5 @@ export default function Home() {
     </TabProvider>
   );
 }
+
 
