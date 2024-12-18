@@ -85,10 +85,10 @@ export default function Home() {
         console.log('Telegram initDataUnsafe:', initDataUnsafe);
   
         // Проверяем наличие start_param
-        if (initDataUnsafe.start_param) {
+        //if (initDataUnsafe.user) {
          // setStartParam(initDataUnsafe.start_param);
-          console.log('Referral code (start_param):', initDataUnsafe.start_param);
-        }
+        //  console.log('Referral code (start_param):', initDataUnsafe.start_param);
+       // }
   
         if (initDataUnsafe.user) {
           const rawUser = initDataUnsafe.user as unknown as {
@@ -137,12 +137,12 @@ export default function Home() {
         // Обработка URL параметров, если не доступен WebApp
         const searchParams = new URLSearchParams(window.location.search);
         const tgWebAppData = searchParams.get('tgWebAppData');
-        const referralCode = searchParams.get('startapp'); // Проверяем реферальный код
+        //const referralCode = searchParams.get('startapp'); // Проверяем реферальный код
   
-        if (referralCode) {
+        //if (referralCode) {
           //setStartParam(referralCode);
-          console.log('Referral code from URL:', referralCode);
-        }
+       //   console.log('Referral code from URL:', referralCode);
+      //  }
   
         if (tgWebAppData) {
           try {
