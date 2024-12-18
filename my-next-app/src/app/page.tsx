@@ -230,33 +230,33 @@ export default function Home() {
   }, [setUserInStore]);
 
 
-  useEffect(() => {
-    const referralCodeFromStart = startParam || ''; // Получаем реферальный код из zustand
+ // useEffect(() => {
+ //   const referralCodeFromStart = startParam || ''; // Получаем реферальный код из zustand
   
-    if (referralCodeFromStart && user?.TelegramId) {  // Проверка на наличие user и TelegramId
-      fetch('/api/referrals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          TelegramId: user.TelegramId,  // TelegramId нового пользователя
-          referralCode: referralCodeFromStart,  // Реферальный код пользователя, который пригласил
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            console.log('Referral added successfully!');
-          } else {
-            console.error('Failed to add referral:', data.error);
-          }
-        })
-        .catch((error) => {
-          console.error('Error adding referral:', error);
-        });
-    } else {
-      console.error('user or TelegramId is null or undefined');
-    }
-  }, [startParam, user?.TelegramId]);
+//    if (referralCodeFromStart && user?.TelegramId) {  // Проверка на наличие user и TelegramId
+ //     fetch('/api/referrals', {
+ //       method: 'POST',
+  //      headers: { 'Content-Type': 'application/json' },
+  //      body: JSON.stringify({
+  //        TelegramId: user.TelegramId,  // TelegramId нового пользователя
+  //        referralCode: referralCodeFromStart,  // Реферальный код пользователя, который пригласил
+  //      }),
+   //   })
+  //      .then((res) => res.json())
+   //     .then((data) => {
+   //       if (data.success) {
+   //         console.log('Referral added successfully!');
+  //        } else {
+  //          console.error('Failed to add referral:', data.error);
+  //        }
+  //      })
+  //      .catch((error) => {
+   //       console.error('Error adding referral:', error);
+  //      });
+  //  } else {
+ //     console.error('user or TelegramId is null or undefined');
+//    }
+//  }, [startParam, user?.TelegramId]);
   
 
   // Функция для получения данных пользователя с сервера
