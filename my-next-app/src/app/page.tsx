@@ -233,8 +233,7 @@ export default function Home() {
   useEffect(() => {
     const referralCodeFromStart = startParam || ''; // Получаем реферальный код из zustand
   
-    if (referralCodeFromStart) {
-      // Отправляем запрос на сервер для добавления нового пользователя в рефералы
+    if (referralCodeFromStart && user?.TelegramId) {  // Проверка на наличие user и TelegramId
       fetch('/api/referrals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -254,9 +253,10 @@ export default function Home() {
         .catch((error) => {
           console.error('Error adding referral:', error);
         });
+    } else {
+      console.error('user or TelegramId is null or undefined');
     }
   }, [startParam, user?.TelegramId]);
-  
   
 
   // Функция для получения данных пользователя с сервера
