@@ -5,26 +5,34 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import useUserStore from "@/stores/useUserStore";
 
-interface FriendsTabProps {
-    initData: string
-    userId: string
-    startParam: string
-  }
-
-
-const INVITE_URL = ' https://t.me/smchangebot/tabtest'; // URL для реферальной ссылки
+const INVITE_URL = 'https://t.me/smchangebot/tabtest'; // URL для реферальной ссылки
 
 const FriendsTab = () => {
-  const [referralCode, setReferralCode] = useState('');
-  const [referrals, setReferrals] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [referralCode, setReferralCode] = useState<string>(''); // Указали тип для referralCode
+  const [referrals, setReferrals] = useState<string[]>([]); // Указали тип для referrals
+  const [loading, setLoading] = useState<boolean>(true); // Указали тип для loading
   const { user } = useUserStore();  // Получаем пользователя из Zustand
-  const startParam = useUserStore((state) => state.startParam);
-  const setStartParam = useUserStore((state) => state.setStartParam);
+  const startParam = useUserStore((state) => state.startParam); // Получаем startParam
+  const setStartParam = useUserStore((state) => state.setStartParam); // Функция для обновления startParam
 
   useEffect(() => {
-    // Функция для получения данных о реферальном коде и рефералах
-    const fetchReferralData = async () => {
+    const initWebApp = async () => {
+      if (typeof window !== 'undefined') {
+        const WebApp = (await import('@twa-dev/sdk')).default;
+        WebApp.ready(); // Инициализируем WebApp
+
+        // Явно указываем тип, что это строка или пустая строка
+        const referralCodeFromStart: string = WebApp.initDataUnsafe.start_param || ''; 
+
+        setStartParam(referralCodeFromStart); // Обновляем startParam в Zustand
+        setReferralCode(referralCodeFromStart); // Также сохраняем его в локальном состоянии
+
+        fetchReferralData(referralCodeFromStart);
+      }
+    };
+
+    // Функция для получения данных о рефералах
+    const fetchReferralData = async (referralCodeFromStart: string) => {
       if (!user?.TelegramId) {
         console.error('TelegramId is missing');
         return;
@@ -32,13 +40,12 @@ const FriendsTab = () => {
 
       try {
         const response = await fetch(`/api/referrals?TelegramId=${user.TelegramId}`, {
-          method: "GET", // Указываем метод GET
-          headers: { "Content-Type": "application/json" }, // Указываем заголовки
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
         });
 
         if (!response.ok) throw new Error('Failed to fetch referral data');
         const data = await response.json();
-        setReferralCode(data.referralCode);
         setReferrals(data.referrals || []);
       } catch (error) {
         console.error('Error fetching referral data:', error);
@@ -47,8 +54,8 @@ const FriendsTab = () => {
       }
     };
 
-    fetchReferralData();
-  }, [user]);
+    initWebApp();
+  }, [user, setStartParam]); // Запускаем только когда user или setStartParam меняются
 
   // Функция для копирования ссылки
   const handleCopyLink = () => {
@@ -115,4 +122,6 @@ const FriendsTab = () => {
 };
 
 export default FriendsTab;
+
+
 
