@@ -51,24 +51,24 @@ export default function Home() {
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
    
-  useEffect(() => {
-    const initWebApp = async () => {
-      if (typeof window !== 'undefined') {
-        const WebApp = (await import('@twa-dev/sdk')).default;
-        WebApp.ready(); // Инициализируем WebApp
+ // useEffect(() => {
+ //   const initWebApp = async () => {
+ //     if (typeof window !== 'undefined') {
+  //      const WebApp = (await import('@twa-dev/sdk')).default;
+  //      WebApp.ready(); // Инициализируем WebApp
 
-        const referralCodeFromStart = WebApp.initDataUnsafe.start_param || ''; // Получаем реферальный код из start_param
-        setStartParam(referralCodeFromStart); // Обновляем startParam в Zustand
-        setReferralCode(referralCodeFromStart); // Также сохраняем его в локальном состоянии
+   //     const referralCodeFromStart = WebApp.initDataUnsafe.start_param || ''; // Получаем реферальный код из start_param
+   //     setStartParam(referralCodeFromStart); // Обновляем startParam в Zustand
+   //     setReferralCode(referralCodeFromStart); // Также сохраняем его в локальном состоянии
 
-        //fetchReferralData(referralCodeFromStart);
-      }
-    };
+   //     //fetchReferralData(referralCodeFromStart);
+   //   }
+   // };
 
   
 
-    initWebApp();
-  }, [user, setStartParam]);
+  //  initWebApp();
+//  }, [user, setStartParam]);
 
 
   useEffect(() => {
