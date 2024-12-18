@@ -48,12 +48,7 @@ export default function Home() {
   const setStartParam = useUserStore((state) => state.setStartParam); // Функция для обновления startParam
 
 
-  // Таймер загрузки
-  useEffect(() => {
-    setLoader(true);
-    const timeout = setTimeout(() => setLoader(false), 3000);
-    return () => clearTimeout(timeout);
-  }, []);
+ 
 
   
   //const telegram = window.Telegram.WebApp;
@@ -317,7 +312,12 @@ export default function Home() {
   };
 
 
-  
+   // Таймер загрузки
+   useEffect(() => {
+    setLoader(true);
+    const timeout = setTimeout(() => setLoader(false), 4000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   
 
