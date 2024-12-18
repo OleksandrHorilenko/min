@@ -38,8 +38,13 @@ export default function Home() {
   const [userMining, setUserMining] = useState<any>(null);
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
   const [initData, setInitData] = useState('')
-  const [startParam, setStartParam] = useState('')
+ // const [startParam, setStartParam] = useState('')
   const [userId, setUserId] = useState('')
+  const [referralCode, setReferralCode] = useState('');
+  const [referrals, setReferrals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const startParam = useUserStore((state) => state.startParam); // Получаем startParam
+  const setStartParam = useUserStore((state) => state.setStartParam); // Функция для обновления startParam
   
   //const telegram = window.Telegram.WebApp;
 
@@ -50,20 +55,20 @@ export default function Home() {
     const initWebApp = async () => {
       if (typeof window !== 'undefined') {
         const WebApp = (await import('@twa-dev/sdk')).default;
-        WebApp.ready(); // Подготовка SDK
+        WebApp.ready(); // Инициализируем WebApp
 
-        setInitData(WebApp.initData); // Инициализация данных
-        setUserId(WebApp.initDataUnsafe.user?.id.toString() || ''); // Получаем ID пользователя
+        const referralCodeFromStart = WebApp.initDataUnsafe.start_param || ''; // Получаем реферальный код из start_param
+        setStartParam(referralCodeFromStart); // Обновляем startParam в Zustand
+        setReferralCode(referralCodeFromStart); // Также сохраняем его в локальном состоянии
 
-        // Извлекаем start_param, который может содержать реферальный код
-        const referralCode = WebApp.initDataUnsafe.start_param || '';
-        setStartParam(referralCode); // Сохраняем реферальный код
-        console.log('Referral Code:', referralCode); // Для отладки
+        //fetchReferralData(referralCodeFromStart);
       }
     };
 
+  
+
     initWebApp();
-  }, []);
+  }, [user, setStartParam]);
 
 
   useEffect(() => {
@@ -223,6 +228,35 @@ export default function Home() {
       }
     }
   }, [setUserInStore]);
+
+
+  useEffect(() => {
+    const referralCodeFromStart = startParam || ''; // Получаем реферальный код из zustand
+  
+    if (referralCodeFromStart) {
+      // Отправляем запрос на сервер для добавления нового пользователя в рефералы
+      fetch('/api/referrals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          TelegramId: user.TelegramId,  // TelegramId нового пользователя
+          referralCode: referralCodeFromStart,  // Реферальный код пользователя, который пригласил
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            console.log('Referral added successfully!');
+          } else {
+            console.error('Failed to add referral:', data.error);
+          }
+        })
+        .catch((error) => {
+          console.error('Error adding referral:', error);
+        });
+    }
+  }, [startParam, user?.TelegramId]);
+  
   
 
   // Функция для получения данных пользователя с сервера
