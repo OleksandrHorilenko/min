@@ -3,6 +3,7 @@
 import CheckFootprint from '@/components/CheckFootprint';
 import NavigationBar from '@/components/NavigationBar';
 import TabContainer from '@/components/TabContainer';
+import Loader from '@/components/Loader';
 import { TabProvider } from '@/contexts/TabContext';
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
@@ -45,6 +46,15 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const startParam = useUserStore((state) => state.startParam); // Получаем startParam
   const setStartParam = useUserStore((state) => state.setStartParam); // Функция для обновления startParam
+
+
+  // Таймер загрузки
+  useEffect(() => {
+    setLoader(true);
+    const timeout = setTimeout(() => setLoader(false), 3000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   
   //const telegram = window.Telegram.WebApp;
 
@@ -312,6 +322,11 @@ export default function Home() {
   
 
   return (
+    <>
+      {loader ? (
+        <Loader />
+      ) : (
+
     <TabProvider>
       <main className="min-h-screen bg-black text-white">
         <CheckFootprint />
@@ -319,6 +334,8 @@ export default function Home() {
         <NavigationBar />
       </main>
     </TabProvider>
+     )}
+     </>
   );
 }
 
