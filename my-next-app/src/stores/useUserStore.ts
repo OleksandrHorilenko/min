@@ -48,20 +48,24 @@ interface User {
 // Типизация состояния хранилища
 interface UserStore {
   user: User;
-  userCollection: Card[]; // Добавляем коллекцию пользователя
+  userCollection: Card[]; // Коллекция пользователя
   setUser: (userData: User) => void;
   updateUser: (updatedData: Partial<User>) => void;
   clearUser: () => void;
-  setUserCollection: (collectionData: Card[]) => void; // Метод для обновления коллекции
+  setUserCollection: (collectionData: Card[]) => void;
   walletAddress: string | null;
   setWalletAddress: (address: string) => void;
-  totalProfit: number; // Тип уже задан как number
-  setTotalProfit: (profit: number) => void; // Убедитесь, что параметр profit имеет тип number
+  totalProfit: number;
+  setTotalProfit: (profit: number) => void;
 
-   // Добавляем состояния для майнинга
-   mining: Mining;             // Добавляем объект для майнинга
-   setMining: (miningData: Mining) => void; // Метод для обновления данных майнинга
-   updateMining: (updatedData: Partial<Mining>) => void; // Метод для обновления части данных майнинга
+  // Данные для майнинга
+  mining: Mining;
+  setMining: (miningData: Mining) => void;
+  updateMining: (updatedData: Partial<Mining>) => void;
+
+  // Новый параметр startParam
+  startParam: string | null;
+  setStartParam: (param: string) => void;
 }
 
 const useUserStore = create<UserStore>((set) => ({
@@ -76,8 +80,8 @@ const useUserStore = create<UserStore>((set) => ({
     wallets: []
   },
   totalProfit: 0,
-  setTotalProfit: (profit) => set({ totalProfit: profit }), // Реализуем сеттер
-  userCollection: [], // Изначально коллекция пуста
+  setTotalProfit: (profit) => set({ totalProfit: profit }),
+  userCollection: [],
   setUser: (userData) => set({ user: { ...userData } }),
   updateUser: (updatedData) => set((state) => ({
     user: { ...state.user, ...updatedData }
@@ -94,26 +98,27 @@ const useUserStore = create<UserStore>((set) => ({
         ecobalance: 0.0,
         wallets: []
       },
-      userCollection: [] // Очищаем коллекцию при сбросе
+      userCollection: []
     }),
-  setUserCollection: (collectionData) =>
-    set({ userCollection: collectionData }), // Метод для обновления коллекции
+  setUserCollection: (collectionData) => set({ userCollection: collectionData }),
   walletAddress: null,
   setWalletAddress: (address) => set({ walletAddress: address }),
 
- // Добавляем данные для майнинга
- mining: {
-  minedCoins: 0.0,      // Изначально 0 монет
-  bonusCoins: 0.0,      // Изначально 0 бонусных монет
-  burnedCoins: 0.0,     // Изначально 0 сожженных монет
-  lastClaim: '',        // Изначально пустая строка
-},
+  // Данные для майнинга
+  mining: {
+    minedCoins: 0.0,
+    bonusCoins: 0.0,
+    burnedCoins: 0.0,
+    lastClaim: '',
+  },
+  setMining: (miningData) => set({ mining: { ...miningData } }),
+  updateMining: (updatedData) => set((state) => ({
+    mining: { ...state.mining, ...updatedData }
+  })),
 
-setMining: (miningData) => set({ mining: { ...miningData } }),
-updateMining: (updatedData) => set((state) => ({
-  mining: { ...state.mining, ...updatedData }
-}))
-
+  // Новый параметр startParam
+  startParam: null,
+  setStartParam: (param) => set({ startParam: param }),
 }));
 
 // Типизация и функции для работы с рефералами
@@ -144,4 +149,5 @@ export function getReferrer(userId: string): string | null {
 }
 
 export default useUserStore;
+
 

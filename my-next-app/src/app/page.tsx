@@ -24,7 +24,7 @@ interface UserData {
   username?: string;
   language_code: string;
   is_premium?: boolean;
-  ecobalance: number;
+  ecobalance: Number;
 }
 
 export default function Home() {
@@ -35,24 +35,33 @@ export default function Home() {
   const [loader, setLoader] = useState(false);
   const [userMining, setUserMining] = useState<any>(null);
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
-  const [initData, setInitData] = useState('');
-  const [startParam, setStartParam] = useState('');
+  const [initData, setInitData] = useState('')
+  const [startParam, setStartParam] = useState('')
+  
+
 
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
+  
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         tg.ready(); // Готовим WebApp
-
+  
         const initData = tg.initData || '';
         const initDataUnsafe = tg.initDataUnsafe || {};
-
+  
         console.log('Telegram initData:', initData);
         console.log('Telegram initDataUnsafe:', initDataUnsafe);
-
+  
+        // Проверяем наличие start_param
+        if (initDataUnsafe.start_param) {
+          setStartParam(initDataUnsafe.start_param);
+          console.log('Referral code (start_param):', initDataUnsafe.start_param);
+        }
+  
         if (initDataUnsafe.user) {
           const rawUser = initDataUnsafe.user as unknown as {
             id: number;
@@ -62,7 +71,7 @@ export default function Home() {
             language_code: string;
             is_premium?: boolean;
           };
-
+  
           // Преобразуем id в telegramId
           const user: UserData = {
             TelegramId: String(rawUser.id), // Преобразование id в строку
@@ -73,8 +82,7 @@ export default function Home() {
             is_premium: rawUser.is_premium,
             ecobalance: 0,
           };
-
-          // Отправляем данные на сервер
+  
           fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -85,38 +93,38 @@ export default function Home() {
               if (data.error) {
                 setError(data.error);
               } else {
-                // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                 fetchUserData(user.TelegramId);
                 fetchUserMining(user.TelegramId);
-
-                // Проверяем наличие реферального кода
-                const referralCode = getReferralCode();
-                if (referralCode) {
-                   addReferral(user.TelegramId, referralCode);
-                                       }
               }
             })
             .catch((err) => {
-              console.error('Failed to send user data:', err);
-              setError('Failed to send user data');
+              console.error('Failed to fetch user data:', err);
+              setError('Failed to fetch user data');
             });
         } else {
           setError('No user data available from Telegram');
           console.error('No user data available from Telegram:', initDataUnsafe);
         }
       } else {
-        const searchParams = new URLSearchParams(window.location.hash.substring(1));
+        // Обработка URL параметров, если не доступен WebApp
+        const searchParams = new URLSearchParams(window.location.search);
         const tgWebAppData = searchParams.get('tgWebAppData');
-
+        const referralCode = searchParams.get('start_param'); // Проверяем реферальный код
+  
+        if (referralCode) {
+          setStartParam(referralCode);
+          console.log('Referral code from URL:', referralCode);
+        }
+  
         if (tgWebAppData) {
           try {
             const userParam = new URLSearchParams(tgWebAppData).get('user');
             const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
             const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
-
+  
             if (userObject) {
               const userData: UserData = {
-                TelegramId: String(userObject.id || '12345'), // telegramId вместо id
+                TelegramId: String(userObject.id || '12345'),
                 first_name: userObject.first_name || 'Имя',
                 last_name: userObject.last_name || 'Фамилия',
                 username: userObject.username || 'username',
@@ -124,8 +132,7 @@ export default function Home() {
                 is_premium: userObject.is_premium || false,
                 ecobalance: 0,
               };
-
-              // Отправляем данные на сервер
+  
               fetch('/api/user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -136,15 +143,8 @@ export default function Home() {
                   if (data.error) {
                     setError(data.error);
                   } else {
-                    // После успешного POST-запроса, получаем все данные (пользователь + коллекция)
                     fetchUserData(userData.TelegramId);
                     fetchUserMining(userData.TelegramId);
-
-                    // Извлекаем реферальный код из URL
-                    const referralCode = getReferralCode();
-if (referralCode) {
-  addReferral(user.TelegramId, referralCode);
-}
                   }
                 })
                 .catch((err) => {
@@ -160,16 +160,22 @@ if (referralCode) {
             setError('Error parsing tgWebAppData');
           }
         } else {
+          // Тестовые данные
+          const testReferralCode = searchParams.get('start_param') || 'TEST_CODE';
+          setStartParam(testReferralCode);
+  
           const UserData: UserData = {
-            TelegramId: '12345', // Тестовые данные с telegramId
+            TelegramId: '12345', // Тестовые данные
             first_name: 'Test User',
             last_name: 'Testov',
             username: 'testuser',
             language_code: 'en',
             is_premium: true,
-            ecobalance: 0
+            ecobalance: 0,
           };
-
+  
+          console.log('Test referral code:', testReferralCode);
+  
           fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -182,24 +188,19 @@ if (referralCode) {
               } else {
                 fetchUserData(UserData.TelegramId);
                 fetchUserMining(UserData.TelegramId);
-
-                // Извлекаем реферальный код из URL
-                const referralCode = getReferralCode();
-if (referralCode) {
-  addReferral(user.TelegramId, referralCode);
-}
               }
             })
             .catch((err) => {
               console.error('Failed to send test user data:', err);
               setError('Failed to send test user data');
             });
-
+  
           setError('This app should be opened in Telegram');
         }
       }
     }
   }, [setUserInStore]);
+  
 
   // Функция для получения данных пользователя с сервера
   const fetchUserData = async (TelegramId: string) => {
@@ -222,22 +223,6 @@ if (referralCode) {
       setError('Failed to fetch user data');
     }
   };
-
-
-  const getReferralCode = () => {
-    // Попробуем извлечь реферальный код из search
-    const urlParams = new URLSearchParams(window.location.search);
-    let referralCode = urlParams.get('startapp');
-  
-    // Если search пустой, попробуем извлечь из hash
-    if (!referralCode) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      referralCode = hashParams.get('startapp');
-    }
-  
-    console.log('Extracted referralCode:', referralCode);
-    return referralCode;
-  };
   
   // Функция для получения данных пользователя с сервера
   const fetchUserMining = async (TelegramId: string) => {
@@ -254,8 +239,9 @@ if (referralCode) {
         setUserMining(data);  
         localStorage.setItem('userMining', JSON.stringify(data));
         // Преобразуем строку lastClaim в Date и сохраняем в состоянии
-        const lastClaimDate = new Date(data.lastClaim);
-        setLastClaim(lastClaimDate); // Устанавливаем состояние lastClaim
+      const lastClaimDate = new Date(data.lastClaim);
+      setLastClaim(lastClaimDate); // Устанавливаем состояние lastClaim
+        
       }
     } catch (err) {
       console.error('Failed to fetch user data:', err);
@@ -263,29 +249,10 @@ if (referralCode) {
     }
   };
 
-  // Функция для добавления реферала
-  const addReferral = (TelegramId: string, referralCode: string) => {
-    fetch('/api/referrals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        TelegramId,
-        referralCode,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setNotification('Referral added successfully!');
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to add referral:', err);
-        setError('Failed to add referral');
-      });
-  };
+
+  
+
+  
 
   return (
     <TabProvider>
@@ -297,5 +264,4 @@ if (referralCode) {
     </TabProvider>
   );
 }
-
 

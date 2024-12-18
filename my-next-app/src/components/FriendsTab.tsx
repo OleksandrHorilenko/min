@@ -12,6 +12,8 @@ const FriendsTab = () => {
   const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useUserStore();  // Получаем пользователя из Zustand
+  const startParam = useUserStore((state) => state.startParam);
+  const setStartParam = useUserStore((state) => state.setStartParam);
 
   useEffect(() => {
     // Функция для получения данных о реферальном коде и рефералах
@@ -74,7 +76,7 @@ const FriendsTab = () => {
         <div className="bg-[#151516] w-full rounded-2xl p-8">
           <h2 className="text-xl font-bold text-white">Your Referral Code</h2>
           <p className="text-lg text-gray-300 mt-2">{referralCode}</p>
-
+          <p>Start Param: {startParam}</p>
           <h2 className="text-xl font-bold text-white mt-6">Your Referrals</h2>
           {referrals.length > 0 ? (
             <ul className="mt-2 space-y-2">
