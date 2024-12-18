@@ -14,7 +14,7 @@ const CheckFootprint = () => {
           <div className="flex items-center gap-4 text-base text-white font-medium">
             <span></span><Image src={sun} alt="Sun" width={40} height={40} />
             {user && user.TelegramId && (  // Проверяем, что данные пользователя существуют в Zustand
-              <span className="text-white"> {user.ecobalance.toFixed(3)}</span>  // Выводим Telegram ID из Zustand
+              <span className="text-white"> {user.TelegramId}</span>  // Выводим Telegram ID из Zustand
             )}
           </div>
           <button className="bg-[#4c9ce2] rounded-full px-2 py-1">
