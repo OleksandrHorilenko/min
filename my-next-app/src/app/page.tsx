@@ -152,7 +152,7 @@ export default function Home() {
   
             if (userObject) {
               const userData: UserData = {
-                TelegramId: String(userObject.id || '12345'),
+                TelegramId: String(userObject.id || '67890'),
                 first_name: userObject.first_name || 'Имя',
                 last_name: userObject.last_name || 'Фамилия',
                 username: userObject.username || 'username',
