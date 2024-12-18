@@ -307,7 +307,7 @@ export default function Home() {
         
         <TabContainer />
         <NavigationBar />
-        {/* Выводим URL и реферальный код */}
+       
         
       </main>
     </TabProvider>
