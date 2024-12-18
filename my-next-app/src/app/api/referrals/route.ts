@@ -10,53 +10,53 @@ function generateReferralCode() {
 
 
 // POST-запрос: новый пользователь приходит по реферальной ссылке
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   await connect(); // Подключаемся к базе данных
 
-  const { telegramId, referralCode } = await request.json();
-
-  if (!telegramId) {
-    return NextResponse.json({ error: 'Missing TelegramId' }, { status: 400 });
-  }
-
   try {
-    // Проверяем, существует ли уже запись для данного TelegramId
-    let user = await Referal.findOne({ TelegramId: telegramId });
-    if (user) {
-      return NextResponse.json({ message: 'User already exists' }, { status: 400 });
+    const { TelegramId, referralCode } = await req.json();
+
+    if (!TelegramId || !referralCode) {
+      return NextResponse.json(
+        { error: 'TelegramId и referralCode обязательны' },
+        { status: 400 }
+      );
     }
 
-    // Генерируем новый реферальный код для нового пользователя
-    const newReferralCode = generateReferralCode();
+    // Находим запись с указанным referralCode
+    const referalRecord = await Referal.findOne({ referralCode });
 
-    // Создаем запись для нового пользователя
-    const newUser = new Referal({
-      TelegramId: telegramId,
-      referralCode: newReferralCode,
-      referrals: [],
-    });
-
-    await newUser.save();
-
-    // Если указан реферальный код, ищем владельца и добавляем нового пользователя в его referrals
-    if (referralCode) {
-      const referrer = await Referal.findOne({ referralCode });
-      if (referrer) {
-        referrer.referrals.push(telegramId);
-        await referrer.save();
-      } else {
-        console.warn(`Referral code ${referralCode} not found`);
-      }
+    if (!referalRecord) {
+      return NextResponse.json(
+        { error: 'Реферальный код не найден' },
+        { status: 404 }
+      );
     }
+
+    // Проверяем, добавлен ли уже этот пользователь в массив рефералов
+    if (referalRecord.referrals.includes(TelegramId)) {
+      return NextResponse.json(
+        { error: 'Пользователь уже добавлен в рефералы' },
+        { status: 409 }
+      );
+    }
+
+    // Добавляем TelegramId в массив рефералов
+    referalRecord.referrals.push(TelegramId);
+
+    // Сохраняем изменения
+    await referalRecord.save();
 
     return NextResponse.json({
       success: true,
-      message: 'User registered successfully',
-      referralCode: newReferralCode,
+      message: 'Реферал успешно добавлен',
     });
   } catch (error) {
-    console.error('Error handling referral:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Ошибка при добавлении реферала:', error);
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    );
   }
 }
 

@@ -252,7 +252,7 @@ export default function Home() {
 
   // Функция для добавления реферала
   const addReferral = (TelegramId: string, referralCode: string) => {
-    fetch('/api/addReferral', {
+    fetch('/api/referrals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
