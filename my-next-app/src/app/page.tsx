@@ -135,7 +135,7 @@ export default function Home() {
         }
       } else {
         // Обработка URL параметров, если не доступен WebApp
-        const searchParams = new URLSearchParams(window.location.search);
+        const searchParams = new URLSearchParams(window.location.hash.substring(1));
         const tgWebAppData = searchParams.get('tgWebAppData');
         //const referralCode = searchParams.get('startapp'); // Проверяем реферальный код
   
