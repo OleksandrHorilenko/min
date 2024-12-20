@@ -1,9 +1,4 @@
-import { ReactElement } from 'react';
-import WalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import TelegramIcon from '@mui/icons-material/Telegram';
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import StarIcon from '@mui/icons-material/Star';
+
 
 export type Task = {
     taskId: number; // Идентификатор задания
