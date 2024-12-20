@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { tasks } from '@/components/data/taskData'; // Импорт списка задач
+import { tasks, Task } from '@/components/data/taskData'; // Импорт задач
 import connect from '@/app/api/mongodb'; // Подключение к MongoDB
 import User from '@/app/api/models/User'; // Модель пользователя
 
@@ -20,16 +20,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Собрать taskId из файла
-    const fileTaskIds = tasks.map((task) => task.taskId);
+    const fileTaskIds = tasks.map((task: Task) => task.taskId);
 
     // Собрать taskId из базы
-    const dbTaskIds = user.tasks.map((task) => task.taskId);
+    const dbTaskIds = user.tasks.map((task: Task) => task.taskId);
 
     // Найти новые задания
-    const newTasks = tasks.filter((task) => !dbTaskIds.includes(task.taskId));
+    const newTasks = tasks.filter((task: Task) => !dbTaskIds.includes(task.taskId));
 
     // Найти задания для удаления
-    const tasksToRemove = user.tasks.filter((task) => !fileTaskIds.includes(task.taskId));
+    const tasksToRemove = user.tasks.filter((task: Task) => !fileTaskIds.includes(task.taskId));
 
     // Добавить новые задания
     if (newTasks.length > 0) {
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     // Удалить отсутствующие задания
     if (tasksToRemove.length > 0) {
-      user.tasks = user.tasks.filter((task) => fileTaskIds.includes(task.taskId));
+      user.tasks = user.tasks.filter((task: Task) => fileTaskIds.includes(task.taskId));
     }
 
     // Обновить пользователя
