@@ -6,6 +6,8 @@ import User from '../models/User';
 import UserCollection from '../models/UserCollection';
 import UserMining from '../models/UserMining';
 import Referal from '../models/Referal'; // Модель для referals
+import UserTasks from '../models/UserTasks'; // Модель для UserTasks
+import { tasks } from '@/components/data/taskData'; // Исходный список заданий
 
 // Функция для генерации уникального реферального кода
 function generateReferralCode() {
@@ -68,6 +70,27 @@ export async function POST(req: NextRequest) {
       referrals: [], // Пустой массив для приглашённых
     });
     await referal.save();
+
+
+     // Создаем запись в UserTasks
+     const userTasks = new UserTasks({
+      TelegramId,
+      tasks: tasks.map((task) => ({
+        taskId: task.taskId,
+        tasktype: task.tasktype,
+        type: task.type,
+        title: task.title,
+        description: task.description,
+        link: task.link,
+        reward: task.reward,
+        status: 'available',
+        icon: '',
+        progress: 0,
+        rewardPaid: false,
+      })),
+      lastUpdated: new Date(),
+    });
+    await userTasks.save();
 
     return NextResponse.json(user, { status: 201 });
   } catch (error) {

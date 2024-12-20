@@ -28,9 +28,25 @@ export interface Mining {
   lastClaim: string;      // Дата последнего запроса (например, ISO 8601 строка)
 }
 
+// Типизация обновленной карты
 export interface UpdatedCard extends Card {
   minedCoins: number;      // Количество намайненных монет
   remainingCoins: number;  // Оставшиеся монеты
+}
+
+// Типизация заданий
+export interface Task {
+  taskId: number;
+  tasktype: 'telegram' | 'twitter' | 'quiz' | 'special' | 'other'; // Тип задания
+  type: 'in-game' | 'partners' | 'special'; // Группировка по вкладкам
+  title: string; // Заголовок задания
+  description: string; // Описание задания
+  link: string; // Ссылка на задание
+  reward: number; // Награда
+  status: 'available' | 'in-progress' | 'checking' | 'completed'; // Статус задания
+  icon: JSX.Element; // Иконка задания
+  progress?: number | undefined; // Прогресс выполнения задания (необязательное поле)
+  rewardPaid: boolean; // Добавили поле rewardPaid
 }
 
 // Типизация данных пользователя
@@ -42,7 +58,7 @@ interface User {
   language_code: string;
   is_premium: boolean;
   ecobalance: number;
-  wallets: []; // Пустой массив по умолчанию
+  wallets: string[]; // Массив строк для кошельков
 }
 
 // Типизация состояния хранилища
@@ -66,6 +82,11 @@ interface UserStore {
   // Новый параметр startParam
   startParam: string | null;
   setStartParam: (param: string) => void;
+  
+  // Добавляем задачи
+  userTasks: Task[];
+  setUserTasks: (tasks: Task[]) => void;
+  updateTaskStatus: (taskId: number, status: string, progress?: number) => void;
 }
 
 const useUserStore = create<UserStore>((set) => ({
@@ -106,9 +127,9 @@ const useUserStore = create<UserStore>((set) => ({
 
   // Данные для майнинга
   mining: {
-    minedCoins: 0.0,
-    bonusCoins: 0.0,
-    burnedCoins: 0.0,
+    minedCoins: 0,  // Например, 0, если хотите целое число
+    bonusCoins: 0,
+    burnedCoins: 0,
     lastClaim: '',
   },
   setMining: (miningData) => set({ mining: { ...miningData } }),
@@ -119,6 +140,15 @@ const useUserStore = create<UserStore>((set) => ({
   // Новый параметр startParam
   startParam: null,
   setStartParam: (param) => set({ startParam: param }),
+
+  userTasks: [],
+  setUserTasks: (tasks) => set({ userTasks: tasks }),
+  updateTaskStatus: (taskId, status, progress) =>
+    set((state) => ({
+      userTasks: state.userTasks.map((task) =>
+        task.taskId === taskId ? { ...task, status, progress: progress ?? task.progress } : task
+      ) as Task[] // Указываем тип массива как Task[]
+    })),
 }));
 
 // Типизация и функции для работы с рефералами
@@ -149,5 +179,3 @@ export function getReferrer(userId: string): string | null {
 }
 
 export default useUserStore;
-
-
