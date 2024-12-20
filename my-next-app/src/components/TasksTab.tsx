@@ -2,6 +2,29 @@ import { useEffect, useState } from "react";
 import { tasks } from "@/components/data/taskData";
 import useUserStore from "@/stores/useUserStore";
 
+
+
+async function syncUserTasks(TelegramId: string) {
+    try {
+        const response = await fetch('/api/syncTasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ TelegramId }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to synchronize tasks');
+        }
+
+        const data = await response.json();
+        console.log('Tasks synchronized:', data);
+    } catch (error) {
+        console.error('Error synchronizing tasks:', error);
+    }
+}
+
+
+
 export async function fetchUserTasks(TelegramId: string) {
     const response = await fetch(`/api/userTasks?TelegramId=${TelegramId}`);
     if (!response.ok) {
@@ -29,6 +52,26 @@ const TasksTab = () => {
 
     const TelegramId = user.TelegramId;
 
+
+    useEffect(() => {
+        const loadAndSyncTasks = async () => {
+            if (!TelegramId) return;
+    
+            try {
+                // Синхронизация новых задач
+                await syncUserTasks(TelegramId);
+    
+                // Загрузка задач после синхронизации
+                const tasks = await fetchUserTasks(TelegramId);
+                setUserTasks(tasks.tasks || []);
+            } catch (error) {
+                console.error('Error loading and syncing tasks:', error);
+            }
+        };
+    
+        loadAndSyncTasks();
+    }, [TelegramId]);
+
     useEffect(() => {
         const loadTasks = async () => {
             if (!TelegramId) return;
@@ -46,7 +89,7 @@ const TasksTab = () => {
         loadTasks();
     }, [TelegramId]);
 
-    const handleStartTask = async (taskId: number) => {
+    const handleStartTask = async (taskId: number, link: string) => {
         try {
             // Локальное обновление
       //      setUserTasks((prevTasks) =>
@@ -61,6 +104,9 @@ const TasksTab = () => {
             // Обновление задач с сервера
             const updatedTasks = await fetchUserTasks(TelegramId);
             setUserTasks(updatedTasks.tasks || []);
+
+            // Переход по ссылке
+        window.open(link, '_blank'); // Открыть в новой вкладке
         } catch (error) {
             console.error("Failed to start task:", error);
         }
@@ -133,7 +179,7 @@ const TasksTab = () => {
                                 </div>
                                 {task.status === 'available' && (
                                     <button
-                                        onClick={() => handleStartTask(task.taskId)}
+                                        onClick={() => handleStartTask(task.taskId, task.link)}
                                         className="h-8 bg-white text-black px-4 rounded-full text-sm font-medium"
                                     >
                                         Start

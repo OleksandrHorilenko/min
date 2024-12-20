@@ -86,4 +86,18 @@ export const tasks: Task[] = [
         progress: 0,
         rewardPaid: false,
     },
+
+    {
+        taskId: 6,
+        tasktype: 'special',
+        type: 'special',
+        title: 'Тесовое обновление заданий',
+        description: 'Оставьте отзыв о нашем приложении.',
+        link: 'https://feedback.example.com/',
+        reward: 75,
+        status: 'available',
+        icon: 'TelegramIcon',
+        progress: 0,
+        rewardPaid: false,
+    },
 ];

@@ -148,17 +148,9 @@ const PurchaseModal = ({ card, onClose }: ModalProps) => {
         </div>
 
         {/* Дополнительная информация о карте */}
-        <h2 className="text-xl font-bold mb-4">{card.title}</h2>
-        <p className="text-sm font-semibold">Price:</p>
-        <p className="text-lg font-bold mb-4">{card.price} ECO</p>
-        <p className="text-sm font-semibold">Mining Coins:</p>
-        <p className="text-lg font-bold mb-4">{card.miningcoins} ECO</p>
-        <p className="text-sm font-semibold">Mining Period:</p>
-        <p className="text-lg font-bold mb-4">{card.miningperiod} days</p>
-        <p className="text-sm font-semibold">Description:</p>
-        <p className="text-md mb-6">{card.description}</p>
+        
 
-        <div className="flex justify-between space-x-4">
+        <div className="flex justify-between space-x-4 mt-4">
           <button onClick={handleBuyECO} className="w-1/3 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-lg py-2">
             Buy ECO
           </button>
