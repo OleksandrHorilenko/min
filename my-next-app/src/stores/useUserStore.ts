@@ -36,7 +36,7 @@ export interface UpdatedCard extends Card {
 
 // Типизация заданий
 export interface Task {
-  taskId: number;
+  taskId: string;
   tasktype: 'telegram' | 'twitter' | 'quiz' | 'special' | 'other'; // Тип задания
   type: 'in-game' | 'partners' | 'special'; // Группировка по вкладкам
   title: string; // Заголовок задания
@@ -86,7 +86,7 @@ interface UserStore {
   // Добавляем задачи
   userTasks: Task[];
   setUserTasks: (tasks: Task[]) => void;
-  updateTaskStatus: (taskId: number, status: string, progress?: number) => void;
+  updateTaskStatus: (taskId: string, status: string, progress?: number) => void;
 }
 
 const useUserStore = create<UserStore>((set) => ({

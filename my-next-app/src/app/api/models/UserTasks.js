@@ -9,7 +9,7 @@ const userTaskSchema = new mongoose.Schema({
   tasks: [
     {
       taskId: {
-        type: Number,
+        type: String,
         required: true,
         unique: true,
       },

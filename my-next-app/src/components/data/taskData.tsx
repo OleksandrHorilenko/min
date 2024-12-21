@@ -1,7 +1,7 @@
 
 
 export type Task = {
-    taskId: number; // Идентификатор задания
+    taskId: string; // Идентификатор задания
     tasktype: string; // Тип задания
     type: string; // Группировка по вкладкам
     title: string; // Заголовок задания
@@ -17,7 +17,7 @@ export type Task = {
 
 export const tasks: Task[] = [
     {
-        taskId: 1, // Изменили с 'id' на 'taskId'
+        taskId: '1', // Изменили с 'id' на 'taskId'
         tasktype: 'telegram',
         type: 'partners',
         title: 'Подпишитесь на канал',
@@ -30,7 +30,7 @@ export const tasks: Task[] = [
         rewardPaid: false, // Добавили поле rewardPaid
     },
     {
-        taskId: 2,
+        taskId: '2',
         tasktype: 'twitter',
         type: 'partners',
         title: 'Ретвитните пост',
@@ -43,7 +43,7 @@ export const tasks: Task[] = [
         rewardPaid: false,
     },
     {
-        taskId: 3,
+        taskId: '3',
         tasktype: 'quiz',
         type: 'in-game',
         title: 'Пройдите React Quiz',
@@ -55,21 +55,23 @@ export const tasks: Task[] = [
         progress: 0,
         rewardPaid: false,
     },
+
     {
-        taskId: 4,
-        tasktype: 'special',
-        type: 'special',
-        title: 'Участвуйте в мероприятии',
-        description: 'Примите участие в специальном мероприятии проекта.',
-        link: 'https://event.example.com/',
-        reward: 200,
+        taskId: '4',
+        tasktype: 'quiz',
+        type: 'in-game',
+        title: 'Пройдите React Quiz',
+        description: 'Пройдите тест по React и узнайте свой уровень знаний.',
+        link: 'https://quiz.example.com/',
+        reward: 150,
         status: 'available',
-        icon:'TelegramIcon',
+        icon: 'TelegramIcon',
         progress: 0,
         rewardPaid: false,
     },
+   
     {
-        taskId: 5,
+        taskId: '5',
         tasktype: 'other',
         type: 'in-game',
         title: 'Напишите отзыв',
@@ -82,8 +84,9 @@ export const tasks: Task[] = [
         rewardPaid: false,
     },
 
+    
     {
-        taskId: 6,
+        taskId: '6',
         tasktype: 'special',
         type: 'special',
         title: 'Тесовое обновление заданий',
@@ -95,4 +98,5 @@ export const tasks: Task[] = [
         progress: 0,
         rewardPaid: false,
     },
+    
 ];

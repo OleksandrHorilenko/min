@@ -1,57 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { tasks, Task } from '@/components/data/taskData'; // Импорт задач
-import connect from '@/app/api/mongodb'; // Подключение к MongoDB
-import User from '@/app/api/models/User'; // Модель пользователя
+import connect from '@/app/api/mongodb';
+import Usertask from '@/app/api/models/UserTasks';
+import { tasks, Task } from '@/components/data/taskData';
 
 export async function POST(req: NextRequest) {
-  try {
     await connect();
 
-    const { TelegramId } = await req.json();
+    try {
+        const { TelegramId } = await req.json();
 
-    if (!TelegramId) {
-      return NextResponse.json({ error: 'TelegramId is required' }, { status: 400 });
+        if (!TelegramId) {
+            return NextResponse.json({ error: 'TelegramId is required' }, { status: 400 });
+        }
+
+        const user = await Usertask.findOne({ TelegramId });
+
+        if (!user || !Array.isArray(user.tasks)) {
+            return NextResponse.json({ error: 'User not found or invalid task data' }, { status: 404 });
+        }
+
+        const existingTaskIds = new Set(user.tasks.map((task: Task) => String(task.taskId).trim()));
+        const fileTaskIds = new Set(tasks.map((task: Task) => String(task.taskId).trim()));
+
+        // Найти новые задачи
+        const newTasks = tasks.filter((task: Task) => !existingTaskIds.has(String(task.taskId).trim()));
+
+        // Удалить задания, которых нет в файле
+        user.tasks = user.tasks.filter((task: Task) => fileTaskIds.has(String(task.taskId).trim()));
+
+        // Добавить только уникальные новые задачи
+        if (newTasks.length > 0) {
+            const uniqueNewTasks = Array.from(
+                new Map(newTasks.map((task: Task) => [String(task.taskId).trim(), task])).values()
+            );
+
+            user.tasks.push(...uniqueNewTasks);
+        }
+
+        // Удалить возможные дубли внутри user.tasks
+        user.tasks = Array.from(
+            new Map(user.tasks.map((task: Task) => [String(task.taskId).trim(), task])).values()
+        );
+
+        // Обновить информацию о времени последнего обновления
+        user.lastUpdated = new Date();
+
+        await user.save();
+
+        return NextResponse.json({
+            message: 'Tasks synchronized',
+            added: newTasks.length,
+            removed: fileTaskIds.size - user.tasks.length,
+        }, { status: 200 });
+
+    } catch (error) {
+        console.error('Error syncing tasks:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-
-    const user = await User.findOne({ TelegramId });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    // Собрать taskId из файла
-    const fileTaskIds = tasks.map((task: Task) => task.taskId);
-
-    // Собрать taskId из базы
-    const dbTaskIds = user.tasks.map((task: Task) => task.taskId);
-
-    // Найти новые задания
-    const newTasks = tasks.filter((task: Task) => !dbTaskIds.includes(task.taskId));
-
-    // Найти задания для удаления
-    const tasksToRemove = user.tasks.filter((task: Task) => !fileTaskIds.includes(task.taskId));
-
-    // Добавить новые задания
-    if (newTasks.length > 0) {
-      user.tasks.push(...newTasks);
-    }
-
-    // Удалить отсутствующие задания
-    if (tasksToRemove.length > 0) {
-      user.tasks = user.tasks.filter((task: Task) => fileTaskIds.includes(task.taskId));
-    }
-
-    // Обновить пользователя
-    user.lastUpdated = new Date();
-    await user.save();
-
-    return NextResponse.json({
-      message: 'Tasks synchronized',
-      added: newTasks.length,
-      removed: tasksToRemove.length,
-    });
-  } catch (error) {
-    console.error('Error syncing tasks:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
 }
