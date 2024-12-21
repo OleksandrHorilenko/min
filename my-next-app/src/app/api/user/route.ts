@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 
 
      // Создаем запись в UserTasks
-     const userTasks = new UserTasks({
+     const usertasks = new UserTasks({
       TelegramId,
       tasks: tasks.map((task) => ({
         taskId: task.taskId,
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
       })),
       lastUpdated: new Date(),
     });
-    await userTasks.save();
+    await usertasks.save();
 
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
