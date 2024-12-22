@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { tasks, Task } from '@/components/data/taskData';
 import useUserStore from "@/stores/useUserStore";
 
+
+
+
+
 export async function syncUserTasks(TelegramId: string) {
     try {
         const response = await fetch('/api/syncTasks', {
@@ -73,7 +77,12 @@ const TasksTab = () => {
             await updateTask(TelegramId, taskId, 'in-progress');
             const updatedTasks = await fetchUserTasks(TelegramId);
             setUserTasks(updatedTasks.tasks || []);
-            window.open(link, '_blank');
+           // Проверяем доступность Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.openLink(link);
+        } else {
+            console.error("Telegram WebApp не доступен. Убедитесь, что приложение запущено в Telegram Mini App.");
+        }
         } catch (error) {
             console.error("Failed to start task:", error);
         }

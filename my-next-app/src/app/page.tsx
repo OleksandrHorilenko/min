@@ -7,14 +7,20 @@ import Loader from '@/components/Loader';
 import { TabProvider } from '@/contexts/TabContext';
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
-//import WebApp from '@twa-dev/sdk';
 import useUserStore from '../stores/useUserStore'; // Импортируем zustand хранилище
 import FriendsTab from '@/components/FriendsTab'
 
 declare global {
   interface Window {
     Telegram?: {
-      WebApp: WebApp;
+      WebApp: {
+        ready: () => void;
+        openLink: (url: string) => void;
+        initData: string;
+        initDataUnsafe: Record<string, unknown>;
+        close: () => void;
+        // Добавьте другие методы и свойства WebApp, если нужно
+      };
     };
   }
 }
@@ -38,9 +44,9 @@ export default function Home() {
   const [loader, setLoader] = useState(false);
   const [userMining, setUserMining] = useState<any>(null);
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
-  const [initData, setInitData] = useState('')
+  const [initData, setInitData] = useState('');
  // const [startParam, setStartParam] = useState('')
-  const [userId, setUserId] = useState('')
+  const [userId, setUserId] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,25 +62,7 @@ export default function Home() {
   // Доступ к состоянию из Zustand
   const { setUser: setUserInStore } = useUserStore();
    
- // useEffect(() => {
- //   const initWebApp = async () => {
- //     if (typeof window !== 'undefined') {
-  //      const WebApp = (await import('@twa-dev/sdk')).default;
-  //      WebApp.ready(); // Инициализируем WebApp
-
-   //     const referralCodeFromStart = WebApp.initDataUnsafe.start_param || ''; // Получаем реферальный код из start_param
-   //     setStartParam(referralCodeFromStart); // Обновляем startParam в Zustand
-   //     setReferralCode(referralCodeFromStart); // Также сохраняем его в локальном состоянии
-
-   //     //fetchReferralData(referralCodeFromStart);
-   //   }
-   // };
-
-  
-
-  //  initWebApp();
-//  }, [user, setStartParam]);
-
+ 
 
 // Таймер загрузки
 useEffect(() => {
@@ -84,7 +72,7 @@ useEffect(() => {
   // Таймер, чтобы показать лоадер на 4 секунды
   const timeout = setTimeout(() => {
     setLoader(false);  // Выключаем лоадер через 4 секунды
-  }, 4000);
+  }, 7000);
 
   return () => clearTimeout(timeout);
 }, []); // Этот эффект сработает один раз при монтировании компонента
@@ -101,6 +89,19 @@ useEffect(() => {
 
 
   useEffect(() => {
+
+
+   
+     // Check if data exists in localStorage
+     const storedUserData = localStorage.getItem('userData');
+     if (storedUserData) {
+       const parsedData = JSON.parse(storedUserData);
+       setUserInStore(parsedData);
+       //setLoading(false);
+       return;
+     }
+   
+
     if (typeof window !== 'undefined') {
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
@@ -108,16 +109,9 @@ useEffect(() => {
   
         const initData = tg.initData || '';
         const initDataUnsafe = tg.initDataUnsafe || {};
-        //const startParam = initDataUnsafe.start_param;
   
         console.log('Telegram initData:', initData);
         console.log('Telegram initDataUnsafe:', initDataUnsafe);
-  
-        // Проверяем наличие start_param
-        //if (initDataUnsafe.user) {
-         // setStartParam(initDataUnsafe.start_param);
-        //  console.log('Referral code (start_param):', initDataUnsafe.start_param);
-       // }
   
         if (initDataUnsafe.user) {
           const rawUser = initDataUnsafe.user as unknown as {
@@ -166,12 +160,7 @@ useEffect(() => {
         // Обработка URL параметров, если не доступен WebApp
         const searchParams = new URLSearchParams(window.location.hash.substring(1));
         const tgWebAppData = searchParams.get('tgWebAppData');
-        //const referralCode = searchParams.get('startapp'); // Проверяем реферальный код
-  
-        //if (referralCode) {
-          //setStartParam(referralCode);
-       //   console.log('Referral code from URL:', referralCode);
-      //  }
+        
   
         if (tgWebAppData) {
           try {
