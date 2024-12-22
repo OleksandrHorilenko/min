@@ -95,13 +95,13 @@ useEffect(() => {
 
    
      // Check if data exists in localStorage
-     const storedUserData = localStorage.getItem('userData');
-     if (storedUserData) {
-       const parsedData = JSON.parse(storedUserData);
-       setUserInStore(parsedData);
+    // const storedUserData = localStorage.getItem('userData');
+     //if (storedUserData) {
+      // const parsedData = JSON.parse(storedUserData);
+      // setUserInStore(parsedData);
        //setLoading(false);
-       return;
-     }
+       //return;
+    // }
    
 
     if (typeof window !== 'undefined') {
