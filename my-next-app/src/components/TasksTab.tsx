@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { tasks, Task } from '@/components/data/taskData';
 import useUserStore from "@/stores/useUserStore";
+import { SendTransactionRequest, useTonConnectUI } from '@tonconnect/ui-react';
 
 
 
@@ -49,7 +50,7 @@ const TasksTab = () => {
     const [isLoading, setIsLoading] = useState(true);  // Лоадер для загрузки задач
     const user = useUserStore((state) => state.user);
     const { userTasks, setUserTasks } = useUserStore();
-
+    const [tonConnectUI] = useTonConnectUI();
     const TelegramId = user?.TelegramId;
 
     useEffect(() => {
@@ -72,17 +73,42 @@ const TasksTab = () => {
         }
     }, [TelegramId]);
 
-    const handleStartTask = async (taskId: string, link: string) => {
+    const handleStartTask = async (taskId: string, link: string, taskType: string) => {
         try {
-            await updateTask(TelegramId, taskId, 'in-progress');
-            const updatedTasks = await fetchUserTasks(TelegramId);
-            setUserTasks(updatedTasks.tasks || []);
-           // Проверяем доступность Telegram WebApp
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.openLink(link);
-        } else {
-            window.open('link', '_blank');
-        }
+            if (taskType === 'special' && taskId === '6') {
+                // Логика для задачи с taskId === '6'
+                const transaction: SendTransactionRequest = {
+                    validUntil: Date.now() + 5 * 60 * 1000, // 5 минут
+                    messages: [
+                        {
+                            address: "UQAK-eku1yCNkL5wt7g9OlBpHSnjadN10h_A19uM3SGVJIu2", // адрес
+                            amount: "200000", // сумма в nanotons
+                        },
+                    ],
+                };
+
+                try {
+                    await tonConnectUI.sendTransaction(transaction);
+                    console.log("Transaction sent successfully");
+
+                    // Обновляем статус задачи после успешной отправки транзакции
+                    await updateTask(TelegramId, taskId, 'in-progress');
+                    const updatedTasks = await fetchUserTasks(TelegramId);
+                    setUserTasks(updatedTasks.tasks || []);
+                } catch (transactionError) {
+                    console.error("Failed to send transaction:", transactionError);
+                }
+            } else {
+                // Общая логика для других задач
+                await updateTask(TelegramId, taskId, 'in-progress');
+                const updatedTasks = await fetchUserTasks(TelegramId);
+                setUserTasks(updatedTasks.tasks || []);
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.openLink(link);
+                } else {
+                    window.open(link, '_blank');
+                }
+            }
         } catch (error) {
             console.error("Failed to start task:", error);
         }
@@ -166,7 +192,7 @@ const TasksTab = () => {
                                 </div>
                                 {task.status === 'available' && (
                                     <button
-                                        onClick={() => handleStartTask(task.taskId, task.link)}
+                                        onClick={() => handleStartTask(task.taskId, task.link, task.type)}
                                         className="h-8 bg-white text-black px-4 rounded-full text-sm font-medium"
                                     >
                                         Start

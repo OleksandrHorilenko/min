@@ -19,6 +19,9 @@ declare global {
         initData: string;
         initDataUnsafe: Record<string, unknown>;
         close: () => void;
+        requestFullscreen: () => void; // Метод для запроса полноэкранного режима
+        exitFullscreen: () => void;   // Метод для выхода из полноэкранного режима
+        isFullscreen?: boolean;      // Флаг текущего состояния полноэкранного режима
         expand: () => void;
         HapticFeedback?: {
           impactOccurred: (style: "light" | "medium" | "heavy") => void;
@@ -77,6 +80,11 @@ export default function Home() {
       tg.ready();
       // Увеличение окна до полного экрана
      tg.expand();
+
+     // Запрос полноэкранного режима
+   // if (tg.requestFullscreen) {
+   //   tg.requestFullscreen();
+   // }
 
       const initDataUnsafe = tg.initDataUnsafe || {};
       if (initDataUnsafe.user) {
