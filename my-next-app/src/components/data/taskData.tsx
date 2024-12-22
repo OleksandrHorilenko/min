@@ -72,8 +72,8 @@ export const tasks: Task[] = [
    
     {
         taskId: '5',
-        tasktype: 'other',
-        type: 'in-game',
+        tasktype: 'special',
+        type: 'special',
         title: 'Connect wallet',
         description: 'Connect wallet.',
         link: '/wallet',

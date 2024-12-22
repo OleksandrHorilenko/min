@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { tasks, Task } from '@/components/data/taskData';
 import useUserStore from "@/stores/useUserStore";
-import { SendTransactionRequest, useTonConnectUI } from '@tonconnect/ui-react';
+//import { SendTransactionRequest, useTonConnectUI } from '@tonconnect/ui-react';
+import {SendTransactionRequest, TonConnectButton, useTonConnectUI, useTonWallet, useTonAddress } from '@tonconnect/ui-react';
 
 
 
@@ -52,6 +53,10 @@ const TasksTab = () => {
     const { userTasks, setUserTasks } = useUserStore();
     const [tonConnectUI] = useTonConnectUI();
     const TelegramId = user?.TelegramId;
+    const tonwallet = useTonWallet(); // Использование хука для TON Connect
+   const userFriendlyAddress = useTonAddress();
+   const rawAddress = useTonAddress(false);
+   const setWalletAddress = useUserStore((state) => state.setWalletAddress);
 
     useEffect(() => {
         if (!TelegramId) {
@@ -76,7 +81,7 @@ const TasksTab = () => {
     const handleStartTask = async (taskId: string, link: string, taskType: string) => {
         try {
             if (taskType === 'special' && taskId === '6') {
-                // Логика для задачи с taskId === '6'
+                // Логика для задачи с taskId === '6' (отправка транзакции)
                 const transaction: SendTransactionRequest = {
                     validUntil: Date.now() + 5 * 60 * 1000, // 5 минут
                     messages: [
@@ -86,20 +91,34 @@ const TasksTab = () => {
                         },
                     ],
                 };
-
+    
                 try {
                     await tonConnectUI.sendTransaction(transaction);
                     console.log("Transaction sent successfully");
-
-                    // Обновляем статус задачи после успешной отправки транзакции
-                    await updateTask(TelegramId, taskId, 'in-progress');
+    
+                    // Обновляем статус задачи после успешной транзакции
+                    await updateTask(TelegramId, taskId, 'completed');
                     const updatedTasks = await fetchUserTasks(TelegramId);
                     setUserTasks(updatedTasks.tasks || []);
                 } catch (transactionError) {
                     console.error("Failed to send transaction:", transactionError);
+                    alert("Ошибка при отправке транзакции. Попробуйте ещё раз.");
                 }
-            } else {
-                // Общая логика для других задач
+            }
+    
+            if (taskType === 'special' && taskId === '5') {
+                // Логика для задачи с taskId === '5'
+                if (userFriendlyAddress && user?.TelegramId) {
+                    await updateTask(TelegramId, taskId, 'in-progress');
+                    const updatedTasks = await fetchUserTasks(TelegramId);
+                    setUserTasks(updatedTasks.tasks || []);
+                } else {
+                    alert('Ошибка: Отсутствуют необходимые данные (userFriendlyAddress или TelegramId).');
+                }
+            }
+    
+            // Общая логика для всех остальных задач
+            if (taskType !== 'special') {
                 await updateTask(TelegramId, taskId, 'in-progress');
                 const updatedTasks = await fetchUserTasks(TelegramId);
                 setUserTasks(updatedTasks.tasks || []);
@@ -110,7 +129,8 @@ const TasksTab = () => {
                 }
             }
         } catch (error) {
-            console.error("Failed to start task:", error);
+            console.error("Ошибка обработки задачи:", error);
+            alert("Произошла ошибка при обработке задачи. Попробуйте ещё раз.");
         }
     };
 
