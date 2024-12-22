@@ -37,14 +37,16 @@ const userTaskSchema = new mongoose.Schema({
         type: Number,
         required: true,
       },
-      icon: {
-        type: String, // Иконка не может быть JSX-элементом в MongoDB, можно хранить строковое значение или путь
-        
-      },
       status: {
         type: String,
         default: 'available',
       },
+
+      icon: {
+        type: String, // Иконка не может быть JSX-элементом в MongoDB, можно хранить строковое значение или путь
+        
+      },
+      
       progress: {
         type: Number,
         default: 0,

@@ -7,7 +7,7 @@ import UserCollection from '../models/UserCollection';
 import UserMining from '../models/UserMining';
 import Referal from '../models/Referal'; // Модель для referals
 import UserTasks from '../models/UserTasks'; // Модель для UserTasks
-import { tasks } from '@/components/data/taskData'; // Исходный список заданий
+import { tasks, Task } from '@/components/data/taskData'; // Исходный список заданий
 
 // Функция для генерации уникального реферального кода
 function generateReferralCode() {
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
      // Создаем запись в UserTasks
      const usertasks = new UserTasks({
       TelegramId,
-      tasks: tasks.map((task) => ({
+      tasks: tasks.map((task: Task) => ({
         taskId: task.taskId,
         tasktype: task.tasktype,
         type: task.type,
