@@ -6,18 +6,9 @@ import TabContainer from '@/components/TabContainer';
 import Loader from '@/components/Loader';
 import { TabProvider } from '@/contexts/TabContext';
 import { useEffect, useState } from 'react';
+import { WebApp } from '@twa-dev/types';
 import useUserStore from '../stores/useUserStore';
-
-// Define the interface for user data
-interface UserData {
-  TelegramId: string;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code: string;
-  is_premium?: boolean;
-  ecobalance: number;
-}
+import FriendsTab from '@/components/FriendsTab';
 
 declare global {
   interface Window {
@@ -29,73 +20,62 @@ declare global {
         initDataUnsafe: Record<string, unknown>;
         close: () => void;
         HapticFeedback?: {
-          impactOccurred: (style: 'light' | 'medium' | 'heavy') => void;
+          impactOccurred: (style: "light" | "medium" | "heavy") => void;
         };
       };
     };
   }
 }
 
+interface UserData {
+  TelegramId: string;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code: string;
+  is_premium?: boolean;
+  ecobalance: number;
+}
+
 export default function Home() {
-  const [user, setUser] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loader, setLoader] = useState(true);
+  const [notification, setNotification] = useState('');
+  const [loader, setLoader] = useState(false);
+  const [userMining, setUserMining] = useState<any>(null);
+  const [lastClaim, setLastClaim] = useState<Date | null>(null);
+  const [initData, setInitData] = useState('');
+  const [userId, setUserId] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+  const [referrals, setReferrals] = useState([]);
+  const [loading, setLoading] = useState(true);
   const startParam = useUserStore((state) => state.startParam);
   const setStartParam = useUserStore((state) => state.setStartParam);
+
   const { setUser: setUserInStore } = useUserStore();
 
-  // Function to initialize user
-  const handleUserInitialization = async (user: UserData) => {
-    try {
-      // Step 1: Check if user exists in the database
-      const response = await fetch(`/api/user?TelegramId=${user.TelegramId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
+  useEffect(() => {
+    setLoader(true);
+    const timeout = setTimeout(() => {
+      setLoader(false);
+    }, 7000);
 
-      if (response.ok) {
-        const existingUser = await response.json();
+    return () => clearTimeout(timeout);
+  }, []);
 
-        if (existingUser) {
-          // User found, update state and localStorage
-          setUser(existingUser);
-          localStorage.setItem('userData', JSON.stringify(existingUser));
-          setUserInStore(existingUser);
-          console.log('User already exists:', existingUser);
-          return;
-        }
-      }
-
-      // Step 2: If user does not exist, create new user
-      const createResponse = await fetch('/api/user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user),
-      });
-
-      if (!createResponse.ok) {
-        throw new Error('Failed to create user');
-      }
-
-      const newUser = await createResponse.json();
-      setUser(newUser);
-      localStorage.setItem('userData', JSON.stringify(newUser));
-      setUserInStore(newUser);
-      console.log('New user created:', newUser);
-    } catch (error) {
-      console.error('Error initializing user:', error);
-      setError('Error initializing user');
+  useEffect(() => {
+    if (user) {
+      setLoader(false);
     }
-  };
+  }, [user]);
 
-  // useEffect for initializing user data
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
 
       const initDataUnsafe = tg.initDataUnsafe || {};
-
       if (initDataUnsafe.user) {
         const rawUser = initDataUnsafe.user as unknown as {
           id: number;
@@ -116,50 +96,95 @@ export default function Home() {
           ecobalance: 0,
         };
 
-        handleUserInitialization(user);
+        checkAndCreateUser(user);
       } else {
-        setError('No user data available from Telegram');
+        handleTGWebAppData();
       }
+    } else {
+      handleTGWebAppData();
     }
-  }, [setUserInStore]);
+  }, []);
 
-  // Referral logic
-  useEffect(() => {
-    const referralCodeFromStart = startParam || '';
+  const handleTGWebAppData = () => {
+    const searchParams = new URLSearchParams(window.location.hash.substring(1));
+    const tgWebAppData = searchParams.get('tgWebAppData');
 
-    if (referralCodeFromStart && user?.TelegramId) {
-      fetch('/api/referrals', {
+    if (tgWebAppData) {
+      try {
+        const userParam = new URLSearchParams(tgWebAppData).get('user');
+        const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
+        const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
+
+        if (userObject) {
+          const userData: UserData = {
+            TelegramId: String(userObject.id || '67890'),
+            first_name: userObject.first_name || 'Имя',
+            last_name: userObject.last_name || 'Фамилия',
+            username: userObject.username || 'username',
+            language_code: userObject.language_code || 'en',
+            is_premium: userObject.is_premium || false,
+            ecobalance: 0,
+          };
+
+          checkAndCreateUser(userData);
+        } else {
+          console.error('Failed to parse user data from URL.');
+          setError('Invalid user data in URL');
+        }
+      } catch (err) {
+        console.error('Error parsing tgWebAppData:', err);
+        setError('Error parsing tgWebAppData');
+      }
+    } else {
+      console.error('No tgWebAppData found.');
+      setError('No tgWebAppData in URL');
+    }
+  };
+
+  const checkAndCreateUser = async (user: UserData) => {
+    try {
+      const response = await fetch(`/api/user?TelegramId=${user.TelegramId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        const existingUser = await response.json();
+        if (existingUser) {
+          setUser(existingUser);
+          setUserInStore(existingUser);
+          localStorage.setItem('userData', JSON.stringify(existingUser));
+        } else {
+          await createUser(user);
+        }
+      } else {
+        await createUser(user);
+      }
+    } catch (err) {
+      console.error('Error checking user existence:', err);
+    }
+  };
+
+  const createUser = async (user: UserData) => {
+    try {
+      const response = await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          TelegramId: user.TelegramId,
-          referralCode: referralCodeFromStart,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            console.log('Referral added successfully!');
-          } else {
-            console.error('Failed to add referral:', data.error);
-          }
-        })
-        .catch((error) => {
-          console.error('Error adding referral:', error);
-        });
-    } else {
-      console.error('user or TelegramId is null or undefined');
+        body: JSON.stringify(user),
+      });
+
+      if (response.ok) {
+        const newUser = await response.json();
+        setUser(newUser);
+        setUserInStore(newUser);
+        localStorage.setItem('userData', JSON.stringify(newUser));
+      } else {
+        console.error('Failed to create user:', await response.text());
+      }
+    } catch (err) {
+      console.error('Error creating user:', err);
     }
-  }, [startParam, user?.TelegramId]);
-
-  // Loader logic
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setLoader(false);
-    }, 7000);
-
-    return () => clearTimeout(timeout);
-  }, []);
+  };
 
   return (
     <>
