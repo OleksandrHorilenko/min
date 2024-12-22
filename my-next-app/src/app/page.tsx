@@ -76,6 +76,30 @@ export default function Home() {
 //  }, [user, setStartParam]);
 
 
+// Таймер загрузки
+useEffect(() => {
+  // Изначально показываем лоадер
+  setLoader(true);
+
+  // Таймер, чтобы показать лоадер на 4 секунды
+  const timeout = setTimeout(() => {
+    setLoader(false);  // Выключаем лоадер через 4 секунды
+  }, 4000);
+
+  return () => clearTimeout(timeout);
+}, []); // Этот эффект сработает один раз при монтировании компонента
+
+// Следим за загрузкой данных пользователя
+useEffect(() => {
+  // Загружаем данные пользователя
+  if (user) {
+    setLoader(false); // Если пользователь загружен, скрываем лоадер
+  }
+}, [user]); // Этот эффект сработает, когда данные пользователя будут обновлены
+
+// Остальной код для загрузки данных о пользователе, инициализации и т.д.
+
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (window.Telegram?.WebApp) {
@@ -127,7 +151,7 @@ export default function Home() {
                 setError(data.error);
               } else {
                 fetchUserData(user.TelegramId);
-                fetchUserMining(user.TelegramId);
+                //fetchUserMining(user.TelegramId);
               }
             })
             .catch((err) => {
@@ -177,7 +201,7 @@ export default function Home() {
                     setError(data.error);
                   } else {
                     fetchUserData(userData.TelegramId);
-                    fetchUserMining(userData.TelegramId);
+                    //fetchUserMining(userData.TelegramId);
                   }
                 })
                 .catch((err) => {
@@ -220,7 +244,7 @@ export default function Home() {
                 setError(data.error);
               } else {
                 fetchUserData(UserData.TelegramId);
-                fetchUserMining(UserData.TelegramId);
+                //fetchUserMining(UserData.TelegramId);
               }
             })
             .catch((err) => {
@@ -312,12 +336,7 @@ export default function Home() {
   };
 
 
-   // Таймер загрузки
-   useEffect(() => {
-    setLoader(true);
-    const timeout = setTimeout(() => setLoader(false), 4000);
-    return () => clearTimeout(timeout);
-  }, []);
+   
 
   
 

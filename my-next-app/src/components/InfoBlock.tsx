@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LinearProgress, Button } from '@mui/material';
 import useUserStore from "@/stores/useUserStore";
 import fetchUserCollection from "@/app/functions/fetchUserCollection";
+import { useTab } from '@/contexts/TabContext'
 
 interface Card {
   cardId: number;
@@ -28,6 +29,8 @@ const InfoBlock: React.FC = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const user = useUserStore((state) => state.user);
+  const [currentTab, setCurrentTab] = useState('leaderboard');
+  const { activeTab, setActiveTab } = useTab()
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -246,8 +249,11 @@ if (response.status !== 200) {
     <Button
       variant="contained"
       color="primary"
-      onClick={() => console.log("Redirecting to buy card...")}  // Логика для перехода к покупке
+      key={'leaderboard'}
+                                //onClick={() => setActiveTab('leaderboard')
+      onClick={() => console.log(setActiveTab('leaderboard'))}  // Логика для перехода к покупке
       className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg"
+
     >
       Buy your first card
     </Button>

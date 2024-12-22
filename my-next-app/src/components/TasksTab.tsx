@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { tasks, Task } from '@/components/data/taskData';
 import useUserStore from "@/stores/useUserStore";
 
-
-
 export async function syncUserTasks(TelegramId: string) {
     try {
         const response = await fetch('/api/syncTasks', {
@@ -22,8 +20,6 @@ export async function syncUserTasks(TelegramId: string) {
         console.error('Error synchronizing tasks:', error);
     }
 }
-
-
 
 export async function fetchUserTasks(TelegramId: string) {
     const response = await fetch(`/api/userTasks?TelegramId=${TelegramId}`);
@@ -46,56 +42,38 @@ export async function updateTask(TelegramId: string, taskId: string, status: str
 
 const TasksTab = () => {
     const [activeTab, setActiveTab] = useState<'in-game' | 'partners' | 'special'>('in-game');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);  // Лоадер для загрузки задач
     const user = useUserStore((state) => state.user);
     const { userTasks, setUserTasks } = useUserStore();
 
-    const TelegramId = user.TelegramId;
-
+    const TelegramId = user?.TelegramId;
 
     useEffect(() => {
-        let isMounted = true;
-    
-        const loadAndSyncTasks = async () => {
-            if (!TelegramId || !isMounted) return;
-            setIsLoading(true);
-    
-            try {
-                await syncUserTasks(TelegramId);
-                const tasks = await fetchUserTasks(TelegramId);
-                if (isMounted) setUserTasks(tasks.tasks || []);
-            } catch (error) {
-                console.error('Error loading and syncing tasks:', error);
-            } finally {
-                if (isMounted) setIsLoading(false);
-            }
-        };
-    
-        loadAndSyncTasks();
-    
-        return () => {
-            isMounted = false; // Отменить выполнение при размонтировании
-        };
+        if (!TelegramId) {
+            return;  // Пока нет пользователя, не загружаем задачи
+        }
+        setIsLoading(true);  // Включаем лоадер при начале загрузки задач
+        fetchUserTasks(TelegramId).then((data) => {
+            setUserTasks(data.tasks || []);  // Устанавливаем задачи в состояние
+            setIsLoading(false);  // Выключаем лоадер после загрузки задач
+        }).catch((error) => {
+            console.error("Error fetching tasks:", error);
+            setIsLoading(false);  // Выключаем лоадер в случае ошибки
+        });
+    }, [TelegramId, setUserTasks]);
+
+    useEffect(() => {
+        if (TelegramId) {
+            syncUserTasks(TelegramId);  // Синхронизация задач с сервером
+        }
     }, [TelegramId]);
 
     const handleStartTask = async (taskId: string, link: string) => {
         try {
-            // Локальное обновление
-      //      setUserTasks((prevTasks) =>
-      //          prevTasks.map((task) =>
-     //               task.taskId === taskId ? { ...task, status: 'in-progress' } : task
-     //           )
-     //       );
-
-            // Обновление статуса на сервере
             await updateTask(TelegramId, taskId, 'in-progress');
-
-            // Обновление задач с сервера
             const updatedTasks = await fetchUserTasks(TelegramId);
             setUserTasks(updatedTasks.tasks || []);
-
-            // Переход по ссылке
-        window.open(link, '_blank'); // Открыть в новой вкладке
+            window.open(link, '_blank');
         } catch (error) {
             console.error("Failed to start task:", error);
         }
@@ -103,36 +81,24 @@ const TasksTab = () => {
 
     const handleCompleteTask = async (taskId: string) => {
         try {
-            // Обновляем статус задачи
             await updateTask(TelegramId, taskId, 'completed');
-    
-            // Получаем обновленный список задач
             const updatedTasks = await fetchUserTasks(TelegramId);
             setUserTasks(updatedTasks.tasks || []);
-    
-            // Находим выполненную задачу
+            
             const completedTask = updatedTasks.tasks?.find((task: Task) => task.taskId === taskId);
-    
             if (completedTask && completedTask.reward) {
-                // Зачисляем награду за выполненную задачу
                 const response = await fetch('/api/taskReward', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ TelegramId, taskReward: completedTask.reward }),
                 });
-    
+
                 if (!response.ok) {
                     throw new Error('Failed to update user balance');
                 }
-    
+
                 const data = await response.json();
-    
-                // Обновляем состояние пользователя
-                const updatedUser = {
-                    ...user,
-                    ecobalance: data.ecobalance, // Баланс из ответа API
-                };
-    
+                const updatedUser = { ...user, ecobalance: data.ecobalance };
                 useUserStore.setState({ user: updatedUser });
                 localStorage.setItem('userData', JSON.stringify(updatedUser));
             }
@@ -140,9 +106,7 @@ const TasksTab = () => {
             console.error("Failed to complete task:", error);
         }
     };
-    
 
-    // Фильтруем задания
     const filteredTasks = Array.isArray(userTasks)
         ? userTasks.filter((task) => task.type === activeTab)
         : [];
@@ -219,5 +183,6 @@ const TasksTab = () => {
 };
 
 export default TasksTab;
+
 
 

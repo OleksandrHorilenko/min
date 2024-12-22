@@ -28,7 +28,7 @@ const HomeTab = () => {
       <div className="flex flex-col items-center mt-12">
         <Image src={sun} alt="Sun" width={108} height={108} />
         <div className="text-4xl font-bold mb-1">
-  {user.ecobalance.toFixed(2)} ECO
+  {user.ecobalance.toFixed(2)} THE
 </div>
         
         <div className="flex items-center gap-1 text-[#868686] rounded-full px-4 py-1.5 mt-2 cursor-pointer">
@@ -48,15 +48,18 @@ const HomeTab = () => {
           >
             <div className="flex items-center gap-3 font-medium">
               <Community className="w-8 h-8" />
-              <span>Buy ECO miner</span>
+              <span>Buy THE miner</span>
             </div>
             <ArrowRight className="w-6 h-6 text-gray-400" />
           </button>
 
           <button className="shine-effect flex-1 bg-[#ffffff0d] border-[1px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-3 font-medium">
+            <div className="flex items-center gap-3 font-medium"
+            key={'earn'}
+            onClick={() => setActiveTab('earn')}
+            >
               <Star className="w-8 h-8" />
-              <span>Check your rewards</span>
+              <span>Get tasks</span>
             </div>
             <ArrowRight className="w-6 h-6 text-gray-400" />
           </button>
