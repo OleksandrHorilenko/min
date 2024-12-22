@@ -19,7 +19,9 @@ declare global {
         initData: string;
         initDataUnsafe: Record<string, unknown>;
         close: () => void;
-        // Добавьте другие методы и свойства WebApp, если нужно
+        HapticFeedback?: {
+          impactOccurred: (style: "light" | "medium" | "heavy") => void;
+        };
       };
     };
   }
