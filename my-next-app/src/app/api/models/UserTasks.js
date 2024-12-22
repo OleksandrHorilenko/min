@@ -11,7 +11,7 @@ const userTaskSchema = new mongoose.Schema({
       taskId: {
         type: String,
         required: true,
-        unique: true,
+        
       },
       tasktype: {
         type: String,
