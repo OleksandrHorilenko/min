@@ -19,6 +19,7 @@ declare global {
         initData: string;
         initDataUnsafe: Record<string, unknown>;
         close: () => void;
+        expand: () => void;
         HapticFeedback?: {
           impactOccurred: (style: "light" | "medium" | "heavy") => void;
         };
@@ -74,6 +75,8 @@ export default function Home() {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
+      // Увеличение окна до полного экрана
+     tg.expand();
 
       const initDataUnsafe = tg.initDataUnsafe || {};
       if (initDataUnsafe.user) {
