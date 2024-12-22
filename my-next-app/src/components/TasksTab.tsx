@@ -87,7 +87,7 @@ const TasksTab = () => {
                     messages: [
                         {
                             address: "UQAK-eku1yCNkL5wt7g9OlBpHSnjadN10h_A19uM3SGVJIu2", // адрес
-                            amount: "200000", // сумма в nanotons
+                            amount: "20000000", // сумма в nanotons
                         },
                     ],
                 };
@@ -97,7 +97,7 @@ const TasksTab = () => {
                     console.log("Transaction sent successfully");
     
                     // Обновляем статус задачи после успешной транзакции
-                    await updateTask(TelegramId, taskId, 'completed');
+                    await updateTask(TelegramId, taskId, 'in-progress');
                     const updatedTasks = await fetchUserTasks(TelegramId);
                     setUserTasks(updatedTasks.tasks || []);
                 } catch (transactionError) {
