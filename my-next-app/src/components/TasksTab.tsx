@@ -81,7 +81,7 @@ const TasksTab = () => {
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.openLink(link);
         } else {
-            console.error("Telegram WebApp не доступен. Убедитесь, что приложение запущено в Telegram Mini App.");
+            window.open('link', '_blank');
         }
         } catch (error) {
             console.error("Failed to start task:", error);
