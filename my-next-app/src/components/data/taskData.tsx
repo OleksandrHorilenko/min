@@ -22,7 +22,7 @@ export const tasks: Task[] = [
         type: 'partners',
         title: 'Подпишитесь на канал',
         description: 'Подпишитесь на официальный Telegram-канал проекта.',
-        link: 'https://t.me/',
+        link: 'https://t.me/@themine_app',
         reward: 50,
         status: 'available',
         icon: 'TelegramIcon',
@@ -97,6 +97,19 @@ export const tasks: Task[] = [
         icon: 'TelegramIcon',
         progress: 0,
         rewardPaid: false,
+    },
+    {
+        taskId: '7', // Изменили с 'id' на 'taskId'
+        tasktype: 'telegram',
+        type: 'partners',
+        title: 'Стань участником группы',
+        description: 'Стань участником группы Telegram проекта.',
+        link: 'https://t.me/+8OgpRqfFu5UyMjQ6',
+        reward: 50,
+        status: 'available',
+        icon: 'TelegramIcon',
+        progress: 0, // Добавили поле progress
+        rewardPaid: false, // Добавили поле rewardPaid
     },
     
 ];
