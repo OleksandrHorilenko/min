@@ -55,7 +55,7 @@ export default function RootLayout({
           />
         </Head>
       </head>
-      <body
+       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TonConnectUIProvider manifestUrl="https://min-liard.vercel.app/tonconnect-manifest.json">

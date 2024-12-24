@@ -3,6 +3,7 @@ import CheckFootprint from '@/components/CheckFootprint'
 import NavigationBar from '@/components/NavigationBar'
 import TabContainer from '@/components/TabContainer'
 import { TabProvider } from '@/contexts/TabContext'
+//import { AppRoot } from '@tonconnect/ui-react';  // Импортируем AppRoot
 
 export default function Home() {
   return (
