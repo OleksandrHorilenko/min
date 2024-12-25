@@ -23,7 +23,9 @@ const WithdrawTab = () => {
   };
 
   return (
-    <div className="flex flex-col items-center mt-8">
+    <div className="flex flex-col items-center mt-8"><div className="w-full flex justify-center mt-8">
+    <TonConnectButton />
+  </div>
       <button
         className="shine-effect bg-[#ffffff0d] border-[1px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center gap-3"
     

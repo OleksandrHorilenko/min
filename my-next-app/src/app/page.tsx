@@ -79,11 +79,11 @@ export default function Home() {
       const tg = window.Telegram.WebApp;
       tg.ready();
       // Увеличение окна до полного экрана
-     tg.expand();
+    // tg.expand();
 
      // Запрос полноэкранного режима
    // if (tg.requestFullscreen) {
-   //   tg.requestFullscreen();
+      tg.requestFullscreen();
    // }
 
       const initDataUnsafe = tg.initDataUnsafe || {};

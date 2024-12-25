@@ -1,10 +1,17 @@
 "use client";
-import { beginCell, toNano, Address } from '@ton/ton'
+import { beginCell, toNano, Address } from '@ton/ton';
 import React, { useState, useEffect } from "react";
-import { TonConnectButton, useTonConnectUI, SendTransactionRequest,useTonWallet, useTonAddress } from "@tonconnect/ui-react";
+import { TonConnectButton, useTonConnectUI, SendTransactionRequest, useTonWallet, useTonAddress } from "@tonconnect/ui-react";
 import useUserStore from "@/stores/useUserStore";
 import { Section, Cell, Info, Avatar } from "@telegram-apps/telegram-ui";
-//import { TonConnectButton, useTonConnectUI, useTonWallet, useTonAddress } from '@tonconnect/ui-react';
+
+interface TransactionData {
+  userId: string; // TelegramId пользователя
+  wallet: any | null;
+  amount: number;  // Сумма транзакции
+  transactionType: string; // Тип транзакции, например, "deposit"
+  timestamp: string; // Время транзакции в формате ISO
+}
 
 const DepositTab = () => {
   const [tonAmount, setTonAmount] = useState("");
@@ -15,79 +22,64 @@ const DepositTab = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [tonConnectUI] = useTonConnectUI();
+  const [tokenAmount, setTokenAmount] = useState(""); // Для ввода количества токенов
 
-  //test jetton transaction
-const userFriendlyAddress = useTonAddress(); // Адрес текущего пользователя
-const jettonContractAddress = "EQBaURJRjn-hG-1ilKdyBaAsxnch35LZ3BquysFnkVaHUc1P"; 
-const Wallet_DST = "UQAK-eku1yCNkL5wt7g9OlBpHSnjadN10h_A19uM3SGVJIu2";
-const Wallet_SRC = userFriendlyAddress;
-const [walletBalance, setWalletBalance] = useState<any | null>(null);
-const wallet = useTonWallet();
-const address = wallet?.account?.address; 
-// Формируем тело сообщения
-//const body = beginCell()
-//    .storeUint(0xf8a7ea5, 32)                 // Jetton transfer op code
-//    .storeUint(0, 64)                         // query_id:uint64
- //   .storeCoins(toNano("1.5"))                // Jetton amount for transfer (1.5 Jettons)
-//    .storeAddress(Address.parse(Wallet_DST))  // Адрес получателя
-//    .storeAddress(Address.parse(Wallet_SRC))  // Адрес отправителя (для ответного сообщения)
-//    .storeUint(0, 1)                          // custom_payload
-//    .storeCoins(toNano("0.05"))               // Количество TON для комиссии/уведомления
-//    .storeUint(0, 1)                          // forward_payload
-//    .endCell();
+  // Получаем адрес пользователя
+  const userFriendlyAddress = useTonAddress(); // Адрес текущего пользователя
+  const wallet = useTonWallet();
+  const address = wallet?.account?.address;
 
-//console.log("Transaction body:", body);
+  const TOKENS_PER_TON = 1000; // 1 TON = 1000 токенов
 
-//баланс токена
-useEffect(() => {
-  const url = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
-  if (address) {
-    fetch(url)
-      .then(async (response: any) => {
-        const res = await response.json();
-        console.log(res);
-        setWalletBalance(parseFloat(res.result.balance) / 1e9);
-      })
-      .catch((error) => console.error(error));
-  }
-}, [address]);
+  const handleQuickFill = (amount: number) => {
+    const tokenString = amount.toString();
+    setTokenAmount(tokenString);
+    const calculatedTon = amount / TOKENS_PER_TON;
+    setTonAmount(calculatedTon.toFixed(6));
+    setTonError("");
+  };
 
-  ///Пополнение TON
-
-  const validateTonAmount = (value: string) => {
+  const validateTokenAmount = (value: string) => {
     const parsed = parseFloat(value);
-    if (!parsed || parsed <= 0 || parsed > 10000) {
-      setTonError("Enter a valid TON amount (0.01 - 10,000)");
+    if (!parsed || parsed <= 0 || parsed > 10000000) { // Максимум 10,000,000 токенов (10,000 TON)
+      setTonError("Enter a valid token amount (1 - 10,000,000)");
       return false;
     }
     setTonError("");
     return true;
   };
 
-  const handleTonInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTokenInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
-    if (/^\d{0,5}(\.\d{0,2})?$/.test(inputValue) || inputValue === "") {
-      setTonAmount(inputValue);
-      validateTonAmount(inputValue);
+    if (/^\d{0,7}(\.\d{0,2})?$/.test(inputValue) || inputValue === "") {
+      setTokenAmount(inputValue);
+      if (validateTokenAmount(inputValue)) {
+        const calculatedTon = parseFloat(inputValue) / TOKENS_PER_TON;
+        setTonAmount(calculatedTon.toFixed(6)); // Отображать до 6 знаков после запятой
+      } else {
+        setTonAmount("");
+      }
     } else {
       setTonError("Only valid number input is allowed");
     }
   };
 
-  const isTonButtonDisabled = () => {
-    const parsed = parseFloat(tonAmount);
-    return !(parsed > 0.001 && parsed <= 10000);
+  const isTokenButtonDisabled = () => {
+    const parsed = parseFloat(tokenAmount);
+    return !(parsed > 0 && parsed <= 10000000);
   };
 
-  const handleTonTransaction = async () => {
+  const handleTokenTransaction = async () => {
     try {
       setIsLoading(true);
+      const tonAmountToSend = parseFloat(tonAmount);
+
       const transaction: SendTransactionRequest = {
         validUntil: Date.now() + 5 * 60 * 1000,
         messages: [
           {
-            address: "UQAK-eku1yCNkL5wt7g9OlBpHSnjadN10h_A19uM3SGVJIu2",
-            amount: (parseFloat(tonAmount) * 1e9).toString(),
+            address: "UQAK-eku1yCNkL5wt7g9OlBpHSnjadN10h_A19uM3SGVJIu2", // Пример адреса
+            amount: (tonAmountToSend * 1e9).toString(), // Перевод в нанотоны
           },
         ],
       };
@@ -95,107 +87,26 @@ useEffect(() => {
       const result = await tonConnectUI.sendTransaction(transaction);
 
       if (result) {
-        const coinsToAdd = parseFloat(tonAmount) * 1000;
+        const coinsToAdd = parseFloat(tokenAmount); // Добавляем токены
         await updateBalanceInDB(coinsToAdd);
+        // Логирование транзакции в базу данных
+        const transactionData: TransactionData = {
+          userId: user.TelegramId,
+          wallet: userFriendlyAddress,
+          amount: coinsToAdd,
+          transactionType: "deposit", // Тип транзакции (например, депозит)
+          timestamp: new Date().toISOString(),
+        };
+        await logTransactionInDB(transactionData);
+
+        setTokenAmount("");
         setTonAmount("");
       } else {
-        alert("TON transaction failed or was cancelled.");
+        alert("Transaction failed or was cancelled.");
       }
     } catch (error) {
-      console.error("TON transaction error:", error);
-      alert("TON transaction failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  ///Пополнение Jetton
-
-  const validateJettonAmount = (value: string) => {
-    const parsed = parseFloat(value);
-    if (!parsed || parsed <= 0 || parsed > 10000) {
-      setJettonError("Enter a valid Jetton amount (0.01 - 10,000)");
-      return false;
-    }
-    setJettonError("");
-    return true;
-  };
-
-  const handleJettonInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    if (/^\d{0,5}(\.\d{0,2})?$/.test(inputValue) || inputValue === "") {
-      setJettonAmount(inputValue);
-      validateJettonAmount(inputValue);
-    } else {
-      setJettonError("Only valid number input is allowed");
-    }
-  };
-
-  const isJettonButtonDisabled = () => {
-    const parsed = parseFloat(jettonAmount);
-    return !(parsed > 0.001 && parsed <= 10000);
-  };
-
-  const handleJettonTransaction = async () => {
-    try {
-      setIsLoading(true);
-  
-      
-  
-      
-  
-      //const Wallet_DST = "UQAK-eku1yCNkL5wt7g9OlBpHSnjadN10h_A19uM3SGVJIu2"; // Адрес получателя
-      //const Wallet_SRC = userFriendlyAddress; // Адрес отправителя
-  
-      // Проверка суммы
-      const estimatedFee = 0.1; // Примерная комиссия
-      const totalAmount = parseFloat(jettonAmount) - estimatedFee;
-  
-      if (totalAmount <= 0) {
-        alert("The amount is too small after deducting the transaction fee.");
-        return;
-      }
-  
-      // Формируем тело транзакции
-      const body = beginCell()
-        .storeUint(0xf8a7ea5, 32) // Jetton transfer op code
-        .storeUint(0, 64) // query_id:uint64
-        .storeCoins(toNano(totalAmount.toString())) // Сумма жетонов для перевода (в nano)
-        .storeAddress(Address.parse(Wallet_DST)) // Адрес получателя
-        .storeAddress(Address.parse(Wallet_SRC)) // Адрес отправителя (для ответного сообщения)
-        .storeUint(0, 1) // custom_payload
-        .storeCoins(toNano("0.05")) // Количество TON для комиссии/уведомления
-        .storeUint(0, 1) // forward_payload
-        .endCell();
-  
-      console.log("Transaction body:", body);
-  
-      // Описание транзакции
-      const transaction = {
-        validUntil: Math.floor(Date.now() / 1000) + 300, // Время валидности
-        messages: [
-          {
-            address: jettonContractAddress, // Адрес контракта жетона
-            amount: toNano("0.15").toString(), 
-            payload: body.toBoc().toString("base64"), 
-          },
-        ],
-      };
-  
-      // Отправляем транзакцию
-      const result = await tonConnectUI.sendTransaction(transaction);
-  
-      if (result) {
-        alert("Transaction successful!");
-        const coinsToAdd = totalAmount * 1000; // Перерасчет суммы с учетом комиссии
-        await updateBalanceInDB(coinsToAdd);
-        setJettonAmount(""); // Сброс введенной суммы
-      } else {
-        alert("Jetton transaction failed or was cancelled.");
-      }
-    } catch (error) {
-      console.error("Jetton transaction error:", error);
-      alert("An error occurred during the transaction. Please try again.");
+      console.error("Transaction error:", error);
+      alert("Transaction failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -229,15 +140,36 @@ useEffect(() => {
     }
   };
 
+  // Запись транзакции в базу данных
+  const logTransactionInDB = async (transactionData: TransactionData) => {
+    try {
+      const response = await fetch("/api/userTransactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          TelegramId: transactionData.userId,
+          wallet: transactionData.wallet, // Передаем wallet в нужном типе
+          amount: transactionData.amount,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to log transaction.");
+      }
+    } catch (err) {
+      console.error("Error logging transaction:", err);
+    }
+  };
+
   return (
-    <div className="max-w-md mx-auto bg-gray-900 text-white rounded-lg shadow-lg p-6 mt-8"><div className="mb-4">
-    {/* Connect Wallet Button */}
-    <TonConnectButton />
-    {JSON.stringify(walletBalance)} {walletBalance}
-  </div>
-     
-    
-    
+    <div className="max-w-md mx-auto bg-gray-900 text-white rounded-lg shadow-lg p-6 mt-8">
+      <div className="mb-4">
+        <TonConnectButton />
+      </div>
+
       <div className="flex justify-between mb-4">
         <button className="text-sm font-medium text-blue-500 border-b-2 border-blue-500 pb-1">
           Deposit
@@ -247,61 +179,47 @@ useEffect(() => {
 
       <h2 className="text-xl font-semibold mb-4">App balance top-up</h2>
 
-      {/* TON Amount Input */}
       <div className="mb-6">
-        <label htmlFor="tonAmount" className="block text-sm font-medium">
-          TON Amount
+        <label htmlFor="tokenAmount" className="block text-sm font-medium">
+          Enter Token Amount
         </label>
         <input
-          id="tonAmount"
+          id="tokenAmount"
           type="text"
-          value={tonAmount}
-          onChange={handleTonInputChange}
-          placeholder="Enter TON amount"
-          className="p-3 w-full bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        {tonError && <p className="text-red-500 text-sm mt-2">{tonError}</p>}
-        <button
-          className={`mt-4 w-full px-4 py-2 font-semibold rounded-lg shadow ${
-            isTonButtonDisabled()
-              ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-              : "bg-yellow-500 text-gray-900 hover:bg-yellow-600"
-          }`}
-          onClick={handleTonTransaction}
-          disabled={isTonButtonDisabled()}
-        >
-          Top up with TON
-        </button>
-      </div>
-
-      {/* Jetton Amount Input */}
-      <div className="mb-6">
-        <label htmlFor="jettonAmount" className="block text-sm font-medium">
-          Jetton Amount
-        </label>
-        <input
-          id="jettonAmount"
-          type="text"
-          value={jettonAmount}
-          onChange={handleJettonInputChange}
-          placeholder="Enter Jetton amount"
+          value={tokenAmount}
+          onChange={handleTokenInputChange}
+          placeholder="Enter token amount"
           className="p-3 w-full bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
         />
-        {jettonError && <p className="text-red-500 text-sm mt-2">{jettonError}</p>}
+        {tonError && <p className="text-red-500 text-sm mt-2">{tonError}</p>}
+        <p className="mt-2 text-gray-300">You will pay: {tonAmount || "0"} TON</p>
+
+        <div className="mt-4 flex gap-2">
+          {[1000, 5000, 10000].map((amount) => (
+            <button
+              key={amount}
+              className="px-4 py-2 bg-blue-600 rounded-lg text-white font-medium hover:bg-blue-700 focus:outline-none"
+              onClick={() => handleQuickFill(amount)}
+            >
+              +{amount}
+            </button>
+          ))}
+        </div>
+
         <button
-          className={`mt-4 w-full px-4 py-2 font-semibold rounded-lg shadow ${
-            isJettonButtonDisabled()
+          className={`mt-6 w-full px-4 py-2 font-semibold rounded-lg shadow ${
+            isTokenButtonDisabled()
               ? "bg-gray-600 text-gray-400 cursor-not-allowed"
               : "bg-green-500 text-gray-900 hover:bg-green-600"
           }`}
-          onClick={handleJettonTransaction}
-          disabled={isJettonButtonDisabled()}
+          onClick={handleTokenTransaction}
+          disabled={isTokenButtonDisabled()}
         >
-          Top up with Jetton
+          Buy Tokens
         </button>
       </div>
 
-      {successMessage && <p className="text-green-500 text-sm mt-4">{successMessage}</p>}
+      {isLoading && <p className="text-gray-400 text-sm mt-4">Processing transaction...</p>}
     </div>
   );
 };
