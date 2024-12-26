@@ -76,7 +76,7 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.hash.substring(1));
+      const urlParams = new URLSearchParams(window.location.search);
       const startapp = urlParams.get('startapp');
   
       // Проверяем, является ли параметр реферальным кодом
@@ -115,6 +115,28 @@ export default function Home() {
   const handleTGWebAppData = () => {
     const searchParams = new URLSearchParams(window.location.hash.substring(1));
     const tgWebAppData = searchParams.get('tgWebAppData');
+
+    // Извлекаем реферальный код, если он присутствует
+  const refCodeFromURL = searchParams.get('startapp');
+  if (refCodeFromURL && refCodeFromURL.startsWith('r_')) {
+    const refCode = refCodeFromURL.substring(2); // Убираем 'r_' префикс
+    setReferralCode(refCode); // Сохраняем реферальный код в состоянии (если нужно)
+    localStorage.setItem('referralCode', refCode); // Сохраняем в localStorage
+
+    // Дополнительная логика с реферальным кодом, например, отправка на сервер
+    const TelegramId = user?.TelegramId; // ID текущего пользователя
+    if (TelegramId) {
+      sendReferral(TelegramId, refCode)
+        .then((result) => {
+          if (result.success) {
+            console.log('Реферал успешно обработан:', result.message);
+          } else {
+            console.error('Ошибка обработки реферала:', result.message);
+          }
+        })
+        .catch((err) => console.error('Ошибка вызова sendReferral:', err));
+    }
+  }
   
     if (tgWebAppData) {
       try {
