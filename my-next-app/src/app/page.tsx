@@ -72,15 +72,21 @@ export default function Home() {
   }, [user]);
 
   useEffect(() => {
+    // Извлечение параметра start_param из query
+    const searchParams = new URLSearchParams(window.location.search);
+    const referralCode = searchParams.get('start_param'); // Здесь извлекаем start_param
+
+    if (referralCode) {
+      setReferralCode(referralCode);  // Устанавливаем реферальный код в состояние
+      localStorage.setItem('referralCode', referralCode);  // Сохраняем реферальный код в localStorage
+      console.log('Referral code extracted:', referralCode);  // Для отладки
+    } else {
+      console.warn('Referral code is missing from the URL');  // Если код не найден
+    }
+
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
-
-      if (tg.requestFullscreen) {
-        tg.requestFullscreen();
-      } else {
-        console.warn('Fullscreen not supported.');
-      }
 
       const initDataUnsafe = tg.initDataUnsafe || {};
       if (initDataUnsafe.user) {
@@ -93,11 +99,6 @@ export default function Home() {
           is_premium?: boolean;
         };
 
-        if (!rawUser) {
-          console.error('No user data found in initDataUnsafe.');
-          return;
-        }
-
         const user: UserData = {
           TelegramId: String(rawUser.id),
           first_name: rawUser.first_name,
@@ -109,11 +110,7 @@ export default function Home() {
         };
 
         checkAndCreateUser(user);
-      } else {
-        handleTGWebAppData();
       }
-    } else {
-      handleTGWebAppData();
     }
   }, []);
 
@@ -253,3 +250,4 @@ export default function Home() {
     </>
   );
 }
+
