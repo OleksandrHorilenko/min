@@ -110,9 +110,29 @@ export default function Home() {
         };
 
         checkAndCreateUser(user);
+      } else {
+        // Если данных Telegram нет, устанавливаем тестовые данные
+        setTestUserData();
       }
+    } else {
+      // Если WebApp не доступен, устанавливаем тестовые данные
+      setTestUserData();
     }
   }, []);
+
+  const setTestUserData = () => {
+    const testUser: UserData = {
+      TelegramId: '123456',
+      first_name: 'Test',
+      last_name: 'User',
+      username: 'testuser',
+      language_code: 'en',
+      is_premium: false,
+      ecobalance: 100,
+    };
+
+    checkAndCreateUser(testUser);
+  };
 
   const handleTGWebAppData = () => {
     const searchParams = new URLSearchParams(window.location.hash.substring(1));
@@ -151,17 +171,8 @@ export default function Home() {
         setError('Error parsing tgWebAppData');
       }
     } else {
-      const testUser: UserData = {
-        TelegramId: '123456',
-        first_name: 'Test',
-        last_name: 'User',
-        username: 'testuser',
-        language_code: 'en',
-        is_premium: false,
-        ecobalance: 100,
-      };
-
-      checkAndCreateUser(testUser);
+      // Если tgWebAppData нет, устанавливаем тестовые данные
+      setTestUserData();
     }
   };
 
@@ -250,4 +261,3 @@ export default function Home() {
     </>
   );
 }
-
