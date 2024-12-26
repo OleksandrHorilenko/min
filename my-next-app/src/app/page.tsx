@@ -80,8 +80,8 @@ export default function Home() {
       const startapp = urlParams.get('startapp');
   
       // Проверяем, является ли параметр реферальным кодом
-      if (startapp?.startsWith('r_')) {
-        const referralCode = startapp.substring(2); // Убираем 'r_' префикс
+      if (startapp) {
+        const referralCode = startapp; // Убираем 'r_' префикс
         setReferralCode(referralCode);
         localStorage.setItem('referralCode', referralCode);
   
@@ -118,15 +118,15 @@ export default function Home() {
 
     // Извлекаем реферальный код, если он присутствует
   const refCodeFromURL = searchParams.get('startapp');
-  if (refCodeFromURL && refCodeFromURL.startsWith('r_')) {
-    const refCode = refCodeFromURL.substring(2); // Убираем 'r_' префикс
-    setReferralCode(refCode); // Сохраняем реферальный код в состоянии (если нужно)
-    localStorage.setItem('referralCode', refCode); // Сохраняем в localStorage
+  if (refCodeFromURL) {
+    const referralCode = refCodeFromURL.substring(2); // Убираем 'r_' префикс
+    setReferralCode(referralCode); // Сохраняем реферальный код в состоянии (если нужно)
+    localStorage.setItem('referralCode', referralCode); // Сохраняем в localStorage
 
     // Дополнительная логика с реферальным кодом, например, отправка на сервер
     const TelegramId = user?.TelegramId; // ID текущего пользователя
     if (TelegramId) {
-      sendReferral(TelegramId, refCode)
+      sendReferral(TelegramId, referralCode)
         .then((result) => {
           if (result.success) {
             console.log('Реферал успешно обработан:', result.message);
@@ -229,7 +229,7 @@ export default function Home() {
 
   async function sendReferral(TelegramId: string, referralCode: string) {
     try {
-      const response = await fetch('/api/referals', {
+      const response = await fetch('/api/referrals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ TelegramId, referralCode }),
