@@ -22,7 +22,7 @@ export const tasks: Task[] = [
         type: 'partners',
         title: 'Подпишитесь на канал',
         description: 'Подпишитесь на официальный Telegram-канал проекта.',
-        link: '@themine_app',
+        link: 't.me/themine_app',
         reward: 50,
         status: 'available',
         icon: 'TelegramIcon',

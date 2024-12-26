@@ -74,17 +74,19 @@ const InfoBlock: React.FC = () => {
   };
 
   const calculateMinedCoins = (card: Card, currentTime: Date) => {
-    const { cardlastclaim, miningcoins, miningperiod, remainingcoins } = card;
-
+    const { cardlastclaim, miningcoins, remainingcoins } = card;
     const lastClaimDate = new Date(cardlastclaim);
-
-    const elapsedSeconds = (currentTime.getTime() - lastClaimDate.getTime()) / 1000;
-
-   const profitPerSecond = card.profitperhour / 3600;
-   const minedSinceLastClaim = Math.min(remainingcoins, profitPerSecond * elapsedSeconds);
-
-    return minedSinceLastClaim;
+    const elapsedSeconds = (currentTime.getTime() - lastClaimDate.getTime()) / 1000; // Время в секундах
+  
+    const profitPerSecond = card.profitperhour / 3600; // Профит за секунду
+    const minedSinceLastClaim = profitPerSecond * elapsedSeconds; // Сколько монет добыто с момента последнего забора
+  
+    // Ограничиваем количество добытых монет
+    const actualMinedCoins = Math.min(minedSinceLastClaim, remainingcoins);
+  
+    return actualMinedCoins;
   };
+  
 
   const getTotalMinedCoins = () => {
     if (!serverTime) return 0;
@@ -106,82 +108,63 @@ const InfoBlock: React.FC = () => {
     try {
       const updatedCollection = userCollection.map((card) => {
         const minedCoins = calculateMinedCoins(card, serverTime);
+  
+        // Обновляем количество добытых монет и оставшиеся монеты
         return {
           ...card,
-          minedcoins: card.minedcoins + minedCoins,
-          remainingcoins: card.remainingcoins - minedCoins,
-          cardlastclaim: serverTime.toISOString(),
+          minedcoins: Math.min(card.minedcoins + minedCoins, card.miningcoins), // Не даем minedcoins превышать miningcoins
+          remainingcoins: Math.max(card.remainingcoins - minedCoins, 0), // Не даем remainingcoins быть меньше 0
+          cardlastclaim: serverTime.toISOString(), // Обновляем дату последнего забора
         };
       });
-  /////Добавленіе на кошелек
-
-
-// Обновляем данные пользователя на сервере
-await fetch('/api/updateUserBalance', {
-  method: 'PUT',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    TelegramId: user.TelegramId,
-    ecobalance: totalMinedCoins,
-    action: 'increment',
-  }),
-});
-
-// Обновляем состояние пользователя
-const updatedUser = {
-  ...user,
-  ecobalance: user.ecobalance + totalMinedCoins,
-};
-
-useUserStore.setState({ user: updatedUser });
-localStorage.setItem('userData', JSON.stringify(updatedUser));
-
-
-
-
-
-
-
-
-
+  
+      // Обновление на сервере и локально
+      await fetch('/api/updateUserBalance', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          TelegramId: user.TelegramId,
+          ecobalance: totalMinedCoins,
+          action: 'increment',
+        }),
+      });
+  
       // Отправка обновленной коллекции на сервер
-// Отправка обновленной коллекции на сервер
-const response = await fetch('/api/updateUserCollectionInDB', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    TelegramId: user.TelegramId,
-    cards: updatedCollection.map((card) => ({  // Переименовали с "collection" на "cards"
-      cardId: card.cardId,  // Убедитесь, что cardId есть в данных
-      serialNumber: card.serialNumber,
-      isActive: card.isActive,
-      rarity: card.rarity,
-      title: card.title,
-      description: card.description,
-      miningcoins: card.miningcoins,
-      miningperiod: card.miningperiod,
-      miningcycle: card.miningcycle,
-      profitperhour: card.profitperhour,
-      minedcoins: card.minedcoins,
-      remainingcoins: card.remainingcoins,
-      price: card.price,
-      edition: card.edition,
-      cardlastclaim: card.cardlastclaim,
-      acquiredAt: card.acquiredAt,
-    })),
-  }),
-});
-
-const data = await response.json();
-
-if (response.status !== 200) {
-  throw new Error(data.error || 'Не удалось обновить коллекцию');
-}
-
+      const response = await fetch('/api/updateUserCollectionInDB', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          TelegramId: user.TelegramId,
+          cards: updatedCollection.map((card) => ({
+            cardId: card.cardId,
+            serialNumber: card.serialNumber,
+            isActive: card.isActive,
+            rarity: card.rarity,
+            title: card.title,
+            description: card.description,
+            miningcoins: card.miningcoins,
+            miningperiod: card.miningperiod,
+            miningcycle: card.miningcycle,
+            profitperhour: card.profitperhour,
+            minedcoins: card.minedcoins,
+            remainingcoins: card.remainingcoins,
+            price: card.price,
+            edition: card.edition,
+            cardlastclaim: card.cardlastclaim,
+            acquiredAt: card.acquiredAt,
+          })),
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.status !== 200) {
+        throw new Error(data.error || 'Не удалось обновить коллекцию');
+      }
   
       // Обновляем данные пользователя локально
       useUserStore.setState({ user: { ...user, ecobalance: user.ecobalance + totalMinedCoins } });
@@ -199,6 +182,7 @@ if (response.status !== 200) {
       console.error("Ошибка при обновлении данных:", error);
     }
   };
+  
 
   // Привязка времени на основе минимального времени с последнего обновления
   useEffect(() => {

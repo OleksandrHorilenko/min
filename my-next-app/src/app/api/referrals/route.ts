@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connect from '../mongodb.js';
 import Referal from '../models/Referal';
+import User from '../models/User';
 
 // Генерация уникального реферального кода
 function generateReferralCode() {
@@ -22,6 +23,15 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+     // Проверяем, существует ли уже пользователь с таким TelegramId
+     const existingUser = await User.findOne({ TelegramId });
+     if (existingUser) {
+       return NextResponse.json(
+         { error: 'Пользователь с таким TelegramId уже существует' },
+         { status: 409 }
+       );
+     }
 
     // Находим запись с указанным referralCode
     const referalRecord = await Referal.findOne({ referralCode });

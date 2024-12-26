@@ -61,7 +61,7 @@ const FriendsTab = () => {
 
   // Функция для копирования ссылки
   const handleCopyLink = () => {
-    const inviteLink = `${INVITE_URL}?startapp=${myRefCode}`;
+    const inviteLink = `${INVITE_URL}?startapp=r_${myRefCode}`;
     navigator.clipboard.writeText(inviteLink);
     alert('Invite link copied to clipboard!');
   };
