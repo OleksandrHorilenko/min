@@ -72,178 +72,40 @@ export default function Home() {
   }, [user]);
 
   useEffect(() => {
-    // Извлечение параметра start_param из query
-    const searchParams = new URLSearchParams(window.location.search);
-    const referralCode = searchParams.get('start_param'); // Здесь извлекаем start_param
-
-    if (referralCode) {
-      setReferralCode(referralCode);  // Устанавливаем реферальный код в состояние
-      localStorage.setItem('referralCode', referralCode);  // Сохраняем реферальный код в localStorage
-      console.log('Referral code extracted:', referralCode);  // Для отладки
-    } else {
-      console.warn('Referral code is missing from the URL');  // Если код не найден
-    }
-
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
+      const tg = window.Telegram.WebApp
+      tg.ready()
 
-      const initDataUnsafe = tg.initDataUnsafe || {};
+      const initData = tg.initData || ''
+      const initDataUnsafe = tg.initDataUnsafe || {}
+
       if (initDataUnsafe.user) {
-        const rawUser = initDataUnsafe.user as unknown as {
-          id: number;
-          first_name: string;
-          last_name?: string;
-          username?: string;
-          language_code: string;
-          is_premium?: boolean;
-        };
-
-        const user: UserData = {
-          TelegramId: String(rawUser.id),
-          first_name: rawUser.first_name,
-          last_name: rawUser.last_name,
-          username: rawUser.username,
-          language_code: rawUser.language_code,
-          is_premium: rawUser.is_premium,
-          ecobalance: 0,
-        };
-
-        checkAndCreateUser(user);
+        fetch('/api/user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(initDataUnsafe.user),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.error) {
+              setError(data.error)
+            } else {
+              setUser(data)
+            }
+          })
+          .catch((err) => {
+            setError('Failed to fetch user data')
+          })
       } else {
-        // Если данных Telegram нет, устанавливаем тестовые данные
-        setTestUserData();
+        setError('No user data available')
       }
     } else {
-      // Если WebApp не доступен, устанавливаем тестовые данные
-      setTestUserData();
+      setError('This app should be opened in Telegram')
     }
-  }, []);
+  }, [])
 
-  const setTestUserData = () => {
-    const testUser: UserData = {
-      TelegramId: '123456',
-      first_name: 'Test',
-      last_name: 'User',
-      username: 'testuser',
-      language_code: 'en',
-      is_premium: false,
-      ecobalance: 100,
-    };
-
-    checkAndCreateUser(testUser);
-  };
-
-  const handleTGWebAppData = () => {
-    const searchParams = new URLSearchParams(window.location.hash.substring(1));
-    const tgWebAppData = searchParams.get('tgWebAppData');
-
-    if (tgWebAppData) {
-      try {
-        const userParam = new URLSearchParams(tgWebAppData).get('user');
-        const referralParam = new URLSearchParams(tgWebAppData).get('r_');
-
-        if (referralParam) {
-          setReferralCode(referralParam);
-        }
-
-        const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
-        const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
-
-        if (userObject) {
-          const userData: UserData = {
-            TelegramId: String(userObject.id || '67890'),
-            first_name: userObject.first_name || 'Имя',
-            last_name: userObject.last_name || 'Фамилия',
-            username: userObject.username || 'username',
-            language_code: userObject.language_code || 'en',
-            is_premium: userObject.is_premium || false,
-            ecobalance: 0,
-          };
-
-          checkAndCreateUser(userData);
-        } else {
-          console.error('Failed to parse user data from URL.');
-          setError('Invalid user data in URL');
-        }
-      } catch (err) {
-        console.error('Error parsing tgWebAppData:', err);
-        setError('Error parsing tgWebAppData');
-      }
-    } else {
-      // Если tgWebAppData нет, устанавливаем тестовые данные
-      setTestUserData();
-    }
-  };
-
-  const checkAndCreateUser = async (user: UserData) => {
-    try {
-      const response = await fetch(`/api/user?TelegramId=${user.TelegramId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (response.ok) {
-        const existingUser = await response.json();
-        if (existingUser) {
-          setUser(existingUser);
-          setUserInStore(existingUser);
-          localStorage.setItem('userData', JSON.stringify(existingUser));
-
-          if (referralCode) {
-            await addReferral(existingUser.TelegramId, referralCode);
-          }
-        } else {
-          await createUser(user);
-        }
-      } else {
-        await createUser(user);
-      }
-    } catch (err) {
-      console.error('Error checking user existence:', err);
-    }
-  };
-
-  const createUser = async (user: UserData) => {
-    try {
-      const response = await fetch('/api/user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user),
-      });
-
-      if (response.ok) {
-        const newUser = await response.json();
-        setUser(newUser);
-        setUserInStore(newUser);
-        localStorage.setItem('userData', JSON.stringify(newUser));
-
-        if (referralCode) {
-          await addReferral(newUser.TelegramId, referralCode);
-        }
-      } else {
-        console.error('Failed to create user:', await response.text());
-      }
-    } catch (err) {
-      console.error('Error creating user:', err);
-    }
-  };
-
-  const addReferral = async (userId: string, referralCode: string) => {
-    try {
-      const response = await fetch('/api/referrals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, referralCode }),
-      });
-
-      if (!response.ok) {
-        console.error('Failed to add referral:', await response.text());
-      }
-    } catch (err) {
-      console.error('Error adding referral:', err);
-    }
-  };
 
   return (
     <>
