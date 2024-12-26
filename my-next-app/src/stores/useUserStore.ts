@@ -82,6 +82,10 @@ interface UserStore {
   // Новый параметр startParam
   startParam: string | null;
   setStartParam: (param: string) => void;
+
+  //реферал
+  referralCode: string;
+  setReferralCode: (code: string) => void;
   
   // Добавляем задачи
   userTasks: Task[];
@@ -140,6 +144,9 @@ const useUserStore = create<UserStore>((set) => ({
   // Новый параметр startParam
   startParam: null,
   setStartParam: (param) => set({ startParam: param }),
+
+  referralCode: '',
+  setReferralCode: (code: string) => set({ referralCode: code }),
 
   userTasks: [],
   setUserTasks: (tasks) => set({ userTasks: tasks }),
