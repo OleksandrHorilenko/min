@@ -6,11 +6,11 @@ import useUserStore from "@/stores/useUserStore";
 import { Section, Cell, Info, Avatar } from "@telegram-apps/telegram-ui";
 
 interface TransactionData {
-  userId: string; // TelegramId пользователя
+  TelegramId: string; // TelegramId пользователя
   wallet: any | null;
   amount: number;  // Сумма транзакции
   type: string; // Тип транзакции, например, "deposit"
-  timestamp: string; // Время транзакции в формате ISO
+  //timestamp: string; // Время транзакции в формате ISO
 }
 
 const DepositTab = () => {
@@ -91,11 +91,11 @@ const DepositTab = () => {
         await updateBalanceInDB(coinsToAdd);
         // Логирование транзакции в базу данных
         const transactionData: TransactionData = {
-          userId: user.TelegramId,
+          TelegramId: user.TelegramId,
           wallet: userFriendlyAddress,
           amount: coinsToAdd,
           type: "deposit", // Тип транзакции (например, депозит)
-          timestamp: new Date().toISOString(),
+          //timestamp: new Date().toISOString(),
         };
         await logTransactionInDB(transactionData);
 
@@ -149,7 +149,7 @@ const DepositTab = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          TelegramId: transactionData.userId,
+          TelegramId: transactionData.TelegramId,
           wallet: transactionData.wallet, // Передаем wallet в нужном типе
           amount: transactionData.amount,
         }),

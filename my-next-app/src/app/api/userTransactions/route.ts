@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     await connect();
 
     try {
-        const { TelegramId, wallet, amount } = await req.json();
+        const { TelegramId, wallet, amount, type } = await req.json();
 
         if (!TelegramId || !wallet || !amount) {
             return NextResponse.json({ error: 'Missing required fields: user, wallet, or amount' }, { status: 400 });
@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
             TelegramId,
             wallet,
             amount,
+            type,
             createdAt: new Date(),
         });
 
