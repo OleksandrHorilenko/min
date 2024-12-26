@@ -56,8 +56,34 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const startParam = useUserStore((state) => state.startParam);
   const setStartParam = useUserStore((state) => state.setStartParam);
+  const [urlData, setUrlData] = useState<string>(''); // Для отображения данных URL
 
   const { setUser: setUserInStore } = useUserStore();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Получаем и отображаем полный URL
+      const fullUrl = window.location.href;
+      const searchParams = new URLSearchParams(window.location.search);
+      const startapp = searchParams.get('startapp');
+      
+      // Для хеш-сегмента
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const tgWebAppData = hashParams.get('tgWebAppData');
+      const refCodeFromHash = hashParams.get('startapp');
+
+      // Формируем строку для отображения
+      const urlInfo = `
+        Full URL: ${fullUrl}
+        Query Params: ${window.location.search}
+        Hash Params: ${window.location.hash}
+        Startapp Param (query): ${startapp}
+        Startapp Param (hash): ${refCodeFromHash}
+        tgWebAppData: ${tgWebAppData}
+      `;
+      setUrlData(urlInfo); // Сохраняем все данные в состояние
+    }
+  }, []); // Это выпо
 
   useEffect(() => {
     setLoader(true);
@@ -262,6 +288,10 @@ export default function Home() {
         <TabProvider>
           <main className="min-h-screen bg-black text-white">
             <CheckFootprint />
+            <div>
+      <h1>URL Data:</h1>
+      <pre>{urlData}</pre> {/* Отображаем данные URL на странице */}
+    </div>
             <TabContainer />
             <NavigationBar />
           </main>
