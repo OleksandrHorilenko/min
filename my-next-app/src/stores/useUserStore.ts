@@ -50,7 +50,7 @@ export interface Task {
 }
 
 // Типизация данных пользователя
-interface User {
+export interface User {
   TelegramId: string;
   first_name: string;
   last_name: string;
@@ -62,7 +62,7 @@ interface User {
 }
 
 // Типизация состояния хранилища
-interface UserStore {
+export interface UserStore {
   user: User;
   userCollection: Card[]; // Коллекция пользователя
   setUser: (userData: User) => void;
@@ -93,7 +93,7 @@ interface UserStore {
   updateTaskStatus: (taskId: string, status: string, progress?: number) => void;
 }
 
-const useUserStore = create<UserStore>((set) => ({
+export const useUserStore = create<UserStore>((set) => ({
   user: {
     TelegramId: '',
     first_name: '',
