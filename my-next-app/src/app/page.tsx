@@ -1,14 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import CheckFootprint from '@/components/CheckFootprint';
 import NavigationBar from '@/components/NavigationBar';
 import TabContainer from '@/components/TabContainer';
 import Loader from '@/components/Loader';
 import { TabProvider } from '@/contexts/TabContext';
-import { useEffect, useState } from 'react';
-import { WebApp } from '@twa-dev/types';
 import useUserStore from '../stores/useUserStore';
-import FriendsTab from '@/components/FriendsTab';
+import { WebApp } from '@twa-dev/types';
 
 declare global {
   interface Window {
@@ -19,9 +18,9 @@ declare global {
         initData: string;
         initDataUnsafe: Record<string, unknown>;
         close: () => void;
-        requestFullscreen: () => void; // Метод для запроса полноэкранного режима
-        exitFullscreen: () => void;   // Метод для выхода из полноэкранного режима
-        isFullscreen?: boolean;      // Флаг текущего состояния полноэкранного режима
+        requestFullscreen: () => void;
+        exitFullscreen: () => void;
+        isFullscreen?: boolean;
         expand: () => void;
         HapticFeedback?: {
           impactOccurred: (style: "light" | "medium" | "heavy") => void;
@@ -49,30 +48,22 @@ export default function Home() {
   const [loader, setLoader] = useState(false);
   const [userMining, setUserMining] = useState<any>(null);
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
-  const [initData, setInitData] = useState('');
-  const [userId, setUserId] = useState('');
+  const [urlData, setUrlData] = useState<string>(''); // Для отображения данных URL
   const [referralCode, setReferralCode] = useState('');
-  const [referrals, setReferrals] = useState([]);
-  const [loading, setLoading] = useState(true);
   const startParam = useUserStore((state) => state.startParam);
   const setStartParam = useUserStore((state) => state.setStartParam);
-  const [urlData, setUrlData] = useState<string>(''); // Для отображения данных URL
-
   const { setUser: setUserInStore } = useUserStore();
 
-  useEffect(() => {
+  // Функция для извлечения и обработки параметров из URL
+  const extractParams = () => {
     if (typeof window !== 'undefined') {
-      // Получаем и отображаем полный URL
       const fullUrl = window.location.href;
       const searchParams = new URLSearchParams(window.location.search);
       const startapp = searchParams.get('startapp');
-      
-      // Для хеш-сегмента
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const tgWebAppData = hashParams.get('tgWebAppData');
       const refCodeFromHash = hashParams.get('startapp');
 
-      // Формируем строку для отображения
       const urlInfo = `
         Full URL: ${fullUrl}
         Query Params: ${window.location.search}
@@ -81,136 +72,68 @@ export default function Home() {
         Startapp Param (hash): ${refCodeFromHash}
         tgWebAppData: ${tgWebAppData}
       `;
-      setUrlData(urlInfo); // Сохраняем все данные в состояние
-    }
-  }, []); // Это выпо
+      setUrlData(urlInfo);
 
-  useEffect(() => {
-    setLoader(true);
-    const timeout = setTimeout(() => {
-      setLoader(false);
-    }, 7000);
-
-    return () => clearTimeout(timeout);
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      setLoader(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Извлекаем параметры из URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const startapp = urlParams.get('startapp');
-  
-      // Проверяем, если найден реферальный код в ссылке
+      // Извлекаем реферальный код из query параметров или хеш-сегмента
       if (startapp) {
-        const referralCode = startapp.replace('r_', ''); // Убираем 'r_' префикс
+        const referralCode = startapp.replace('r_', '');
         setReferralCode(referralCode);
         localStorage.setItem('referralCode', referralCode);
-  
-        // Отправляем реферал
-        const TelegramId = user?.TelegramId; // ID текущего пользователя
-        if (TelegramId) {
-          sendReferral(TelegramId, referralCode)
-            .then((result) => {
-              if (result.success) {
-                console.log('Реферал успешно обработан:', result.message);
-              } else {
-                console.error('Ошибка обработки реферала:', result.message);
-              }
-            })
-            .catch((err) => console.error('Ошибка вызова sendReferral:', err));
-        }
+        handleReferral(referralCode);
+      } else if (refCodeFromHash) {
+        const referralCode = refCodeFromHash.replace('r_', '');
+        setReferralCode(referralCode);
+        localStorage.setItem('referralCode', referralCode);
+        handleReferral(referralCode);
       }
-  
-      // Обрабатываем данные для Telegram WebApp
-      const handleTGWebAppData = () => {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1)); // Используем hash, а не search
-        const tgWebAppData = hashParams.get('tgWebAppData');
-  
-        // Извлекаем реферальный код, если он присутствует в хеш-сегменте
-        const refCodeFromHash = hashParams.get('startapp');
-        if (refCodeFromHash) {
-          const referralCode = refCodeFromHash.replace('r_', ''); // Убираем 'r_' префикс
-          setReferralCode(referralCode);
-          localStorage.setItem('referralCode', referralCode);
-  
-          // Дополнительная логика с реферальным кодом, например, отправка на сервер
-          const TelegramId = user?.TelegramId; // ID текущего пользователя
-          if (TelegramId) {
-            sendReferral(TelegramId, referralCode)
-              .then((result) => {
-                if (result.success) {
-                  console.log('Реферал успешно обработан:', result.message);
-                } else {
-                  console.error('Ошибка обработки реферала:', result.message);
-                }
-              })
-              .catch((err) => console.error('Ошибка вызова sendReferral:', err));
+
+      // Обработка данных из tgWebAppData
+      if (tgWebAppData) {
+        try {
+          const userParam = new URLSearchParams(tgWebAppData).get('user');
+          const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
+          const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
+
+          if (userObject) {
+            const userData: UserData = {
+              TelegramId: String(userObject.id || '67890'),
+              first_name: userObject.first_name || 'Имя',
+              last_name: userObject.last_name || 'Фамилия',
+              username: userObject.username || 'username',
+              language_code: userObject.language_code || 'en',
+              is_premium: userObject.is_premium || false,
+              ecobalance: 0,
+            };
+            checkAndCreateUser(userData);
+          } else {
+            console.error('Не удалось разобрать данные пользователя из URL.');
+            setError('Неверные данные пользователя в URL');
           }
+        } catch (err) {
+          console.error('Ошибка при разборе tgWebAppData:', err);
+          setError('Ошибка при разборе tgWebAppData');
         }
-  
-        // Обрабатываем данные, полученные из Telegram WebApp
-        if (tgWebAppData) {
-          try {
-            const userParam = new URLSearchParams(tgWebAppData).get('user');
-            const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
-            const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
-  
-            if (userObject) {
-              const userData = {
-                TelegramId: String(userObject.id || '67890'),
-                first_name: userObject.first_name || 'Имя',
-                last_name: userObject.last_name || 'Фамилия',
-                username: userObject.username || 'username',
-                language_code: userObject.language_code || 'en',
-                is_premium: userObject.is_premium || false,
-                ecobalance: 0,
-              };
-  
-              // Создаем пользователя с данными из Telegram
-              checkAndCreateUser(userData);
-            } else {
-              console.error('Не удалось разобрать данные пользователя из URL.');
-              setError('Неверные данные пользователя в URL');
-            }
-          } catch (err) {
-            console.error('Ошибка при разборе tgWebAppData:', err);
-            setError('Ошибка при разборе tgWebAppData');
-          }
-        } else {
-          // Если tgWebAppData нет, создаем тестового пользователя
-          const testUser = {
-            TelegramId: '123456',
-            first_name: 'Test',
-            last_name: 'User',
-            username: 'testuser',
-            language_code: 'en',
-            is_premium: false,
-            ecobalance: 100, // Пример тестового баланса
-          };
-  
-          checkAndCreateUser(testUser); // Создаем тестового пользователя
-        }
-      };
-  
-      // Инициализируем данные WebApp, если они есть
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        handleTGWebAppData(); // Вызываем обработку данных
-      } else {
-        handleTGWebAppData(); // Обрабатываем данные, если WebApp не найден
       }
     }
-  }, []); // Зависимость от user, если требуется обновление
-  
-  
+  };
 
+  // Обработчик реферальных данных
+  const handleReferral = (referralCode: string) => {
+    const TelegramId = user?.TelegramId;
+    if (TelegramId) {
+      sendReferral(TelegramId, referralCode)
+        .then((result) => {
+          if (result.success) {
+            console.log('Реферал успешно обработан:', result.message);
+          } else {
+            console.error('Ошибка обработки реферала:', result.message);
+          }
+        })
+        .catch((err) => console.error('Ошибка вызова sendReferral:', err));
+    }
+  };
+
+  // Функция для проверки и создания пользователя
   const checkAndCreateUser = async (user: UserData) => {
     try {
       const response = await fetch(`/api/user?TelegramId=${user.TelegramId}`, {
@@ -235,6 +158,7 @@ export default function Home() {
     }
   };
 
+  // Функция для создания нового пользователя
   const createUser = async (user: UserData) => {
     try {
       const response = await fetch('/api/user', {
@@ -256,7 +180,7 @@ export default function Home() {
     }
   };
 
-
+  // Функция для отправки данных реферала
   async function sendReferral(TelegramId: string, referralCode: string) {
     try {
       const response = await fetch('/api/referrals', {
@@ -264,13 +188,13 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ TelegramId, referralCode }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Ошибка при отправке реферала:', errorData.error);
         return { success: false, message: errorData.error };
       }
-  
+
       const data = await response.json();
       console.log('Реферал успешно добавлен:', data.message);
       return { success: true, message: data.message };
@@ -279,6 +203,10 @@ export default function Home() {
       return { success: false, message: 'Ошибка сети или сервера' };
     }
   }
+
+  useEffect(() => {
+    extractParams();
+  }, [user]); // Вызовем при изменении user
 
   return (
     <>
@@ -289,9 +217,9 @@ export default function Home() {
           <main className="min-h-screen bg-black text-white">
             <CheckFootprint />
             <div>
-      <h1>URL Data:</h1>
-      <pre>{urlData}</pre> {/* Отображаем данные URL на странице */}
-    </div>
+              <h1>URL Data:</h1>
+              <pre>{urlData}</pre> {/* Отображаем данные URL на странице */}
+            </div>
             <TabContainer />
             <NavigationBar />
           </main>
