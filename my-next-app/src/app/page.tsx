@@ -81,14 +81,14 @@ export default function Home() {
   
       // Проверяем, является ли параметр реферальным кодом
       if (startapp?.startsWith('r_')) {
-        const refCode = startapp.substring(2); // Убираем 'r_' префикс
-        setReferralCode(refCode);
-        localStorage.setItem('referralCode', refCode);
+        const referralCode = startapp.substring(2); // Убираем 'r_' префикс
+        setReferralCode(referralCode);
+        localStorage.setItem('referralCode', referralCode);
   
         // Отправляем реферал
         const TelegramId = user?.TelegramId; // ID текущего пользователя
         if (TelegramId) {
-          sendReferral(TelegramId, refCode)
+          sendReferral(TelegramId, referralCode)
             .then((result) => {
               if (result.success) {
                 console.log('Реферал успешно обработан:', result.message);
