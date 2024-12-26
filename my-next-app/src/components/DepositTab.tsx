@@ -9,7 +9,7 @@ interface TransactionData {
   userId: string; // TelegramId пользователя
   wallet: any | null;
   amount: number;  // Сумма транзакции
-  transactionType: string; // Тип транзакции, например, "deposit"
+  type: string; // Тип транзакции, например, "deposit"
   timestamp: string; // Время транзакции в формате ISO
 }
 
@@ -94,7 +94,7 @@ const DepositTab = () => {
           userId: user.TelegramId,
           wallet: userFriendlyAddress,
           amount: coinsToAdd,
-          transactionType: "deposit", // Тип транзакции (например, депозит)
+          type: "deposit", // Тип транзакции (например, депозит)
           timestamp: new Date().toISOString(),
         };
         await logTransactionInDB(transactionData);

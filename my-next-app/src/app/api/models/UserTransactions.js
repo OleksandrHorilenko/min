@@ -8,7 +8,7 @@ const TransactionSchema = new mongoose.Schema({
     TelegramId: { type: String, required: true },
     wallet: { type: String, required: true },
     amount: { type: Number, required: true },
-    type: { type: String, enum: ['deposit', 'withdrawal'], required: true }, // Указание типа транзакции
+    type: { type: String, enum: ['deposit', 'withdrawal'] }, // Указание типа транзакции
     createdAt: { type: Date, default: Date.now },
 });
 
