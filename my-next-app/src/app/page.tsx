@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import CheckFootprint from '@/components/CheckFootprint';
 import NavigationBar from '@/components/NavigationBar';
 import TabContainer from '@/components/TabContainer';
 import Loader from '@/components/Loader';
 import { TabProvider } from '@/contexts/TabContext';
-import useUserStore from '../stores/useUserStore';
+import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
+import useUserStore from '../stores/useUserStore';
+import FriendsTab from '@/components/FriendsTab';
 
 declare global {
   interface Window {
@@ -18,9 +19,9 @@ declare global {
         initData: string;
         initDataUnsafe: Record<string, unknown>;
         close: () => void;
-        requestFullscreen: () => void;
-        exitFullscreen: () => void;
-        isFullscreen?: boolean;
+        requestFullscreen: () => void; // Метод для запроса полноэкранного режима
+        exitFullscreen: () => void;   // Метод для выхода из полноэкранного режима
+        isFullscreen?: boolean;      // Флаг текущего состояния полноэкранного режима
         expand: () => void;
         HapticFeedback?: {
           impactOccurred: (style: "light" | "medium" | "heavy") => void;
@@ -48,92 +49,122 @@ export default function Home() {
   const [loader, setLoader] = useState(false);
   const [userMining, setUserMining] = useState<any>(null);
   const [lastClaim, setLastClaim] = useState<Date | null>(null);
-  const [urlData, setUrlData] = useState<string>(''); // Для отображения данных URL
+  const [initData, setInitData] = useState('');
+  const [userId, setUserId] = useState('');
   const [referralCode, setReferralCode] = useState('');
+  const [referrals, setReferrals] = useState([]);
+  const [loading, setLoading] = useState(true);
   const startParam = useUserStore((state) => state.startParam);
   const setStartParam = useUserStore((state) => state.setStartParam);
+
   const { setUser: setUserInStore } = useUserStore();
 
-  // Функция для извлечения и обработки параметров из URL
-  const extractParams = () => {
-    if (typeof window !== 'undefined') {
-      const fullUrl = window.location.href;
-      const searchParams = new URLSearchParams(window.location.search);
-      const startapp = searchParams.get('startapp');
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const tgWebAppData = hashParams.get('tgWebAppData');
-      const refCodeFromHash = hashParams.get('startapp');
+  useEffect(() => {
+    setLoader(true);
+    const timeout = setTimeout(() => {
+      setLoader(false);
+    }, 7000);
 
-      const urlInfo = `
-        Full URL: ${fullUrl}
-        Query Params: ${window.location.search}
-        Hash Params: ${window.location.hash}
-        Startapp Param (query): ${startapp}
-        Startapp Param (hash): ${refCodeFromHash}
-        tgWebAppData: ${tgWebAppData}
-      `;
-      setUrlData(urlInfo);
+    return () => clearTimeout(timeout);
+  }, []);
 
-      // Извлекаем реферальный код из query параметров или хеш-сегмента
-      if (startapp) {
-        const referralCode = startapp.replace('r_', '');
-        setReferralCode(referralCode);
-        localStorage.setItem('referralCode', referralCode);
-        handleReferral(referralCode);
-      } else if (refCodeFromHash) {
-        const referralCode = refCodeFromHash.replace('r_', '');
-        setReferralCode(referralCode);
-        localStorage.setItem('referralCode', referralCode);
-        handleReferral(referralCode);
+  useEffect(() => {
+    if (user) {
+      setLoader(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+
+      const initDataUnsafe = tg.initDataUnsafe || {};
+      if (initDataUnsafe.user) {
+        const rawUser = initDataUnsafe.user as unknown as {
+          id: number;
+          first_name: string;
+          last_name?: string;
+          username?: string;
+          language_code: string;
+          is_premium?: boolean;
+        };
+
+        const user: UserData = {
+          TelegramId: String(rawUser.id),
+          first_name: rawUser.first_name,
+          last_name: rawUser.last_name,
+          username: rawUser.username,
+          language_code: rawUser.language_code,
+          is_premium: rawUser.is_premium,
+          ecobalance: 0,
+        };
+
+        checkAndCreateUser(user);
+      } else {
+        handleTGWebAppData();
       }
+    } else {
+      handleTGWebAppData();
+    }
+  }, []);
 
-      // Обработка данных из tgWebAppData
-      if (tgWebAppData) {
-        try {
-          const userParam = new URLSearchParams(tgWebAppData).get('user');
-          const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
-          const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
+  const handleTGWebAppData = () => {
+    // Извлечение реферального кода из URL
+    const searchParams = new URLSearchParams(window.location.search);
+    const referralCodeFromQuery = searchParams.get('startapp');
+    if (referralCodeFromQuery) {
+      setReferralCode(referralCodeFromQuery.replace('r_', ''));
+      localStorage.setItem('referralCode', referralCodeFromQuery.replace('r_', ''));
+    }
 
-          if (userObject) {
-            const userData: UserData = {
-              TelegramId: String(userObject.id || '67890'),
-              first_name: userObject.first_name || 'Имя',
-              last_name: userObject.last_name || 'Фамилия',
-              username: userObject.username || 'username',
-              language_code: userObject.language_code || 'en',
-              is_premium: userObject.is_premium || false,
-              ecobalance: 0,
-            };
-            checkAndCreateUser(userData);
-          } else {
-            console.error('Не удалось разобрать данные пользователя из URL.');
-            setError('Неверные данные пользователя в URL');
-          }
-        } catch (err) {
-          console.error('Ошибка при разборе tgWebAppData:', err);
-          setError('Ошибка при разборе tgWebAppData');
+    // Обработка данных из хеш-сегмента
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const tgWebAppData = hashParams.get('tgWebAppData');
+  
+    if (tgWebAppData) {
+      try {
+        const userParam = new URLSearchParams(tgWebAppData).get('user');
+        const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
+        const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
+  
+        if (userObject) {
+          const userData: UserData = {
+            TelegramId: String(userObject.id || '67890'),
+            first_name: userObject.first_name || 'Имя',
+            last_name: userObject.last_name || 'Фамилия',
+            username: userObject.username || 'username',
+            language_code: userObject.language_code || 'en',
+            is_premium: userObject.is_premium || false,
+            ecobalance: 0,
+          };
+  
+          // Создаем пользователя с данными из Telegram
+          checkAndCreateUser(userData);
+        } else {
+          console.error('Failed to parse user data from URL.');
+          setError('Invalid user data in URL');
         }
+      } catch (err) {
+        console.error('Error parsing tgWebAppData:', err);
+        setError('Error parsing tgWebAppData');
       }
+    } else {
+      // Если tgWebAppData нет, создаем тестового пользователя
+      const testUser: UserData = {
+        TelegramId: '123456',
+        first_name: 'Test',
+        last_name: 'User',
+        username: 'testuser',
+        language_code: 'en',
+        is_premium: false,
+        ecobalance: 100, // Пример тестового баланса
+      };
+  
+      checkAndCreateUser(testUser); // Создаем тестового пользователя
     }
   };
 
-  // Обработчик реферальных данных
-  const handleReferral = (referralCode: string) => {
-    const TelegramId = user?.TelegramId;
-    if (TelegramId) {
-      sendReferral(TelegramId, referralCode)
-        .then((result) => {
-          if (result.success) {
-            console.log('Реферал успешно обработан:', result.message);
-          } else {
-            console.error('Ошибка обработки реферала:', result.message);
-          }
-        })
-        .catch((err) => console.error('Ошибка вызова sendReferral:', err));
-    }
-  };
-
-  // Функция для проверки и создания пользователя
   const checkAndCreateUser = async (user: UserData) => {
     try {
       const response = await fetch(`/api/user?TelegramId=${user.TelegramId}`, {
@@ -158,7 +189,6 @@ export default function Home() {
     }
   };
 
-  // Функция для создания нового пользователя
   const createUser = async (user: UserData) => {
     try {
       const response = await fetch('/api/user', {
@@ -180,34 +210,6 @@ export default function Home() {
     }
   };
 
-  // Функция для отправки данных реферала
-  async function sendReferral(TelegramId: string, referralCode: string) {
-    try {
-      const response = await fetch('/api/referrals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ TelegramId, referralCode }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Ошибка при отправке реферала:', errorData.error);
-        return { success: false, message: errorData.error };
-      }
-
-      const data = await response.json();
-      console.log('Реферал успешно добавлен:', data.message);
-      return { success: true, message: data.message };
-    } catch (error) {
-      console.error('Внутренняя ошибка при отправке реферала:', error);
-      return { success: false, message: 'Ошибка сети или сервера' };
-    }
-  }
-
-  useEffect(() => {
-    extractParams();
-  }, [user]); // Вызовем при изменении user
-
   return (
     <>
       {loader ? (
@@ -216,10 +218,6 @@ export default function Home() {
         <TabProvider>
           <main className="min-h-screen bg-black text-white">
             <CheckFootprint />
-            <div>
-              <h1>URL Data:</h1>
-              <pre>{urlData}</pre> {/* Отображаем данные URL на странице */}
-            </div>
             <TabContainer />
             <NavigationBar />
           </main>
