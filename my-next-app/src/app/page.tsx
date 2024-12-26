@@ -19,12 +19,12 @@ declare global {
         initData: string;
         initDataUnsafe: Record<string, unknown>;
         close: () => void;
-        requestFullscreen: () => void; // Метод для запроса полноэкранного режима
-        exitFullscreen: () => void;   // Метод для выхода из полноэкранного режима
-        isFullscreen?: boolean;      // Флаг текущего состояния полноэкранного режима
+        requestFullscreen?: () => void;
+        exitFullscreen?: () => void;
+        isFullscreen?: boolean;
         expand: () => void;
         HapticFeedback?: {
-          impactOccurred: (style: "light" | "medium" | "heavy") => void;
+          impactOccurred: (style: 'light' | 'medium' | 'heavy') => void;
         };
       };
     };
@@ -61,10 +61,7 @@ export default function Home() {
 
   useEffect(() => {
     setLoader(true);
-    const timeout = setTimeout(() => {
-      setLoader(false);
-    }, 7000);
-
+    const timeout = setTimeout(() => setLoader(false), 7000);
     return () => clearTimeout(timeout);
   }, []);
 
@@ -79,6 +76,12 @@ export default function Home() {
       const tg = window.Telegram.WebApp;
       tg.ready();
 
+      if (tg.requestFullscreen) {
+        tg.requestFullscreen();
+      } else {
+        console.warn('Fullscreen not supported.');
+      }
+
       const initDataUnsafe = tg.initDataUnsafe || {};
       if (initDataUnsafe.user) {
         const rawUser = initDataUnsafe.user as unknown as {
@@ -89,6 +92,11 @@ export default function Home() {
           language_code: string;
           is_premium?: boolean;
         };
+
+        if (!rawUser) {
+          console.error('No user data found in initDataUnsafe.');
+          return;
+        }
 
         const user: UserData = {
           TelegramId: String(rawUser.id),
@@ -110,24 +118,21 @@ export default function Home() {
   }, []);
 
   const handleTGWebAppData = () => {
-    // Извлечение реферального кода из URL
-    const searchParams = new URLSearchParams(window.location.search);
-    const referralCodeFromQuery = searchParams.get('startapp');
-    if (referralCodeFromQuery) {
-      setReferralCode(referralCodeFromQuery.replace('r_', ''));
-      localStorage.setItem('referralCode', referralCodeFromQuery.replace('r_', ''));
-    }
+    const searchParams = new URLSearchParams(window.location.hash.substring(1));
+    const tgWebAppData = searchParams.get('tgWebAppData');
 
-    // Обработка данных из хеш-сегмента
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const tgWebAppData = hashParams.get('tgWebAppData');
-  
     if (tgWebAppData) {
       try {
         const userParam = new URLSearchParams(tgWebAppData).get('user');
+        const referralParam = new URLSearchParams(tgWebAppData).get('r_');
+
+        if (referralParam) {
+          setReferralCode(referralParam);
+        }
+
         const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
         const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
-  
+
         if (userObject) {
           const userData: UserData = {
             TelegramId: String(userObject.id || '67890'),
@@ -138,8 +143,7 @@ export default function Home() {
             is_premium: userObject.is_premium || false,
             ecobalance: 0,
           };
-  
-          // Создаем пользователя с данными из Telegram
+
           checkAndCreateUser(userData);
         } else {
           console.error('Failed to parse user data from URL.');
@@ -150,7 +154,6 @@ export default function Home() {
         setError('Error parsing tgWebAppData');
       }
     } else {
-      // Если tgWebAppData нет, создаем тестового пользователя
       const testUser: UserData = {
         TelegramId: '123456',
         first_name: 'Test',
@@ -158,10 +161,10 @@ export default function Home() {
         username: 'testuser',
         language_code: 'en',
         is_premium: false,
-        ecobalance: 100, // Пример тестового баланса
+        ecobalance: 100,
       };
-  
-      checkAndCreateUser(testUser); // Создаем тестового пользователя
+
+      checkAndCreateUser(testUser);
     }
   };
 
@@ -178,6 +181,10 @@ export default function Home() {
           setUser(existingUser);
           setUserInStore(existingUser);
           localStorage.setItem('userData', JSON.stringify(existingUser));
+
+          if (referralCode) {
+            await addReferral(existingUser.TelegramId, referralCode);
+          }
         } else {
           await createUser(user);
         }
@@ -202,11 +209,31 @@ export default function Home() {
         setUser(newUser);
         setUserInStore(newUser);
         localStorage.setItem('userData', JSON.stringify(newUser));
+
+        if (referralCode) {
+          await addReferral(newUser.TelegramId, referralCode);
+        }
       } else {
         console.error('Failed to create user:', await response.text());
       }
     } catch (err) {
       console.error('Error creating user:', err);
+    }
+  };
+
+  const addReferral = async (userId: string, referralCode: string) => {
+    try {
+      const response = await fetch('/api/referrals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, referralCode }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to add referral:', await response.text());
+      }
+    } catch (err) {
+      console.error('Error adding referral:', err);
     }
   };
 
