@@ -79,10 +79,10 @@ export default function Home() {
       // Извлекаем параметры из URL
       const urlParams = new URLSearchParams(window.location.search);
       const startapp = urlParams.get('startapp');
-      
+  
       // Проверяем, если найден реферальный код в ссылке
       if (startapp) {
-        const referralCode = startapp; // Если реферальный код просто передается без 'r_' префикса
+        const referralCode = startapp.replace('r_', ''); // Убираем 'r_' префикс
         setReferralCode(referralCode);
         localStorage.setItem('referralCode', referralCode);
   
@@ -103,15 +103,15 @@ export default function Home() {
   
       // Обрабатываем данные для Telegram WebApp
       const handleTGWebAppData = () => {
-        const searchParams = new URLSearchParams(window.location.hash.substring(1));
-        const tgWebAppData = searchParams.get('tgWebAppData');
+        const hashParams = new URLSearchParams(window.location.hash.substring(1)); // Используем hash, а не search
+        const tgWebAppData = hashParams.get('tgWebAppData');
   
-        // Извлекаем реферальный код, если он присутствует
-        const refCodeFromURL = searchParams.get('startapp');
-        if (refCodeFromURL) {
-          const referralCode = refCodeFromURL.substring(2); // Убираем 'r_' префикс
-          setReferralCode(referralCode); // Сохраняем реферальный код в состоянии (если нужно)
-          localStorage.setItem('referralCode', referralCode); // Сохраняем в localStorage
+        // Извлекаем реферальный код, если он присутствует в хеш-сегменте
+        const refCodeFromHash = hashParams.get('startapp');
+        if (refCodeFromHash) {
+          const referralCode = refCodeFromHash.replace('r_', ''); // Убираем 'r_' префикс
+          setReferralCode(referralCode);
+          localStorage.setItem('referralCode', referralCode);
   
           // Дополнительная логика с реферальным кодом, например, отправка на сервер
           const TelegramId = user?.TelegramId; // ID текущего пользователя
@@ -181,7 +181,9 @@ export default function Home() {
         handleTGWebAppData(); // Обрабатываем данные, если WebApp не найден
       }
     }
-  }, [user, setReferralCode]); // Добавляем зависимости, если нужно отслеживать изменения
+  }, []); // Зависимость от user, если требуется обновление
+  
+  
 
   const checkAndCreateUser = async (user: UserData) => {
     try {
