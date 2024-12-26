@@ -76,7 +76,7 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
+      const urlParams = new URLSearchParams(window.location.hash.substring(1));
       const startapp = urlParams.get('startapp');
   
       // Проверяем, является ли параметр реферальным кодом
