@@ -15,22 +15,61 @@ const FriendsTab = () => {
   const setStartParam = useUserStore((state) => state.setStartParam); // Функция для обновления startParam
   //const [referrals, setReferrals] = useState<string[]>([]); // Список рефералов
   //const [myRefCode, setMyRefCode] = useState<string>(''); // Мой реферальный код
+  //const TelegramID = user.TelegramId;
+
+  const addReferral = async (TelegramId: string, referralCode: string) => {
+    try {
+      const response = await fetch('/api/referrals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ TelegramId, referralCode }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        console.error('Ошибка при добавлении реферала:', data.error);
+        return { success: false, error: data.error };
+      }
+  
+      console.log('Реферал успешно добавлен:', data.message);
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error('Ошибка сети или сервера:', error);
+      return { success: false, error: 'Ошибка сети или сервера' };
+    }
+  };
 
   useEffect(() => {
     const initWebApp = async () => {
       if (typeof window !== 'undefined') {
         const WebApp = (await import('@twa-dev/sdk')).default;
         WebApp.ready(); // Инициализируем WebApp
-        // Явно указываем тип, что это строка или пустая строка
-        const referralCodeFromStart: string = WebApp.initDataUnsafe.start_param || ''; 
+  
+        // Получаем start_param и обрабатываем его
+        const referralCodeFromStart: string = WebApp.initDataUnsafe.start_param || '';
         const trimmedReferralCode = referralCodeFromStart.slice(2);
+  
         setStartParam(trimmedReferralCode); // Обновляем startParam в Zustand
         setReferralCode(trimmedReferralCode); // Также сохраняем его в локальном состоянии
-        //fetchReferralData(referralCodeFromStart);
+  
+        // Проверяем, что user.TelegramId и referralCode доступны перед вызовом addReferral
+        if (user?.TelegramId && trimmedReferralCode) {
+          const result = await addReferral(user.TelegramId, trimmedReferralCode);
+          if (result.success) {
+            console.log('Реферал успешно добавлен');
+          } else {
+            console.error('Ошибка при добавлении реферала:', result.error);
+          }
+        }
       }
     };
+  
     initWebApp();
-  }, [user, setStartParam]); // Запускаем только когда user или setStartParam меняются
+  }, [user, referralCode]); // Добавляем зависимости
+  
   
 
   // Получение данных о рефералах
