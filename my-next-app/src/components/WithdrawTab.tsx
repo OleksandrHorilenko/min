@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { TonConnectButton, useTonConnectUI, SendTransactionRequest, useTonWallet, useTonAddress } from "@tonconnect/ui-react";
 import useUserStore from "@/stores/useUserStore"; // Предположим, что Zustand хранилище находится здесь
+import { updateUserBalance } from '@/app/functions/updateUserBalance';
 
 const WithdrawTab = () => {
-  const { user } = useUserStore(); // Получаем пользователя из Zustand
+  const { user, updateUser } = useUserStore(); // Получаем информацию о пользователе
   const userBalance = user.ecobalance; // Получаем баланс из состояния
   const userFriendlyAddress = useTonAddress();
 
@@ -78,6 +79,9 @@ const WithdrawTab = () => {
       const result = await response.json();
   
       if (response.ok) {
+        const newBalance = user.ecobalance - numericAmount;
+        updateUser({ ecobalance: newBalance }); // Обновляем состояние хранилища
+        const result = await updateUserBalance(user.TelegramId, numericAmount, "decrement");
         // Уведомление об успешной отправке заявки
         console.log(`Successfully created withdrawal request: ${result.transaction._id}`);
         alert("Withdrawal request submitted successfully.");
