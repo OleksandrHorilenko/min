@@ -23,8 +23,9 @@ const FriendsTab = () => {
         WebApp.ready(); // Инициализируем WebApp
         // Явно указываем тип, что это строка или пустая строка
         const referralCodeFromStart: string = WebApp.initDataUnsafe.start_param || ''; 
-        setStartParam(referralCodeFromStart); // Обновляем startParam в Zustand
-        setReferralCode(referralCodeFromStart); // Также сохраняем его в локальном состоянии
+        const trimmedReferralCode = referralCodeFromStart.slice(2);
+        setStartParam(trimmedReferralCode); // Обновляем startParam в Zustand
+        setReferralCode(trimmedReferralCode); // Также сохраняем его в локальном состоянии
         //fetchReferralData(referralCodeFromStart);
       }
     };
