@@ -63,7 +63,7 @@ const WithdrawTab = () => {
   
     try {
       // Отправка заявки на вывод
-      const response = await fetch('/api/withdraw', {
+      const response = await fetch('/api/userWithdraws', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
