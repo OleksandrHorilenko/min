@@ -19,12 +19,12 @@ declare global {
         initData: string;
         initDataUnsafe: Record<string, unknown>;
         close: () => void;
-        requestFullscreen?: () => void;
-        exitFullscreen?: () => void;
-        isFullscreen?: boolean;
+        requestFullscreen: () => void; // Метод для запроса полноэкранного режима
+        exitFullscreen: () => void;   // Метод для выхода из полноэкранного режима
+        isFullscreen?: boolean;      // Флаг текущего состояния полноэкранного режима
         expand: () => void;
         HapticFeedback?: {
-          impactOccurred: (style: 'light' | 'medium' | 'heavy') => void;
+          impactOccurred: (style: "light" | "medium" | "heavy") => void;
         };
       };
     };
@@ -61,7 +61,10 @@ export default function Home() {
 
   useEffect(() => {
     setLoader(true);
-    const timeout = setTimeout(() => setLoader(false), 7000);
+    const timeout = setTimeout(() => {
+      setLoader(false);
+    }, 7000);
+
     return () => clearTimeout(timeout);
   }, []);
 
@@ -73,39 +76,127 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp
-      tg.ready()
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      // Увеличение окна до полного экрана
+     tg.expand();
 
-      const initData = tg.initData || ''
-      const initDataUnsafe = tg.initDataUnsafe || {}
+     // Запрос полноэкранного режима
+   // if (tg.requestFullscreen) {
+    //  tg.requestFullscreen();
+   // }
 
+      const initDataUnsafe = tg.initDataUnsafe || {};
       if (initDataUnsafe.user) {
-        fetch('/api/user', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(initDataUnsafe.user),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.error) {
-              setError(data.error)
-            } else {
-              setUser(data)
-            }
-          })
-          .catch((err) => {
-            setError('Failed to fetch user data')
-          })
+        const rawUser = initDataUnsafe.user as unknown as {
+          id: number;
+          first_name: string;
+          last_name?: string;
+          username?: string;
+          language_code: string;
+          is_premium?: boolean;
+        };
+
+        const user: UserData = {
+          TelegramId: String(rawUser.id),
+          first_name: rawUser.first_name,
+          last_name: rawUser.last_name,
+          username: rawUser.username,
+          language_code: rawUser.language_code,
+          is_premium: rawUser.is_premium,
+          ecobalance: 0,
+        };
+
+        checkAndCreateUser(user);
       } else {
-        setError('No user data available')
+        handleTGWebAppData();
       }
     } else {
-      setError('This app should be opened in Telegram')
+      handleTGWebAppData();
     }
-  }, [])
+  }, []);
 
+  const handleTGWebAppData = () => {
+    const searchParams = new URLSearchParams(window.location.hash.substring(1));
+    const tgWebAppData = searchParams.get('tgWebAppData');
+
+    if (tgWebAppData) {
+      try {
+        const userParam = new URLSearchParams(tgWebAppData).get('user');
+        const decodedUserParam = userParam ? decodeURIComponent(userParam) : null;
+        const userObject = decodedUserParam ? JSON.parse(decodedUserParam) : null;
+
+        if (userObject) {
+          const userData: UserData = {
+            TelegramId: String(userObject.id || '67890'),
+            first_name: userObject.first_name || 'Имя',
+            last_name: userObject.last_name || 'Фамилия',
+            username: userObject.username || 'username',
+            language_code: userObject.language_code || 'en',
+            is_premium: userObject.is_premium || false,
+            ecobalance: 0,
+          };
+
+          checkAndCreateUser(userData);
+        } else {
+          console.error('Failed to parse user data from URL.');
+          setError('Invalid user data in URL');
+        }
+      } catch (err) {
+        console.error('Error parsing tgWebAppData:', err);
+        setError('Error parsing tgWebAppData');
+      }
+    } else {
+      console.error('No tgWebAppData found.');
+      setError('No tgWebAppData in URL');
+    }
+  };
+
+  const checkAndCreateUser = async (user: UserData) => {
+    try {
+      const response = await fetch(`/api/user?TelegramId=${user.TelegramId}`, {
+
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        const existingUser = await response.json();
+        if (existingUser) {
+          setUser(existingUser);
+          setUserInStore(existingUser);
+          localStorage.setItem('userData', JSON.stringify(existingUser));
+        } else {
+          await createUser(user);
+        }
+      } else {
+        await createUser(user);
+      }
+    } catch (err) {
+      console.error('Error checking user existence:', err);
+    }
+  };
+
+  const createUser = async (user: UserData) => {
+    try {
+      const response = await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user),
+      });
+
+      if (response.ok) {
+        const newUser = await response.json();
+        setUser(newUser);
+        setUserInStore(newUser);
+        localStorage.setItem('userData', JSON.stringify(newUser));
+      } else {
+        console.error('Failed to create user:', await response.text());
+      }
+    } catch (err) {
+      console.error('Error creating user:', err);
+    }
+  };
 
   return (
     <>

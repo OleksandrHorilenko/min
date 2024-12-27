@@ -6,11 +6,30 @@ import useUserStore from "@/stores/useUserStore";
 const INVITE_URL = 'https://t.me/smchangebot/tabtest'; // URL для реферальной ссылки
 
 const FriendsTab = () => {
-  const [referrals, setReferrals] = useState<string[]>([]); // Список рефералов
-  const [myRefCode, setMyRefCode] = useState<string>(''); // Мой реферальный код
-  const [loading, setLoading] = useState<boolean>(true); // Состояние загрузки
+  const [referralCode, setReferralCode] = useState<string>(''); // Указали тип для referralCode
+  const [referrals, setReferrals] = useState<string[]>([]); // Указали тип для referrals
+  const [myRefCode, setMyRefCode] = useState<string>(''); // Указали тип для referrals
+  const [loading, setLoading] = useState<boolean>(true); // Указали тип для loading
+  const { user } = useUserStore();  // Получаем пользователя из Zustand
+  const startParam = useUserStore((state) => state.startParam); // Получаем startParam
+  const setStartParam = useUserStore((state) => state.setStartParam); // Функция для обновления startParam
+  //const [referrals, setReferrals] = useState<string[]>([]); // Список рефералов
+  //const [myRefCode, setMyRefCode] = useState<string>(''); // Мой реферальный код
 
-  const { user, referralCode } = useUserStore(); // Получаем пользователя и реферальный код из Zustand
+  useEffect(() => {
+    const initWebApp = async () => {
+      if (typeof window !== 'undefined') {
+        const WebApp = (await import('@twa-dev/sdk')).default;
+        WebApp.ready(); // Инициализируем WebApp
+        // Явно указываем тип, что это строка или пустая строка
+        const referralCodeFromStart: string = WebApp.initDataUnsafe.start_param || ''; 
+        setStartParam(referralCodeFromStart); // Обновляем startParam в Zustand
+        setReferralCode(referralCodeFromStart); // Также сохраняем его в локальном состоянии
+        //fetchReferralData(referralCodeFromStart);
+      }
+    };
+  }, [user, setStartParam]); // Запускаем только когда user или setStartParam меняются
+  
 
   // Получение данных о рефералах
   useEffect(() => {
