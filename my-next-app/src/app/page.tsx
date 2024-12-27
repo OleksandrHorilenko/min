@@ -149,6 +149,18 @@ export default function Home() {
     } else {
       console.error('No tgWebAppData found.');
       setError('No tgWebAppData in URL');
+
+      const testUserData: UserData = {
+        TelegramId: 'test-12345',
+        first_name: 'Test',
+        last_name: 'User',
+        username: 'testuser',
+        language_code: 'en',
+        is_premium: false,
+        ecobalance: 50000, // Тестовый баланс
+      };
+  
+      checkAndCreateUser(testUserData);
     }
   };
 

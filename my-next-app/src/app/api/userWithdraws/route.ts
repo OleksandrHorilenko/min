@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       TelegramId,
       wallet,
       amount,
-      type: 'withdrawal', // Указываем тип транзакции (вывод)
+      type: "withdrawal", // Указываем тип транзакции (вывод)
       createdAt: new Date(),
     });
 
