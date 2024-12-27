@@ -29,15 +29,26 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     await connect();
-
+  
     try {
-        const transactions = await Transaction.find().sort({ createdAt: -1 });
-
-        return NextResponse.json(transactions, { status: 200 });
+      // Получаем TelegramId из query параметра
+      const TelegramId = req.nextUrl.searchParams.get('TelegramId');
+  
+      if (!TelegramId) {
+        return NextResponse.json({ error: 'TelegramId is required' }, { status: 400 });
+      }
+  
+      // Получаем транзакции для конкретного пользователя и сортируем по дате
+      const transactions = await Transaction.find({ TelegramId })
+        .sort({ createdAt: -1 })
+        .limit(10); // Ограничиваем количество транзакций (например, 10)
+  
+      return NextResponse.json({ transactions }, { status: 200 });
     } catch (error) {
-        console.error('Error fetching transactions:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      console.error('Error fetching transactions:', error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+  }
+  

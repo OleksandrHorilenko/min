@@ -23,11 +23,17 @@ const DepositTab = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [tonConnectUI] = useTonConnectUI();
   const [tokenAmount, setTokenAmount] = useState(""); // Для ввода количества токенов
+  const [showHistory, setShowHistory] = useState(false); // Состояние для отображения истории
 
   // Получаем адрес пользователя
   const userFriendlyAddress = useTonAddress(); // Адрес текущего пользователя
   const wallet = useTonWallet();
   const address = wallet?.account?.address;
+
+  // Функция для переключения видимости истории транзакций
+  const toggleHistory = () => {
+    setShowHistory((prev) => !prev);
+  };
 
   const TOKENS_PER_TON = 1000; // 1 TON = 1000 токенов
 
@@ -175,7 +181,12 @@ const DepositTab = () => {
         <button className="text-sm font-medium text-blue-500 border-b-2 border-blue-500 pb-1">
           Deposit
         </button>
-        <button className="text-sm font-medium text-gray-400">History</button>
+        <button
+        onClick={toggleHistory}
+        className="text-sm font-medium text-gray-400 mt-4"
+      >
+        {showHistory ? 'Hide History' : 'View History'}
+      </button>
       </div>
 
       <h2 className="text-xl font-semibold mb-4">App balance top-up</h2>

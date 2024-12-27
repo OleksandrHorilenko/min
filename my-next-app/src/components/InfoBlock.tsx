@@ -236,7 +236,7 @@ const InfoBlock: React.FC = () => {
       key={'leaderboard'}
                                 //onClick={() => setActiveTab('leaderboard')
       onClick={() => console.log(setActiveTab('leaderboard'))}  // Логика для перехода к покупке
-      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg"
+      className="shine-effect bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg"
 
     >
       Buy your first card

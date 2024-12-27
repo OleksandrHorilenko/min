@@ -10,6 +10,12 @@ import { WebApp } from '@twa-dev/types';
 import useUserStore from '../stores/useUserStore';
 import FriendsTab from '@/components/FriendsTab';
 
+
+
+  
+
+  
+
 declare global {
   interface Window {
     Telegram?: {
@@ -56,8 +62,11 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const startParam = useUserStore((state) => state.startParam);
   const setStartParam = useUserStore((state) => state.setStartParam);
+  
 
   const { setUser: setUserInStore } = useUserStore();
+
+  
 
   useEffect(() => {
     setLoader(true);
@@ -220,6 +229,10 @@ export default function Home() {
             <CheckFootprint />
             <TabContainer />
             <NavigationBar />
+            
+            
+
+            
           </main>
         </TabProvider>
       )}

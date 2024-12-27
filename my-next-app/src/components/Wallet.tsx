@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import DepositTab from './DepositTab';
 import WithdrawTab from './WithdrawTab';
+import TransactionHistory from './TransactionHistory';
 import Image from 'next/image';
 import { sun } from '@/images'; // Импортируем изображение солнца
 import { TonConnectButton, useTonConnectUI, useTonWallet, useTonAddress } from '@tonconnect/ui-react';
 import useUserStore from '@/stores/useUserStore'; // Подключаем хранилище пользователя
 
 const Wallet = () => {
-  const [selectedTab, setSelectedTab] = useState<'Deposit' | 'Withdraw'>('Deposit'); // Состояние для переключения вкладок
+  const [selectedTab, setSelectedTab] = useState<'Deposit' | 'Withdraw' | 'History'>('Deposit'); // Добавили 'History'
   const tonwallet = useTonWallet(); // Использование хука для TON Connect
   const [tonConnectUI] = useTonConnectUI();
   const userFriendlyAddress = useTonAddress();
@@ -56,7 +57,7 @@ const Wallet = () => {
 
       saveWalletAddress();
     }
-  }, [tonwallet, user?.TelegramId, userFriendlyAddress]); // Зависимости, чтобы запрос выполнялся, когда изменяется кошелек или данные пользователя
+  }, [userFriendlyAddress]); // Зависимости, чтобы запрос выполнялся, когда изменяется кошелек или данные пользователя
 
   return (
     <div className="bg-black min-h-screen text-white">
@@ -78,12 +79,14 @@ const Wallet = () => {
       <div className="flex justify-center items-center bg-[#1c1c1c] py-4 rounded-lg">
         <div className="flex items-center text-xl">
           <Image src={sun} alt="sparkles" width={24} height={24} />
-          <span className="ml-2 text-2xl font-bold">{String(user.ecobalance).slice(0, 5)}</span>
+          <span className="ml-2 text-2xl font-bold">{String(user.ecobalance).slice(0, 8)}</span>
           <span className="ml-1">THE</span>
         </div>
       </div>
 
       {/* Вкладки Deposit и Withdraw */}
+      
+      {/* Вкладки Deposit, Withdraw и History */}
       <div className="flex justify-center mt-6 mb-8">
         <div
           className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg ${selectedTab === 'Deposit' ? 'bg-[#333] border-b-4 border-[#FFA500]' : 'bg-transparent'}`}
@@ -97,11 +100,18 @@ const Wallet = () => {
         >
           Withdraw
         </div>
+        <div
+          className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg ${selectedTab === 'History' ? 'bg-[#333] border-b-4 border-[#FFA500]' : 'bg-transparent'}`}
+          onClick={() => setSelectedTab('History')}
+        >
+          History
+        </div>
       </div>
 
       {/* Отображение содержимого вкладки */}
       {selectedTab === 'Deposit' && <DepositTab />}
       {selectedTab === 'Withdraw' && <WithdrawTab />}
+      {selectedTab === 'History' && <TransactionHistory />} {/* Добавили отображение истории */}
     </div>
   );
 };
