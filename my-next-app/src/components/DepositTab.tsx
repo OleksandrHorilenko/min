@@ -152,6 +152,7 @@ const DepositTab = () => {
           TelegramId: transactionData.TelegramId,
           wallet: transactionData.wallet, // Передаем wallet в нужном типе
           amount: transactionData.amount,
+          //type: "deposit",
         }),
       });
 

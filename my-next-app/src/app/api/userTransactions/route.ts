@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
             TelegramId,
             wallet,
             amount,
-            type,
+            type: 'deposit',
             createdAt: new Date(),
         });
 
