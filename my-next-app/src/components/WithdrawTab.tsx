@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { TonConnectButton } from '@tonconnect/ui-react';
+import { TonConnectButton, useTonConnectUI, SendTransactionRequest, useTonWallet, useTonAddress } from "@tonconnect/ui-react";
 import useUserStore from "@/stores/useUserStore"; // Предположим, что Zustand хранилище находится здесь
 
 const WithdrawTab = () => {
   const { user } = useUserStore(); // Получаем пользователя из Zustand
   const userBalance = user.ecobalance; // Получаем баланс из состояния
+  const userFriendlyAddress = useTonAddress();
 
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
@@ -46,9 +47,9 @@ const WithdrawTab = () => {
     }
   };
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     const numericAmount = parseInt(amount, 10);
-    
+  
     // Проверка корректности суммы для вывода
     if (
       !amount ||
@@ -59,10 +60,36 @@ const WithdrawTab = () => {
       setError('Please enter a valid amount.');
       return;
     }
-
-    // Логика отправки транзакции
-    console.log(`Withdrawing ${amount} coins.`);
+  
+    try {
+      // Отправка заявки на вывод
+      const response = await fetch('/api/withdraw', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          TelegramId: user.TelegramId, // Идентификатор Telegram пользователя
+          wallet: userFriendlyAddress, // Адрес кошелька пользователя
+          amount: numericAmount, // Сумма для вывода
+        }),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        // Уведомление об успешной отправке заявки
+        console.log(`Successfully created withdrawal request: ${result.transaction._id}`);
+        alert("Withdrawal request submitted successfully.");
+      } else {
+        // Отображение ошибки, если запрос не успешен
+        setError(result.error || 'Error creating withdrawal request');
+      }
+    } catch (err) {
+      setError('Error connecting to server');
+    }
   };
+  
 
   // Расчет эквивалента в TON
   const tonEquivalent = amount ? (parseInt(amount, 10) / 1000).toFixed(3) : '0';
