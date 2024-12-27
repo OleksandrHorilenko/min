@@ -25,13 +25,23 @@ export async function POST(req: NextRequest) {
     }
 
      // Проверяем, существует ли уже пользователь с таким TelegramId
-     const existingUser = await User.findOne({ TelegramId });
-     if (existingUser) {
-       return NextResponse.json(
-         { error: 'Пользователь с таким TelegramId уже существует' },
-         { status: 409 }
-       );
-     }
+     //const existingUser = await User.findOne({ TelegramId });
+    // if (existingUser) {
+     //  return NextResponse.json(
+     //    { error: 'Пользователь с таким TelegramId уже существует' },
+     //    { status: 409 }
+    //   );
+    // }
+
+    // Проверяем, существует ли уже пользователь с таким TelegramId в массивах referrals
+const referalWithUser = await Referal.findOne({ referrals: TelegramId });
+
+if (referalWithUser) {
+  return NextResponse.json(
+    { error: 'Пользователь уже добавлен в рефералы' },
+    { status: 409 }
+  );
+}
 
     // Находим запись с указанным referralCode
     const referalRecord = await Referal.findOne({ referralCode });
