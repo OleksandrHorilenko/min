@@ -28,6 +28,7 @@ const FriendsTab = () => {
         //fetchReferralData(referralCodeFromStart);
       }
     };
+    initWebApp();
   }, [user, setStartParam]); // Запускаем только когда user или setStartParam меняются
   
 
