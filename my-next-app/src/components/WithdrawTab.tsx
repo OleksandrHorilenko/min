@@ -1,30 +1,62 @@
 'use client';
 
-import { useState } from 'react';
-import { TonConnectButton, useTonConnectUI, SendTransactionRequest, useTonWallet, useTonAddress } from "@tonconnect/ui-react";
-import useUserStore from "@/stores/useUserStore"; // Предположим, что Zustand хранилище находится здесь
+import { useState, useEffect } from 'react';
+import { TonConnectButton, useTonAddress } from "@tonconnect/ui-react";
+import useUserStore from "@/stores/useUserStore";
 import { updateUserBalance } from '@/app/functions/updateUserBalance';
 
 const WithdrawTab = () => {
-  const { user, updateUser } = useUserStore(); // Получаем информацию о пользователе
-  const userBalance = user.ecobalance; // Получаем баланс из состояния
+  const { user, updateUser } = useUserStore();
+  const userBalance = user.ecobalance;
   const userFriendlyAddress = useTonAddress();
 
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  useEffect(() => {
+    // Проверяем локальное хранилище для времени последней транзакции
+    const lastWithdrawTime = localStorage.getItem('lastWithdrawTime');
+    if (lastWithdrawTime) {
+      const now = Date.now();
+      const lastTime = parseInt(lastWithdrawTime, 10);
+      const timeDifference = now - lastTime;
+
+      if (timeDifference < 5 * 60 * 1000) {
+        setIsButtonDisabled(true);
+        setRemainingTime(5 * 60 * 1000 - timeDifference);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Таймер для обновления оставшегося времени
+    if (remainingTime > 0) {
+      const timer = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1000) {
+            setIsButtonDisabled(false);
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1000;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [remainingTime]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    // Проверка, что ввод состоит только из цифр
     if (/^\d*$/.test(value)) {
-      // Проверка, чтобы первое число не было 0
       if (value.length > 1 && value.startsWith('0')) {
         setError('Number cannot start with zero.');
         return;
       }
 
-      // Ограничение длины вводимого значения (например, до 6 символов)
       if (value.length > 6) {
         setError('Maximum length is 6 digits.');
         return;
@@ -35,7 +67,6 @@ const WithdrawTab = () => {
 
       const numericValue = parseInt(value, 10);
 
-      // Логика для проверки минимальной и максимальной суммы
       if (numericValue < 5000) {
         setError('Minimum withdrawal amount is 5000 coins.');
       } else if (numericValue > 100000) {
@@ -50,8 +81,7 @@ const WithdrawTab = () => {
 
   const handleWithdraw = async () => {
     const numericAmount = parseInt(amount, 10);
-  
-    // Проверка корректности суммы для вывода
+
     if (
       !amount ||
       numericAmount < 5000 ||
@@ -61,41 +91,45 @@ const WithdrawTab = () => {
       setError('Please enter a valid amount.');
       return;
     }
-  
+
     try {
-      // Отправка заявки на вывод
       const response = await fetch('/api/userWithdraws', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          TelegramId: user.TelegramId, // Идентификатор Telegram пользователя
-          wallet: userFriendlyAddress, // Адрес кошелька пользователя
-          amount: numericAmount, // Сумма для вывода
+          TelegramId: user.TelegramId,
+          wallet: userFriendlyAddress,
+          amount: numericAmount,
         }),
       });
-  
-      const result = await response.json();
-  
-      if (response.ok) {
-        const newBalance = user.ecobalance - numericAmount;
-        updateUser({ ecobalance: newBalance }); // Обновляем состояние хранилища
-        const result = await updateUserBalance(user.TelegramId, numericAmount, "decrement");
-        // Уведомление об успешной отправке заявки
-        console.log(`Successfully created withdrawal request: ${result.transaction._id}`);
-        alert("Withdrawal request submitted successfully.");
-      } else {
-        // Отображение ошибки, если запрос не успешен
+
+      if (!response.ok) {
+        const result = await response.json();
         setError(result.error || 'Error creating withdrawal request');
+        return;
       }
+
+      const result = await response.json();
+
+      const newBalance = user.ecobalance - numericAmount;
+      updateUser({ ecobalance: newBalance });
+      await updateUserBalance(user.TelegramId, numericAmount, "decrement");
+      console.log(`Successfully created withdrawal request: ${result.transaction._id}`);
+      alert("Withdrawal request submitted successfully.");
+
+      // Сохраняем время последней транзакции в локальное хранилище
+      const now = Date.now();
+      localStorage.setItem('lastWithdrawTime', now.toString());
+      setIsButtonDisabled(true);
+      setRemainingTime(5 * 60 * 1000);
     } catch (err) {
-      setError('Error connecting to server');
+      console.error(err);
+      setError('Unexpected error occurred. Please try again.');
     }
   };
-  
 
-  // Расчет эквивалента в TON
   const tonEquivalent = amount ? (parseInt(amount, 10) / 1000).toFixed(3) : '0';
 
   return (
@@ -124,9 +158,9 @@ const WithdrawTab = () => {
         <button
           onClick={handleWithdraw}
           className="mt-6 w-full shine-effect bg-[#ffffff0d] border-[1px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-center gap-3 text-white hover:bg-[#ffffff1a]"
-          disabled={!!error || !amount}
+          disabled={isButtonDisabled || !!error || !amount}
         >
-          Withdraw THE
+          {isButtonDisabled ? `Wait ${Math.ceil(remainingTime / 1000)}s` : 'Withdraw THE'}
         </button>
       </div>
       <p className="mt-4 text-sm text-gray-400">Your balance: {userBalance} coins</p>
