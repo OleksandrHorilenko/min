@@ -199,15 +199,8 @@ const TasksTab = () => {
                             <div className="details flex items-center justify-between w-full py-4 pr-4 border-t border-[#222622]">
                                 <div>
                                     <div className="text-[17px] font-bold">{task.title}</div>
-                                    <div className="text-gray-400 text-[14px]">{task.description}</div>
-                                    <a
-                                        href={task.link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-400 text-sm underline"
-                                    >
-                                        {task.link}
-                                    </a>
+                                    <div className="text-gray-400 text-[14px]"></div>
+                                    
                                     <div className="text-yellow-400 mt-1">Reward: {task.reward} THE</div>
                                 </div>
                                 {task.status === 'available' && (

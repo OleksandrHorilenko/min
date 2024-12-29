@@ -296,8 +296,8 @@ const InfoBlock: React.FC = () => {
         </div>
 
         <div className="flex justify-end items-center mt-1 space-x-2">
-          <p className="text-xs text-gray-400">Remaining Coins</p>
-          <p className="text-xs font-bold text-gray-300">{remainingPercentage}%</p>
+          <p className="text-xs text-gray-400">Remaining Coins:</p>
+          <p className="text-xs font-bold text-gray-300">{Math.round(card.remainingcoins)}  ({remainingPercentage}%)</p>
         </div>
       </div>
     );
