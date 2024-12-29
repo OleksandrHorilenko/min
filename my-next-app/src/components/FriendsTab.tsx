@@ -35,9 +35,12 @@ const FriendsTab = () => {
       setReferrals(uniqueReferrals);
     
       // Получение деталей каждого реферала
-      const userDetails = await Promise.all(
+      const userDetails = await Promise.allSettled(
         uniqueReferrals.map(async (referral) => {
-          const userResponse = await fetch(`/api/users/${referral}`);
+          const userResponse = await fetch(`/api/user?TelegramId=${referral}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
           if (!userResponse.ok) throw new Error('Ошибка при загрузке данных пользователя');
           return await userResponse.json();
         })
@@ -95,36 +98,46 @@ const FriendsTab = () => {
       </div>
 
       {showReferrals && (
-        <div className="mt-8">
-          <div className="bg-[#151516] w-full rounded-2xl p-8">
-            <h2 className="text-xl font-bold text-white">Ваши рефералы</h2>
-            {referralDetails.length > 0 ? (
-              <ul className="mt-2 space-y-2">
-                {referralDetails.map((referral, index) => (
-                  <li
-                    key={referral.TelegramId || index}
-                    className="text-lg text-gray-300 flex justify-between items-center"
-                  >
-                    <div>
-                      <p>Юзернейм: {referral.username || 'Не указано'}</p>
-                      <p>Имя: {referral.name || 'Не указано'}</p>
-                      <p>Общее количество монет: {referral.totalCoins || 0}</p>
-                    </div>
-                    <button
-                      onClick={() => handleReward(referral.id)}
-                      className="bg-green-500 text-white px-4 py-2 rounded-lg"
-                    >
-                      Получить награду
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500 mt-2">У вас пока нет рефералов.</p>
-            )}
-          </div>
-        </div>
+  <div className="mt-8">
+    <div className="bg-[#151516] w-full rounded-2xl p-8">
+      <h2 className="text-xl font-bold text-white">Ваши рефералы</h2>
+      {referralDetails.length > 0 ? (
+        <ul className="mt-2 space-y-2">
+          {referralDetails.map((referral, index) => (
+            <li
+              key={referral._id || index}
+              className="text-lg text-gray-300 flex justify-between items-center"
+            >
+              <div>
+                <p>
+                  <span className="font-bold">Юзернейм:</span>{' '}
+                  {referral.username || 'Не указано'}
+                </p>
+                <p>
+                  <span className="font-bold">Имя:</span>{' '}
+                  {referral.first_name || 'Не указано'}{' '}
+                  {referral.last_name || ''}
+                </p>
+                <p>
+                  <span className="font-bold">Общее количество монет:</span>{' '}
+                  {referral.ecobalance || 0}
+                </p>
+              </div>
+              <button
+                onClick={() => handleReward(referral.TelegramId)}
+                className="bg-green-500 text-white px-4 py-2 rounded-lg"
+              >
+                Получить награду
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-gray-500 mt-2">У вас пока нет рефералов.</p>
       )}
+    </div>
+  </div>
+)}
 
       {/* Кнопка для копирования ссылки */}
       <div className="fixed bottom-[80px] left-0 right-0 py-4 flex justify-center">
