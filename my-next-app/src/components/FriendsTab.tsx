@@ -14,6 +14,7 @@ const FriendsTab = () => {
   const [showReferrals, setShowReferrals] = useState<boolean>(false);
   const { user } = useUserStore();
 
+
   const handleShowReferrals = async () => {
     if (!user?.TelegramId) {
       console.error('TelegramId отсутствует');
@@ -52,6 +53,7 @@ const FriendsTab = () => {
     } finally {
       setLoading(false);
       setShowReferrals(true);
+      //console.log(referral); 
     }
   };  
 
@@ -102,39 +104,36 @@ const FriendsTab = () => {
     <div className="bg-[#151516] w-full rounded-2xl p-8">
       <h2 className="text-xl font-bold text-white">Ваши рефералы</h2>
       {referralDetails.length > 0 ? (
-        <ul className="mt-2 space-y-2">
-          {referralDetails.map((referral, index) => (
-            <li
-              key={referral._id || index}
-              className="text-lg text-gray-300 flex justify-between items-center"
-            >
-              <div>
-                <p>
-                  <span className="font-bold">Юзернейм:</span>{' '}
-                  {referral.username || 'Не указано'}
-                </p>
-                <p>
-                  <span className="font-bold">Имя:</span>{' '}
-                  {referral.first_name || 'Не указано'}{' '}
-                  {referral.last_name || ''}
-                </p>
-                <p>
-                  <span className="font-bold">Общее количество монет:</span>{' '}
-                  {referral.ecobalance || 0}
-                </p>
-              </div>
-              <button
-                onClick={() => handleReward(referral.TelegramId)}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg"
-              >
-                Получить награду
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-500 mt-2">У вас пока нет рефералов.</p>
-      )}
+  <ul className="mt-2 space-y-2">
+    {referralDetails.map((detail, index) => {
+      console.log(detail); // Логируем каждый detail
+      console.log(referralDetails); // Выведите весь массив перед рендером
+      return (
+        <li key={detail._id || index} className="text-lg text-gray-300 flex justify-between items-center">
+          <div>
+            <p>
+              <span className="font-bold">Юзернейм:</span> {detail.value.username || 'Не указано'}
+            </p>
+            <p>
+              <span className="font-bold">Имя:</span> {detail.value.first_name || 'Не указано'} {detail.last_name || ''}
+            </p>
+            <p>
+              <span className="font-bold">Общее количество монет:</span> {detail.value.ecobalance || 0}
+            </p>
+          </div>
+          <button
+            onClick={() => handleReward(detail.TelegramId)} // Используем detail.TelegramId
+            className="bg-green-500 text-white px-4 py-2 rounded-lg"
+          >
+            Получить награду
+          </button>
+        </li>
+      );
+    })}
+  </ul>
+) : (
+  <p className="text-gray-500 mt-2">У вас пока нет рефералов.</p>
+)}
     </div>
   </div>
 )}
