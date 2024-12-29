@@ -19,7 +19,7 @@ export const tasks: Task[] = [
     {
         taskId: '1', // Изменили с 'id' на 'taskId'
         tasktype: 'telegram',
-        type: 'partners',
+        type: 'in-game',
         title: 'Subscribe channel',
         description: 'Subscribe our channel',
         link: 'https://t.me/themine_app',
@@ -32,7 +32,7 @@ export const tasks: Task[] = [
     {
         taskId: '2',
         tasktype: 'twitter',
-        type: 'partners',
+        type: 'in-game',
         title: 'Follow X',
         description: 'Follow X',
         link: 'https://twitter.com/',
@@ -101,7 +101,7 @@ export const tasks: Task[] = [
     {
         taskId: '7', // Изменили с 'id' на 'taskId'
         tasktype: 'telegram',
-        type: 'partners',
+        type: 'in-game',
         title: 'Subscribe our TG group',
         description: 'Subscribe our TG group',
         link: 'https://t.me/+8OgpRqfFu5UyMjQ6',

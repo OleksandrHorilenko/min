@@ -13,7 +13,7 @@ const cards = [
       profitperhour: 0.25,
       minedcoins: 0,
       remainingcoins: 1080,
-      price: 500,
+      price: 10,
       edition: 88888,
       cardlastclaim: new Date().toISOString(),
       

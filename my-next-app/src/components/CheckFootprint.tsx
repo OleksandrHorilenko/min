@@ -4,6 +4,8 @@ import useUserStore from '../stores/useUserStore'; // Подключаем Zusta
 import ArrowBigRight from "@/icons/ArrowBigRight";
 import { sun, sparkles } from '@/images';
 import Image from 'next/image';
+import { IoPaperPlaneOutline } from "react-icons/io5";
+
 const CheckFootprint = () => {
   const { user } = useUserStore();  // Получаем пользователя из Zustand
 
@@ -12,9 +14,9 @@ const CheckFootprint = () => {
       <div className="fixed top-0 w-full max-w-md px-4 py-3 bg-[#151516] cursor-pointer">
         <div className="flex justify-between items-center pl-2 border-l-[2px] border-[#4c9ce2]">
           <div className="flex items-center gap-4 text-base text-white font-medium">
-            <span></span><Image src={sun} alt="Sun" width={40} height={40} />
+            <span></span><IoPaperPlaneOutline  size={30} color="1E90FF" />
             {user && user.TelegramId && (  // Проверяем, что данные пользователя существуют в Zustand
-              <span className="text-white"> {user.TelegramId}</span>  // Выводим Telegram ID из Zustand
+              <span className="text-white"> {user.username}</span>  // Выводим Telegram ID из Zustand
             )}
           </div>
           <button className="bg-[#4c9ce2] rounded-full px-2 py-1">

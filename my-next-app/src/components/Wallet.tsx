@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { sun } from '@/images'; // Импортируем изображение солнца
 import { TonConnectButton, useTonConnectUI, useTonWallet, useTonAddress } from '@tonconnect/ui-react';
 import useUserStore from '@/stores/useUserStore'; // Подключаем хранилище пользователя
+import { IoPaperPlaneOutline } from "react-icons/io5";
 
 const Wallet = () => {
   const [selectedTab, setSelectedTab] = useState<'Deposit' | 'Withdraw' | 'History'>('Deposit'); // Добавили 'History'
@@ -78,7 +79,7 @@ const Wallet = () => {
       {/* Полоска с балансом */}
       <div className="flex justify-center items-center bg-[#1c1c1c] py-4 rounded-lg">
         <div className="flex items-center text-xl">
-          <Image src={sun} alt="sparkles" width={24} height={24} />
+        <IoPaperPlaneOutline  size={30} color="1E90FF" />
           <span className="ml-2 text-2xl font-bold">{String(user.ecobalance).slice(0, 8)}</span>
           <span className="ml-1">THE</span>
         </div>
@@ -88,25 +89,54 @@ const Wallet = () => {
       
       {/* Вкладки Deposit, Withdraw и History */}
       <div className="flex justify-center mt-6 mb-8">
+      {/* Deposit Tab */}
+      <div
+        className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg relative
+        ${selectedTab === 'Deposit' 
+          ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg' 
+          : 'bg-transparent text-gray-400 hover:text-white font-bold py-3 px-8 rounded-xl'}`}
+        onClick={() => setSelectedTab('Deposit')}
+      >
+        Deposit
+        {/* Hover effect only on non-active tabs */}
         <div
-          className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg ${selectedTab === 'Deposit' ? 'bg-[#333] border-b-4 border-[#FFA500]' : 'bg-transparent'}`}
-          onClick={() => setSelectedTab('Deposit')}
-        >
-          Deposit
-        </div>
-        <div
-          className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg ${selectedTab === 'Withdraw' ? 'bg-[#333] border-b-4 border-[#FFA500]' : 'bg-transparent'}`}
-          onClick={() => setSelectedTab('Withdraw')}
-        >
-          Withdraw
-        </div>
-        <div
-          className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg ${selectedTab === 'History' ? 'bg-[#333] border-b-4 border-[#FFA500]' : 'bg-transparent'}`}
-          onClick={() => setSelectedTab('History')}
-        >
-          History
-        </div>
+          className={`absolute bottom-0 left-0 w-full h-1 rounded-t-full 
+          ${selectedTab === 'Deposit' ? 'bg-transparent' : 'bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 hover:opacity-100'}`}
+        />
       </div>
+
+      {/* Withdraw Tab */}
+      <div
+        className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg relative
+        ${selectedTab === 'Withdraw' 
+          ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg' 
+          : 'bg-transparent text-gray-400 hover:text-white font-bold py-3 px-8 rounded-xl'}`}
+        onClick={() => setSelectedTab('Withdraw')}
+      >
+        Withdraw
+        {/* Hover effect only on non-active tabs */}
+        <div
+          className={`absolute bottom-0 left-0 w-full h-1 rounded-t-full 
+          ${selectedTab === 'Withdraw' ? 'bg-transparent' : 'bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 hover:opacity-100'}`}
+        />
+      </div>
+
+      {/* History Tab */}
+      <div
+        className={`flex-1 text-center py-2 cursor-pointer rounded-t-lg relative
+        ${selectedTab === 'History' 
+          ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg' 
+          : 'bg-transparent text-gray-400 hover:text-white font-bold py-3 px-8 rounded-xl'}`}
+        onClick={() => setSelectedTab('History')}
+      >
+        History
+        {/* Hover effect only on non-active tabs */}
+        <div
+          className={`absolute bottom-0 left-0 w-full h-1 rounded-t-full 
+          ${selectedTab === 'History' ? 'bg-transparent' : 'bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 hover:opacity-100'}`}
+        />
+      </div>
+    </div>
 
       {/* Отображение содержимого вкладки */}
       {selectedTab === 'Deposit' && <DepositTab />}

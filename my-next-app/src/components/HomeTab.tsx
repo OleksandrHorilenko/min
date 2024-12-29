@@ -13,6 +13,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/router'
 import { useState } from 'react';
 import { useTab } from '@/contexts/TabContext'
+import { TiAdjustBrightness, TiShoppingCart, TiClipboard } from "react-icons/ti";
+import { IoPaperPlaneOutline } from "react-icons/io5";
+import { WiStars } from "react-icons/wi";
 
 const HomeTab = () => {
   const user = useUserStore((state) => state.user);
@@ -26,14 +29,14 @@ const HomeTab = () => {
   return (
     <div className={`home-tab-con transition-all duration-300`}>
       <div className="flex flex-col items-center mt-12">
-        <Image src={sun} alt="Sun" width={108} height={108} />
+      <IoPaperPlaneOutline  size={108} color="1E90FF" />
         <div className="text-4xl font-bold mb-1">
   {user.ecobalance.toFixed(2)} THE
 </div>
         
         <div className="flex items-center gap-1 text-[#868686] rounded-full px-4 py-1.5 mt-2 cursor-pointer">
           <span>NEWCOMER</span>
-          <Image src={sparkles} alt="Sparkles" width={18} height={18} />
+          <WiStars  size={24} color="1E90FF" />
           <span>RANK</span>
           <ArrowRight className="w-6 h-6" />
         </div>
@@ -47,7 +50,7 @@ const HomeTab = () => {
                                 onClick={() => setActiveTab('leaderboard')}
           >
             <div className="flex items-center gap-3 font-medium">
-              <Community className="w-8 h-8" />
+            <TiShoppingCart size={36} color="#9400D3" />
               <span>Buy THE miner</span>
             </div>
             <ArrowRight className="w-6 h-6 text-gray-400" />
@@ -58,7 +61,7 @@ const HomeTab = () => {
             key={'earn'}
             onClick={() => setActiveTab('earn')}
             >
-              <Star className="w-8 h-8" />
+              <TiClipboard size={36} color="#9400D3" />
               <span>Get tasks</span>
             </div>
             <ArrowRight className="w-6 h-6 text-gray-400" />

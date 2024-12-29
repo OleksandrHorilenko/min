@@ -8,6 +8,7 @@ interface Transaction {
   amount: number;
   type: string;
   wallet: string;
+  
 }
 
 const TransactionHistory = () => {
@@ -59,6 +60,9 @@ const TransactionHistory = () => {
 
   return (
     <div className="transaction-history-container">
+      <div className="w-full flex justify-center mt-8">
+        <TonConnectButton />
+      </div>
       <h2 className="text-xl font-semibold text-white-800">Transaction History</h2>
       <div className="mt-4">
         {transactions.length === 0 ? (
