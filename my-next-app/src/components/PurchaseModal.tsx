@@ -2,7 +2,17 @@ import { CardData } from "@/components/types/CardData";
 import useUserStore from "@/stores/useUserStore"; // Для доступа к информации о пользователе
 import fetchUserCollection from "@/app/functions/fetchUserCollection"; // Функция для обновления коллекции
 import { updateUserBalance } from '@/app/functions/updateUserBalance';
+import { useState } from 'react';
 import LinearProgress from '@mui/material/LinearProgress'; // Для прогресс-бара
+import { TonConnectButton, useTonConnectUI, SendTransactionRequest, useTonWallet, useTonAddress } from "@tonconnect/ui-react";
+
+interface TransactionData {
+  TelegramId: string; // TelegramId пользователя
+  wallet: any | null;
+  amount: number;  // Сумма транзакции
+  type: string; // Тип транзакции, например, "deposit"
+  //timestamp: string; // Время транзакции в формате ISO
+}
 
 interface ModalProps {
   card: CardData;
@@ -11,6 +21,38 @@ interface ModalProps {
 
 const PurchaseModal = ({ card, onClose }: ModalProps) => {
   const { user, updateUser } = useUserStore(); // Получаем информацию о пользователе
+  const userFriendlyAddress = useTonAddress(); // Адрес текущего пользователя
+  const [tonConnectUI] = useTonConnectUI();
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+
+  // Запись транзакции в базу данных
+  const logTransactionInDB = async (transactionData: TransactionData) => {
+    try {
+      const response = await fetch("/api/userTransactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          TelegramId: transactionData.TelegramId,
+          wallet: transactionData.wallet, // Передаем wallet в нужном типе
+          amount: transactionData.amount,
+          //type: "deposit",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to log transaction.");
+      }
+    } catch (err) {
+      console.error("Error logging transaction:", err);
+    }
+  };
 
   // Обработчик для кнопки Buy ECO
   const handleBuyECO = async () => {
@@ -18,6 +60,9 @@ const PurchaseModal = ({ card, onClose }: ModalProps) => {
       alert("Недостаточно средств для покупки!");
       return;
     }
+
+    // Отключаем кнопку до завершения обработки
+  setIsProcessing(true);
 
     try {
       const newBalance = user.ecobalance - Number(card.price);
@@ -91,7 +136,107 @@ const PurchaseModal = ({ card, onClose }: ModalProps) => {
     } catch (error) {
       console.error("Ошибка при обработке покупки:", error);
     }
+    finally {
+      // Включаем кнопку обратно после завершения
+      setIsProcessing(false);
+    }
   };
+
+
+  const handleBuyTon = async () => {
+    try {
+      setIsProcessing(true);
+  
+      // Перевод цены карты из токенов в TON
+      const tonAmountToSend = card.price / 1000; // 1000 токенов = 1 TON
+  
+      const transaction: SendTransactionRequest = {
+        validUntil: Date.now() + 5 * 60 * 1000, // Время истечения транзакции
+        messages: [
+          {
+            address: "UQAK-eku1yCNkL5wt7g9OlBpHSnjadN10h_A19uM3SGVJIu2", // Адрес кошелька продавца
+            amount: (tonAmountToSend * 1e9).toFixed(0).toString(), // Перевод в нанотоны
+          },
+        ],
+      };
+  
+      const result = await tonConnectUI.sendTransaction(transaction);
+  
+      if (result) {
+        // Успешная транзакция - добавляем карту пользователю
+        const newCard = {
+          cardId: card.cardId,
+          serialNumber: card.serialNumber,
+          isActive: card.isActive,
+          acquiredAt: new Date().toISOString(),
+          rarity: card.rarity,
+          title: card.title,
+          description: card.description,
+          miningcoins: card.miningcoins,
+          miningperiod: card.miningperiod,
+          miningcycle: card.miningcycle,
+          profitperhour: card.profitperhour,
+          minedcoins: card.minedcoins,
+          remainingcoins: card.remainingcoins,
+          price: card.price,
+          priceInTon: tonAmountToSend, // Цена в TON
+          edition: card.edition,
+          cardlastclaim: new Date().toISOString(),
+        };
+  
+        const requestData = {
+          TelegramId: user.TelegramId,
+          newCard: newCard,
+        };
+  
+        const response = await fetch("/api/addCardToUserCollection", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestData),
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Ошибка при добавлении карты в коллекцию:", errorData.error);
+          alert("Ошибка при добавлении карты. Попробуйте снова.");
+          return;
+        }
+  
+        // Логируем транзакцию
+        const transactionData: TransactionData = {
+          TelegramId: user.TelegramId,
+          wallet: userFriendlyAddress,
+          amount: tonAmountToSend,
+          type: "purchase", // Тип транзакции (покупка)
+        };
+        await logTransactionInDB(transactionData);
+  
+        alert("Карта успешно куплена за TON!");
+        fetchUserCollection(user.TelegramId); // Обновляем коллекцию пользователя
+      } else {
+        alert("Транзакция была отменена.");
+      }
+    } catch (error) {
+      console.error("Ошибка при обработке покупки за TON:", error);
+      alert("Ошибка при обработке покупки. Попробуйте снова.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+
+
+  const handleBuyStars = () => {
+    // Показываем всплывающее окно
+    setShowPopup(true);
+
+    // Через 2 секунды скрываем уведомление
+    setTimeout(() => {
+      setShowPopup(false);
+    }, 2000);
+  };
+  
+
 
   // Определяем цвет в зависимости от редкости карты
   const bgColor = (() => {
@@ -151,15 +296,27 @@ const PurchaseModal = ({ card, onClose }: ModalProps) => {
         
 
         <div className="flex justify-between space-x-4 mt-4">
-          <button onClick={handleBuyECO} className="w-1/3 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-lg py-2">
-            Buy ECO
+          <button onClick={handleBuyECO} disabled={isProcessing} className="w-1/3 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-lg py-2">
+          {isProcessing ? 'Processing...' : 'Buy card $THE'}
           </button>
-          <button onClick={() => console.log("Buy TON")} className="w-1/3 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-lg py-2">
+          <button onClick={handleBuyTon} disabled={isProcessing} className="w-1/3 bg-gradient-to-r from-green-400 to-blue-600 text-white rounded-lg py-2">
             Buy TON
           </button>
-          <button onClick={() => console.log("Buy STARS")} className="w-1/3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-lg py-2">
-            Buy STARS
-          </button>
+         
+      <button
+        onClick={handleBuyStars}
+        className="w-1/3 bg-gradient-to-r from-blue-400 to-yellow-600 text-white rounded-lg py-2"
+      >
+        Buy STARS
+      </button>
+
+      {/* Всплывающее окно */}
+      {showPopup && (
+        <div className="fixed bottom-4 left-1/2 w-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md border-4 border-white-300 font-bold text-center">
+        Soon
+      </div>
+      )}
+    
         </div>
       </div>
     </div>
