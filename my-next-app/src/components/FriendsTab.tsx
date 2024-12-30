@@ -88,37 +88,45 @@ const FriendsTab = () => {
   <div className="text-gray-500 text-xl">YOUR FRIENDS' MINING TOKENS</div>
 </div>
 {/* Кнопка для загрузки рефералов */}
-<div className="p-8 bg-black rounded-lg shadow-md border border-gray-300">
-      <h2 className="text-2xl font-bold text-center text-white mb-6">
-        How it works
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Step 1 */}
-        <div className="flex flex-col items-center text-center h-full space-y-4">
-          <FaShareAlt className="text-blue-500 text-4xl" />
-          <h3 className="font-semibold text-lg text-white">Share Link</h3>
-          <p className="text-gray-400">
-            Share your unique invitation link with friends.
-          </p>
-        </div>
-        {/* Step 2 */}
-        <div className="flex flex-col items-center text-center h-full space-y-4">
-          <FaUserFriends className="text-green-500 text-4xl" />
-          <h3 className="font-semibold text-lg text-white">Invite a Friend</h3>
-          <p className="text-gray-400">
-            Get <span className="font-semibold text-white">$100 THE</span> for each referral.
-          </p>
-        </div>
-        {/* Step 3 */}
-        <div className="flex flex-col items-center text-center h-full space-y-4">
-          <FaDollarSign className="text-yellow-500 text-4xl" />
-          <h3 className="font-semibold text-lg text-white">Earn Rewards</h3>
-          <p className="text-gray-400">
-            Earn <span className="font-semibold text-white">5% THE</span> from their mining income.
-          </p>
-        </div>
+<div className="p-6 bg-black rounded-lg shadow-md border border-gray-300">
+  <h2 className="text-xl font-bold text-center text-white mb-4">
+    How it works
+  </h2>
+  <div className="grid grid-cols-1 gap-4">
+    {/* Step 1 */}
+    <div className="flex items-center space-x-3">
+      <FaShareAlt className="text-blue-500 text-2xl flex-shrink-0" />
+      <div>
+        <h3 className="font-semibold text-base text-white">Share Link</h3>
+        <p className="text-sm text-gray-400">
+          Share your unique invitation link with friends.
+        </p>
       </div>
     </div>
+    {/* Step 2 */}
+    <div className="flex items-center space-x-3">
+      <FaUserFriends className="text-green-500 text-2xl flex-shrink-0" />
+      <div>
+        <h3 className="font-semibold text-base text-white">Invite a Friend</h3>
+        <p className="text-sm text-gray-400">
+          Get <span className="font-semibold text-white">$100 THE</span> for each referral.
+        </p>
+      </div>
+    </div>
+    {/* Step 3 */}
+    <div className="flex items-center space-x-3">
+      <FaDollarSign className="text-yellow-500 text-2xl flex-shrink-0" />
+      <div>
+        <h3 className="font-semibold text-base text-white">Earn Rewards</h3>
+        <p className="text-sm text-gray-400">
+          Earn <span className="font-semibold text-white">5% THE</span> from their mining income.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
       {/* Кнопка для загрузки рефералов */}
       <div className="mt-8">
         <button

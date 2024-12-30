@@ -209,7 +209,7 @@ const InfoBlock: React.FC = () => {
 
   return (
     <div className="bg-[#121212] flex flex-col items-center">
-      <div className="w-full max-w-4xl bg-[#1a1a1a] rounded-2xl shadow-lg p-6 flex flex-col space-y-6">
+      <div className="w-full max-w-6xl bg-[#1a1a1a] rounded-2xl shadow-lg p-6 flex flex-col space-y-6">
         <div className="text-white text-lg font-bold hover:text-gray-300 transition-colors flex flex-col items-center justify-center">
           <span>Total mined since last claim:</span>
           <span className="text-4xl">{getTotalMinedCoins().toFixed(3)}</span>
@@ -263,7 +263,7 @@ const InfoBlock: React.FC = () => {
     return (
       <div
         key={index}
-        className={`relative w-[90%] sm:w-[320px] h-[200px] ${bgColor} border-2 rounded-2xl shadow-lg p-6 flex flex-col justify-between mb-6 mx-auto`}
+        className={`relative w-[320px] h-[200px] ${bgColor} border-2 rounded-2xl shadow-lg p-6 flex flex-col justify-between mb-6 mx-auto`}
         style={{
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)',
         }}
@@ -281,7 +281,7 @@ const InfoBlock: React.FC = () => {
         <div className="mt-4">
           <p className="text-gray-300">
             <strong className="text-4xl text-yellow-400">{card.miningcoins}</strong>
-            <span className="text-xl text-gray-300"> ECO</span>
+            <span className="text-xl text-gray-300"> THE</span>
           </p>
           <p className="text-sm text-gray-300 mt-1">{card.miningperiod} days</p>
         </div>
@@ -295,7 +295,7 @@ const InfoBlock: React.FC = () => {
           />
         </div>
 
-        <div className="flex justify-end items-center mt-1 space-x-2">
+        <div className="flex justify-end items-center mt-1 space-x-2 whitespace-nowrap">
           <p className="text-xs text-gray-400">Remaining Coins:</p>
           <p className="text-xs font-bold text-gray-300">{Math.round(card.remainingcoins)}  ({remainingPercentage}%)</p>
         </div>
