@@ -47,7 +47,7 @@ export async function updateTask(TelegramId: string, taskId: string, status: str
 }
 
 const TasksTab = () => {
-    const [activeTab, setActiveTab] = useState<'in-game' | 'partners' | 'special'>('in-game');
+    const [activeTab, setActiveTab] = useState<'in-game' | 'partners' | 'daily'>('in-game');
     const [isLoading, setIsLoading] = useState(true);  // Лоадер для загрузки задач
     const user = useUserStore((state) => state.user);
     const { userTasks, setUserTasks } = useUserStore();
@@ -163,8 +163,13 @@ const TasksTab = () => {
     };
 
     const filteredTasks = Array.isArray(userTasks)
-        ? userTasks.filter((task) => task.type === activeTab)
-        : [];
+    ? userTasks.filter((task) => {
+        if (activeTab === 'in-game') return task.type === 'in-game'|| task.type === 'special' ;
+        if (activeTab === 'partners') return task.type === 'partners';
+        if (activeTab === 'daily') return task.type === 'daily';
+        return task.type === activeTab;
+    })
+    : [];
 
     return (
         <div className="tasks-tab px-4">
@@ -174,10 +179,10 @@ const TasksTab = () => {
             </div>
 
             <div className="tabs flex gap-0 mt-6">
-                {['in-game', 'partners', 'special'].map((tab) => (
+                {['in-game', 'partners', 'daily'].map((tab) => (
                     <button
                         key={tab}
-                        onClick={() => setActiveTab(tab as 'in-game' | 'partners' | 'special')}
+                        onClick={() => setActiveTab(tab as 'in-game' | 'partners' | 'daily')}
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
                             activeTab === tab ? 'bg-white text-black' : 'bg-[#151515] text-white'
                         }`}

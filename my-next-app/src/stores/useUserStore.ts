@@ -38,7 +38,7 @@ export interface UpdatedCard extends Card {
 export interface Task {
   taskId: string;
   tasktype: 'telegram' | 'twitter' | 'quiz' | 'special' | 'other'; // Тип задания
-  type: 'in-game' | 'partners' | 'special'; // Группировка по вкладкам
+  type: 'in-game' | 'partners' | 'special' | 'daily'; // Группировка по вкладкам
   title: string; // Заголовок задания
   description: string; // Описание задания
   link: string; // Ссылка на задание

@@ -16,6 +16,7 @@ export type Task = {
 
 
 export const tasks: Task[] = [
+   
     {
         taskId: '1', // Изменили с 'id' на 'taskId'
         tasktype: 'telegram',
@@ -42,33 +43,33 @@ export const tasks: Task[] = [
         progress: 0,
         rewardPaid: false,
     },
-    {
-        taskId: '3',
-        tasktype: 'quiz',
-        type: 'in-game',
-        title: 'Follow us in Instagram',
-        description: 'Follow us in Instagram.',
-        link: 'https://www.instagram.com/',
-        reward: 50,
-        status: 'available',
-        icon: 'TelegramIcon',
-        progress: 0,
-        rewardPaid: false,
-    },
+  //  {
+  //      taskId: '3',
+  //      tasktype: 'quiz',
+   //     type: 'in-game',
+  //      title: 'Follow us in Instagram',
+   //     description: 'Follow us in Instagram.',
+    //    link: 'https://www.instagram.com/',
+   //     reward: 50,
+  //      status: 'available',
+   //     icon: 'TelegramIcon',
+   //     progress: 0,
+   //     rewardPaid: false,
+  //  },
 
-    {
-        taskId: '4',
-        tasktype: 'quiz',
-        type: 'in-game',
-        title: 'Subscribe on Youtube',
-        description: 'Subscribe our Youtube',
-        link: 'https://www.youtube.com/',
-        reward: 50,
-        status: 'available',
-        icon: 'TelegramIcon',
-        progress: 0,
-        rewardPaid: false,
-    },
+  //  {
+   //     taskId: '4',
+   //     tasktype: 'quiz',
+   //     type: 'in-game',
+   //     title: 'Subscribe on Youtube',
+   //     description: 'Subscribe our Youtube',
+   //     link: 'https://www.youtube.com/',
+   //     reward: 50,
+   //     status: 'available',
+   //     icon: 'TelegramIcon',
+   //     progress: 0,
+   //     rewardPaid: false,
+  //  },
    
     {
         taskId: '5',
@@ -111,5 +112,4 @@ export const tasks: Task[] = [
         progress: 0, // Добавили поле progress
         rewardPaid: false, // Добавили поле rewardPaid
     },
-    
 ];
