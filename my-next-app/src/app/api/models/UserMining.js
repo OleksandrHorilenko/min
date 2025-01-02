@@ -11,6 +11,11 @@ const userMiningSchema = new mongoose.Schema(
       type: Number, 
       default: 0 // Начальное значение для намайненных монет
     },
+    taskCoins: { 
+      type: Number, 
+      default: 0 // Начальное значение для намайненных монет
+    },
+
     bonusCoins: { 
       type: Number, 
       default: 0 // Начальное значение для бонусных монет

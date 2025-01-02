@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import UserMining from '../models/UserMining'; // Путь к модели
+import connect from '../mongodb';
 
 // Обработчик для GET запроса
 export async function GET(req: NextRequest) {
+  await connect();
   // Получаем telegramId из query-параметров URL
-  const telegramId = req.nextUrl.searchParams.get('TelegramId'); 
+  const { searchParams } = req.nextUrl;
+  const TelegramId = searchParams.get('TelegramId');
 
-  if (!telegramId) {
+  if (!TelegramId) {
     return NextResponse.json({ message: 'TelegramId is required' }, { status: 400 });
   }
 
   try {
     // Получаем данные для пользователя по telegramId
-    const userMiningData = await UserMining.findOne({ TelegramId: telegramId });
+    const userMiningData = await UserMining.findOne({ TelegramId: TelegramId });
 
     if (userMiningData) {
       return NextResponse.json(userMiningData); // Отправляем найденные данные

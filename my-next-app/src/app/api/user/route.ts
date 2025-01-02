@@ -54,13 +54,14 @@ export async function POST(req: NextRequest) {
     await userCollection.save();
 
     // Создаем начальную запись в usermining
-    //const userMining = new UserMining({
-   //   TelegramId,
-    //  minedCoins: 0,
-    //  bonusCoins: 0,
-   //   burnedCoins: 0,
-  //  });
-   // await userMining.save();
+    const userMining = new UserMining({
+      TelegramId,
+      minedCoins: 0,
+      taskCoins: 0,
+      bonusCoins: 0,
+      burnedCoins: 0,
+    });
+    await userMining.save();
 
     // Создаем запись в коллекции referals
     const referralCode = generateReferralCode();

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LinearProgress, Button } from '@mui/material';
 import useUserStore from "@/stores/useUserStore";
 import fetchUserCollection from "@/app/functions/fetchUserCollection";
+import {updateUserMiningData} from "@/app/functions/updateUserMining";
 import { useTab } from '@/contexts/TabContext'
 
 interface Card {
@@ -102,6 +103,10 @@ const InfoBlock: React.FC = () => {
       console.error("Не хватает данных для обновления");
       return;
     }
+
+       // Активируем таймер блокировки кнопки
+       setIsButtonDisabled(true);
+       setCountdown(300); // 5 минут = 300 секунд
   
     const totalMinedCoins = getTotalMinedCoins();
   
@@ -172,10 +177,12 @@ const InfoBlock: React.FC = () => {
       // Обновляем состояние коллекции в приложении
       setUserCollection(updatedCollection);
       localStorage.setItem('userCollection', JSON.stringify(updatedCollection));
+
+       updateUserMiningData('increment', totalMinedCoins, user.TelegramId)
+ .then(data => console.log('Updated data:', data))
+  .catch(err => console.error('Error:', err));
   
-      // Активируем таймер блокировки кнопки
-      setIsButtonDisabled(true);
-      setCountdown(300); // 5 минут = 300 секунд
+   
   
       console.log("Данные успешно обновлены!");
     } catch (error) {
