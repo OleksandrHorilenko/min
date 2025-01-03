@@ -58,7 +58,9 @@ export interface User {
   language_code: string;
   is_premium: boolean;
   ecobalance: number;
-  wallets: string[]; // Массив строк для кошельков
+  wallets: string[];
+  refCode: string;
+  referals: string[]; 
 }
 
 // Типизация состояния хранилища
@@ -102,7 +104,9 @@ export const useUserStore = create<UserStore>((set) => ({
     language_code: '',
     is_premium: false,
     ecobalance: 0.0,
-    wallets: []
+    wallets: [],
+    refCode: '',
+    referals: []
   },
   totalProfit: 0,
   setTotalProfit: (profit) => set({ totalProfit: profit }),
@@ -121,7 +125,9 @@ export const useUserStore = create<UserStore>((set) => ({
         language_code: '',
         is_premium: false,
         ecobalance: 0.0,
-        wallets: []
+        wallets: [],
+        refCode: '',
+        referals: []
       },
       userCollection: []
     }),

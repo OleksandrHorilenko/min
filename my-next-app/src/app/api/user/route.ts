@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
+    const referralCode = generateReferralCode();
     let user = await User.findOne({ TelegramId });
     if (user) {
       return NextResponse.json(user, { status: 200 });
@@ -43,6 +43,8 @@ export async function POST(req: NextRequest) {
       is_premium,
       ecobalance: 0,
       wallets: [],
+      refCode: referralCode,
+      referals: [],
     });
     await user.save();
 
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest) {
     await userMining.save();
 
     // Создаем запись в коллекции referals
-    const referralCode = generateReferralCode();
+   
     const referal = new Referal({
       TelegramId,
       referralCode,
@@ -140,6 +142,50 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       { error: 'Ошибка при получении данных пользователя' },
       { status: 500 } // HTTP 500 - Internal Server Error
+    );
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  await connect();
+
+  try {
+    const body = await req.json();
+    const { TelegramId, ...updateFields } = body;
+
+    // Проверяем, что TelegramId передан
+    if (!TelegramId) {
+      return NextResponse.json(
+        { error: 'TelegramId является обязательным полем' },
+        { status: 400 }
+      );
+    }
+
+    // Ищем пользователя по TelegramId
+    const user = await User.findOne({ TelegramId });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Пользователь не найден' },
+        { status: 404 }
+      );
+    }
+
+    // Обновляем только переданные поля
+    Object.keys(updateFields).forEach((field) => {
+      if (updateFields[field] !== undefined) {
+        user[field] = updateFields[field];
+      }
+    });
+
+    await user.save();
+
+    return NextResponse.json({ message: 'Пользователь успешно обновлен', user }, { status: 200 });
+  } catch (error) {
+    console.error('Ошибка при обновлении пользователя:', error);
+    return NextResponse.json(
+      { error: 'Ошибка при обновлении пользователя' },
+      { status: 500 }
     );
   }
 }

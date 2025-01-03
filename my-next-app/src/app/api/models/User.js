@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema({
   is_premium: { type: Boolean, default: false },
   ecobalance: { type: Number, default: 0.0 }, // Число с запятой, по умолчанию 0.0
   wallets: { type: [String], default: [] }, // Массив строковых адресов кошельков
+  refCode: { type: String },
+  referals: { type: [String], default: [] },
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

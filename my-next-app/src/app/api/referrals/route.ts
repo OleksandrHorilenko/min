@@ -35,8 +35,10 @@ export async function POST(req: NextRequest) {
 
     // Проверяем, существует ли уже пользователь с таким TelegramId в массивах referrals
 const referalWithUser = await Referal.findOne({ referrals: TelegramId });
+// Проверяем, существует ли уже пользователь с таким TelegramId в массивах referrals
+const referalInUser = await User.findOne({ referals: TelegramId });
 
-if (referalWithUser) {
+if (referalWithUser||referalInUser) {
   return NextResponse.json(
     { error: 'Пользователь уже добавлен в рефералы' },
     { status: 409 }
@@ -45,8 +47,9 @@ if (referalWithUser) {
 
     // Находим запись с указанным referralCode
     const referalRecord = await Referal.findOne({ referralCode });
+    const referalRecordInUser = await User.findOne({ referralCode });
 
-    if (!referalRecord) {
+    if (!referalRecord || !referalRecordInUser) {
       return NextResponse.json(
         { error: 'Реферальный код не найден' },
         { status: 404 }
@@ -63,9 +66,11 @@ if (referalWithUser) {
 
     // Добавляем TelegramId в массив рефералов
     referalRecord.referrals.push(TelegramId);
+    referalRecordInUser.referals.push(TelegramId);
 
     // Сохраняем изменения
     await referalRecord.save();
+    await referalRecordInUser.save();
 
     return NextResponse.json({
       success: true,
