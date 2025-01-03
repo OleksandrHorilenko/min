@@ -10,7 +10,6 @@ import User from '../models/User';
 
 
 
-// POST-запрос: новый пользователь приходит по реферальной ссылке
 export async function POST(req: NextRequest) {
   await connect(); // Подключаемся к базе данных
 
@@ -24,53 +23,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-     // Проверяем, существует ли уже пользователь с таким TelegramId
-     //const existingUser = await User.findOne({ TelegramId });
-    // if (existingUser) {
-     //  return NextResponse.json(
-     //    { error: 'Пользователь с таким TelegramId уже существует' },
-     //    { status: 409 }
-    //   );
-    // }
+    // Проверяем, существует ли уже пользователь с таким TelegramId
+    const existingUser = await User.findOne({ TelegramId });
 
-    // Проверяем, существует ли уже пользователь с таким TelegramId в массивах referrals
-const referalWithUser = await Referal.findOne({ referrals: TelegramId });
-// Проверяем, существует ли уже пользователь с таким TelegramId в массивах referrals
-const referalInUser = await User.findOne({ referals: TelegramId });
-
-if (referalWithUser||referalInUser) {
-  return NextResponse.json(
-    { error: 'Пользователь уже добавлен в рефералы' },
-    { status: 409 }
-  );
-}
-
-    // Находим запись с указанным referralCode
-    const referalRecord = await Referal.findOne({ referralCode });
-    const referalRecordInUser = await User.findOne({ referralCode });
-
-    if (!referalRecord || !referalRecordInUser) {
+    if (!existingUser) {
       return NextResponse.json(
-        { error: 'Реферальный код не найден' },
+        { error: 'Пользователь не найден' },
         { status: 404 }
       );
     }
 
-    // Проверяем, добавлен ли уже этот пользователь в массив рефералов
-    if (referalRecord.referrals.includes(TelegramId)) {
+    // Проверяем, был ли пользователь добавлен в рефералы
+    const referalWithUser = await Referal.findOne({ referrals: TelegramId });
+    if (referalWithUser) {
       return NextResponse.json(
         { error: 'Пользователь уже добавлен в рефералы' },
         { status: 409 }
       );
     }
 
+    // Находим запись с указанным referralCode
+    const referalRecord = await Referal.findOne({ referralCode });
+    if (!referalRecord) {
+      return NextResponse.json(
+        { error: 'Реферальный код не найден' },
+        { status: 404 }
+      );
+    }
+
     // Добавляем TelegramId в массив рефералов
     referalRecord.referrals.push(TelegramId);
-    referalRecordInUser.referals.push(TelegramId);
-
-    // Сохраняем изменения
     await referalRecord.save();
-    await referalRecordInUser.save();
 
     return NextResponse.json({
       success: true,
