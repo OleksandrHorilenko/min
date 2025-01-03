@@ -4,9 +4,9 @@ import Referal from '../models/Referal';
 import User from '../models/User';
 
 // Генерация уникального реферального кода
-function generateReferralCode() {
-  return `ref-${Math.random().toString(36).slice(2, 11)}`;
-}
+//function generateReferralCode() {
+ // return `ref-${Math.random().toString(36).slice(2, 11)}`;
+//}
 
 
 

@@ -2,22 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import useUserStore from "@/stores/useUserStore";
-import { FaShareAlt, FaUserFriends, FaDollarSign } from "react-icons/fa";
 
-const INVITE_URL = 'https://t.me/smchangebot/tabtest';
+const INVITE_URL = 'https://t.me/smchangebot/tabtest'; // URL для реферальной ссылки
 
 const FriendsTab = () => {
-  const [referralCode, setReferralCode] = useState<string>('');
-  const [referrals, setReferrals] = useState<string[]>([]);
-  const [referralDetails, setReferralDetails] = useState<any[]>([]);
-  const [myRefCode, setMyRefCode] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [showReferrals, setShowReferrals] = useState<boolean>(false);
-  const { user } = useUserStore();
+  const [referralCode, setReferralCode] = useState<string>(''); // Указали тип для referralCode
+  const [referrals, setReferrals] = useState<string[]>([]); // Указали тип для referrals
+  const [myRefCode, setMyRefCode] = useState<string>(''); // Указали тип для referrals
+  const [loading, setLoading] = useState<boolean>(true); // Указали тип для loading
+  const { user } = useUserStore();  // Получаем пользователя из Zustand
+  const startParam = useUserStore((state) => state.startParam); // Получаем startParam
   const setStartParam = useUserStore((state) => state.setStartParam); // Функция для обновления startParam
-  const refCode = user.refCode;
-  /////////
-
+  //const [referrals, setReferrals] = useState<string[]>([]); // Список рефералов
+  //const [myRefCode, setMyRefCode] = useState<string>(''); // Мой реферальный код
+  //const TelegramID = user.TelegramId;
   const addReferral = async (TelegramId: string, referralCode: string) => {
     try {
       const response = await fetch('/api/referrals', {
@@ -43,18 +41,22 @@ const FriendsTab = () => {
     }
   };
 
-
   useEffect(() => {
     const initWebApp = async () => {
       if (typeof window !== 'undefined') {
         const WebApp = (await import('@twa-dev/sdk')).default;
         WebApp.ready(); // Инициализируем WebApp
+        // Явно указываем тип, что это строка или пустая строка
+        //const referralCodeFromStart: string = WebApp.initDataUnsafe.start_param || ''; 
+  
         // Получаем start_param и обрабатываем его
         const referralCodeFromStart: string = WebApp.initDataUnsafe.start_param || '';
         const trimmedReferralCode = referralCodeFromStart.slice(2);
   
         setStartParam(trimmedReferralCode); // Обновляем startParam в Zustand
         setReferralCode(trimmedReferralCode); // Также сохраняем его в локальном состоянии
+        //fetchReferralData(referralCodeFromStart);
+  
         // Проверяем, что user.TelegramId и referralCode доступны перед вызовом addReferral
         if (user?.TelegramId && trimmedReferralCode) {
           const result = await addReferral(user.TelegramId, trimmedReferralCode);
@@ -68,166 +70,88 @@ const FriendsTab = () => {
     };
   
     initWebApp();
+  //}, [user, setStartParam]); // Запускаем только когда user или setStartParam меняются
   }, [user, referralCode]); // Добавляем зависимости
+  
 
-  //////////////
 
+  // Получение данных о рефералах
+  useEffect(() => {
+    const fetchReferralData = async () => {
+      if (!user?.TelegramId) {
+        console.error('TelegramId отсутствует');
+        return;
+      }
 
-  const handleShowReferrals = async () => {
-    if (!user?.TelegramId) {
-      console.error('TelegramId отсутствует');
-      return;
-    }
+      try {
+        const response = await fetch(`/api/referrals?TelegramId=${user.TelegramId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
 
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/referrals?TelegramId=${user.TelegramId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-    
-      if (!response.ok) throw new Error('Ошибка при получении данных о рефералах');
-      const data = await response.json();
-    
-      // Удаление дубликатов рефералов
-      const uniqueReferrals: string[] = Array.from(new Set(data.referrals || []) as Set<string>);
-      setReferrals(uniqueReferrals);
-    
-      // Получение деталей каждого реферала
-      const userDetails = await Promise.allSettled(
-        uniqueReferrals.map(async (referral) => {
-          const userResponse = await fetch(`/api/user?TelegramId=${referral}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          });
-          if (!userResponse.ok) throw new Error('Ошибка при загрузке данных пользователя');
-          return await userResponse.json();
-        })
-      );
-    
-      setReferralDetails(userDetails);
-    } catch (error) {
-      console.error('Ошибка при загрузке данных рефералов:', error);
-    } finally {
-      setLoading(false);
-      setShowReferrals(true);
-      //console.log(referral); 
-    }
-  };  
+        if (!response.ok) throw new Error('Ошибка при получении данных о рефералах');
+        const data = await response.json();
+        setReferrals(data.referrals || []);
+        setMyRefCode(data.referralCode || '');
+      } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchReferralData();
+  }, [user]);
+
+  // Копирование ссылки
   const handleCopyLink = () => {
-    const inviteLink = `${INVITE_URL}?startapp=r_${refCode}`;
+    const inviteLink = `${INVITE_URL}?startapp=r_${myRefCode}`;
     navigator.clipboard.writeText(inviteLink);
     alert('Пригласительная ссылка скопирована в буфер обмена!');
   };
 
-  const handleReward = (referralId: string) => {
-    alert(`Награда за реферала ${referralId} получена!`);
-    // Логика обработки награды может быть добавлена здесь
-  };
-
-  if (loading && showReferrals) {
+  if (loading) {
     return <p className="text-center text-xl text-gray-500">Загрузка...</p>;
   }
 
   return (
     <div className="friends-tab-con px-4 pb-24 transition-all duration-300">
       {/* Заголовок */}
-      {/* Header */}
-<div className="pt-8 space-y-1">
-  <h1 className="text-3xl font-bold">INVITE YOUR FRIENDS</h1>
-  
-  <div className="text-xl">
-    <span className="text-gray-500">AND</span>
-    <span className="ml-2 font-semibold">EARN 5%</span>
-    <span className="ml-2 text-gray-500">FROM</span>
-  </div>
-  <div className="text-gray-500 text-xl">YOUR FRIENDS' MINING TOKENS</div>
-</div>
-{/* Кнопка для загрузки рефералов */}
-<div className="p-6 bg-black rounded-lg shadow-md border border-gray-300">
-  <h2 className="text-xl font-bold text-center text-white mb-4">
-    How it works
-  </h2>
-  <div className="grid grid-cols-1 gap-4">
-    {/* Step 1 */}
-    <div className="flex items-center space-x-3">
-      <FaShareAlt className="text-blue-500 text-2xl flex-shrink-0" />
-      <div>
-        <h3 className="font-semibold text-base text-white">Share Link</h3>
-        <p className="text-sm text-gray-400">
-          Share your unique invitation link with friends.
-        </p>
+      <div className="pt-8 space-y-1">
+        <h1 className="text-3xl font-bold">ПРИГЛАСИТЕ ДРУЗЕЙ</h1>
+        <div className="text-xl">
+          <span className="font-semibold">ПОДЕЛИТЕСЬ</span>
+          <span className="ml-2 text-gray-500">ВАШЕЙ ПРИГЛАСИТЕЛЬНОЙ</span>
+        </div>
+        <div className="text-xl">
+          <span className="text-gray-500">ССЫЛКОЙ И</span>
+          <span className="ml-2 font-semibold">ПОЛУЧИТЕ 10%</span>
+          <span className="ml-2 text-gray-500">ОТ</span>
+        </div>
+        <div className="text-gray-500 text-xl">ОЧКОВ ДРУЗЕЙ</div>
       </div>
-    </div>
-    {/* Step 2 */}
-    <div className="flex items-center space-x-3">
-      <FaUserFriends className="text-green-500 text-2xl flex-shrink-0" />
-      <div>
-        <h3 className="font-semibold text-base text-white">Invite a Friend</h3>
-        <p className="text-sm text-gray-400">
-          Get <span className="font-semibold text-white">$100 THE</span> for each referral.
-        </p>
-      </div>
-    </div>
-    {/* Step 3 */}
-    <div className="flex items-center space-x-3">
-      <FaDollarSign className="text-yellow-500 text-2xl flex-shrink-0" />
-      <div>
-        <h3 className="font-semibold text-base text-white">Earn Rewards</h3>
-        <p className="text-sm text-gray-400">
-          Earn <span className="font-semibold text-white">5% THE</span> from their mining income.
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
 
-
-      {/* Кнопка для загрузки рефералов */}
+      {/* Реферальный код, извлеченный из ссылки */}
       <div className="mt-8">
-        <button
-          onClick={handleShowReferrals}
-          className="w-full bg-[#4c9ce2] text-white py-2 rounded-xl text font-medium"
-        >
-          Get my referals
-        </button>
+        <div className="bg-[#151516] w-full rounded-2xl p-8">
+          <h2 className="text-xl font-bold text-white">Извлеченный код из ссылки</h2>
+          <p className="text-lg text-gray-300 mt-2">{referralCode || 'Код отсутствует'}</p>
+          <h2 className="text-xl font-bold text-white mt-6">Ваш реферальный код</h2>
+          <p className="text-lg text-gray-300 mt-2">{myRefCode || 'Не доступен'}</p>
+          <h2 className="text-xl font-bold text-white mt-6">Ваши рефералы</h2>
+          {referrals.length > 0 ? (
+            <ul className="mt-2 space-y-2">
+              {referrals.map((referral, index) => (
+                <li key={index} className="text-lg text-gray-300">
+                  {referral}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500 mt-2">У вас пока нет рефералов.</p>
+          )}
+        </div>
       </div>
-
-      {showReferrals && (
-  <div className="mt-8">
-    <div className="bg-[#151516] w-full rounded-2xl p-8">
-      <h2 className="text-xl font-bold text-white">Your referals</h2>
-      {referralDetails.length > 0 ? (
-  <ul className="mt-2 space-y-2">
-    {referralDetails.map((detail, index) => {
-      console.log(detail); // Логируем каждый detail
-      console.log(referralDetails); // Выведите весь массив перед рендером
-      return (
-        <li key={detail._id || index} className="text-lg text-gray-300 flex justify-between items-center">
-          <div>
-            
-            <p>
-              <span className="font-bold"></span> {detail.value.first_name || 'Не указано'} {detail.last_name || ''}
-            </p>
-            
-          </div>
-          <button
-            onClick={() => handleReward(detail.value.first_name)} // Используем detail.TelegramId
-            className="bg-green-500 text-white px-3 py-1 rounded-lg"
-          >
-            Get reward
-          </button>
-        </li>
-      );
-    })}
-  </ul>
-) : (
-  <p className="text-gray-500 mt-2">You have not referals</p>
-)}
-    </div>
-  </div>
-)}
 
       {/* Кнопка для копирования ссылки */}
       <div className="fixed bottom-[80px] left-0 right-0 py-4 flex justify-center">
@@ -236,7 +160,7 @@ const FriendsTab = () => {
             onClick={handleCopyLink}
             className="w-full bg-[#4c9ce2] text-white py-4 rounded-xl text-lg font-medium"
           >
-            Copy invite link
+            Скопировать пригласительную ссылку
           </button>
         </div>
       </div>
