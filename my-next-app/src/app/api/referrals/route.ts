@@ -51,9 +51,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Добавляем TelegramId в массив рефералов
+    // Добавляем TelegramId в массив рефералов в коллекции referals
     referalRecord.referrals.push(TelegramId);
     await referalRecord.save();
+
+    // Находим пользователя, которому принадлежит referralCode, в коллекции users
+    const referalOwner = await User.findOne({ refCode: referralCode });
+    if (!referalOwner) {
+      return NextResponse.json(
+        { error: 'Пользователь с указанным реферальным кодом не найден' },
+        { status: 404 }
+      );
+    }
+
+    // Убедиться, что поле referals существует и является массивом
+    if (!Array.isArray(referalOwner.referals)) {
+      referalOwner.referals = [];
+    }
+
+    // Добавляем TelegramId в массив referals в коллекции users
+    referalOwner.referals.push(TelegramId);
+    await referalOwner.save();
 
     return NextResponse.json({
       success: true,
@@ -67,6 +85,7 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
 
 
 
